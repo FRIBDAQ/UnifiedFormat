@@ -63,6 +63,16 @@ class abringitemtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getbodypointer_1);
     CPPUNIT_TEST(getbodypointer_2);
+    
+    CPPUNIT_TEST(getbodycursor_1);
+    CPPUNIT_TEST(getbodycursor_2);
+    
+    CPPUNIT_TEST(getitempointer_1);
+    CPPUNIT_TEST(getitempointer_2);
+    
+    CPPUNIT_TEST(type_1);    // The type is right for items made using
+    CPPUNIT_TEST(type_2);    // any of the three
+    CPPUNIT_TEST(type_3);    // constructors!
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -90,6 +100,16 @@ protected:
     
     void getbodypointer_1();
     void getbodypointer_2();
+    
+    void getbodycursor_1();
+    void getbodycursor_2();
+    
+    void getitempointer_1();
+    void getitempointer_2();
+    
+    void type_1();
+    void type_2();
+    void type_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abringitemtest);
@@ -253,10 +273,97 @@ void abringitemtest::getbodypointer_1()
 // non const
 void abringitemtest::getbodypointer_2()
 {
-CTestRingItem item(PHYSICS_EVENT);
+    CTestRingItem item(PHYSICS_EVENT);
     void* pBodyPointer = item.getBodyPointer();
     RingItemHeader* pH        = reinterpret_cast<RingItemHeader*>(item.m_pItem);
     pH++;           /// Should be the body pointer in this impl.
     
     EQ(pBodyPointer, reinterpret_cast<void*>(pH));    
+}
+// empty body get body cursor:
+
+void abringitemtest::getbodycursor_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    EQ(item.getBodyPointer(), item.getBodyCursor());
+}
+// nonempty body cursor:
+
+void abringitemtest::getbodycursor_2()
+{
+    struct myitem {
+        RingItemHeader hdr;
+        uint8_t payload[100];
+    } rawItem;
+    for (int i =0; i < 100; i++) {
+        rawItem.payload[i] = i;
+    }
+    rawItem.hdr.s_size= sizeof(rawItem);
+    rawItem.hdr.s_type= PHYSICS_EVENT;
+    
+    CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
+    
+    const uint8_t* pBody = reinterpret_cast<const uint8_t*>(item.getBodyPointer());
+    uint8_t* pCursor  = reinterpret_cast<uint8_t*>(item.getBodyCursor());
+    size_t n = pCursor - pBody;
+    EQ(sizeof(rawItem.payload), n);
+}
+// get item pointer for static buffer:
+
+void abringitemtest::getitempointer_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    
+    // Below are really 2 different method calls.
+    
+    uint8_t* p1 = reinterpret_cast<uint8_t*>(item.getItemPointer());
+    const uint8_t* p2 = reinterpret_cast<const uint8_t*>(item.getItemPointer());
+    
+    EQ(const_cast<const uint8_t*>(p1), p2);
+    EQ(p2, reinterpret_cast<const uint8_t*>(&item.m_staticBuffer[0]));
+    EQ(p1, reinterpret_cast<uint8_t*>(item.m_pItem));
+}
+// get item pointer when new was required.
+
+void abringitemtest::getitempointer_2()
+{
+    CTestRingItem item(PHYSICS_EVENT, 2*CRingItemStaticBufferSize);
+    ASSERT(
+        item.getItemPointer() !=
+        reinterpret_cast<pRingItem>(&(item.m_staticBuffer[0]))
+    );
+    pRingItem p1 = item.getItemPointer();
+    const RingItem* p2 = item.getItemPointer();   // const
+    EQ(const_cast<const RingItem*>(p1), p2);
+}
+// type correct for first type constructor:
+
+void abringitemtest::type_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    EQ(PHYSICS_EVENT, item.type());
+}
+// type correct on copy construction.
+void abringitemtest::type_2()
+{
+    CTestRingItem item1(PHYSICS_EVENT);
+    CTestRingItem item(item1);
+    EQ(PHYSICS_EVENT, item.type());
+}
+// Type correct on raw construction.
+
+void abringitemtest::type_3()
+{
+    struct myitem {
+        RingItemHeader hdr;
+        uint8_t payload[100];
+    } rawItem;
+    for (int i =0; i < 100; i++) {
+        rawItem.payload[i] = i;
+    }
+    rawItem.hdr.s_size= sizeof(rawItem);
+    rawItem.hdr.s_type= PHYSICS_EVENT;
+    
+    CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
+    EQ(PHYSICS_EVENT, item.type());
 }
