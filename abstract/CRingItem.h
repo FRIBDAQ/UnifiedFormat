@@ -56,7 +56,7 @@ public:
       
     
       virtual ~CRingItem();
-    
+private:                                   // Don't allow these vestigial
       CRingItem& operator=(const CRingItem& rhs);
       int operator==(const CRingItem& rhs) const;
       int operator!=(const CRingItem& rhs) const;
@@ -68,7 +68,7 @@ public:
 public:
       size_t getStorageSize() const;
       size_t getBodySize()    const;
-      virtual const RingItem*  getBodyPointer() const;
+      virtual const void*  getBodyPointer() const;
       virtual pRingItem getBodyPointer();
       virtual void*  getBodyCursor();
       pRingItem  getItemPointer();

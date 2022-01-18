@@ -199,10 +199,10 @@ CRingItem::getBodySize() const
   @note - THe base class knows nothing of body headers.  This gets overidden
           in the concrete versions of the class that have body headers:
 */
-const RingItem*
+const void*
 CRingItem::getBodyPointer() const
 {
-  const RingItem* p = getItemPointer();
+  const RingItemHeader* p = reinterpret_cast<const RingItemHeader*>(getItemPointer());
   p++;
   return p;
   
