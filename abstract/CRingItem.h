@@ -69,7 +69,7 @@ public:
       size_t getStorageSize() const;
       size_t getBodySize()    const;
       virtual const void*  getBodyPointer() const;
-      virtual pRingItem getBodyPointer();
+      virtual void* getBodyPointer();
       virtual void*  getBodyCursor();
       pRingItem  getItemPointer();
       const RingItem*  getItemPointer() const;

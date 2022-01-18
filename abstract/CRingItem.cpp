@@ -208,11 +208,12 @@ CRingItem::getBodyPointer() const
   
     
 }
-pRingItem
+void*
 CRingItem::getBodyPointer()
 {
-  const RingItem* p = getBodyPointer();
-  return const_cast<pRingItem>(p);
+  RingItemHeader* p = reinterpret_cast<RingItemHeader*>(getItemPointer());
+  p++;
+  return p;
 }
 /*!
    \return void*
