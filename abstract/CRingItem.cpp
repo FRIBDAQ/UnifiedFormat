@@ -149,7 +149,7 @@ CRingItem::operator==(const CRingItem& rhs) const
 
   // Now there's nothing for it but to compare the contents:
 
-  return (memcmp(m_pItem, rhs.m_pItem, itemSize()) == 0);
+  return (memcmp(m_pItem, rhs.m_pItem, size()) == 0);
 }
 /*!
   Inequality is just the logical inverse of equality.  This can take time, see
@@ -317,19 +317,6 @@ CRingItem::getBarrierType() const
         "Attempted to get the barrier type from an event that does not have one"
     );
     return 0;
-}
-/**
- * itemSize
- *   @return number of bytes currently thought to be in the ring itme.
- *   @note for this to be valid the cursor must be up to date and updateSize
- *      must have been called since the last update of the cursor.
- *   
- */
-uint32_t
-CRingItem::itemSize() const
-{
-    
-    return m_pItem->s_header.s_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -508,7 +495,7 @@ CRingItem::copyIn(const CRingItem& rhs)
   newIfNecessary(m_storageSize);
   
 
-  memcpy(m_pItem, rhs.m_pItem, rhs.itemSize());
+  memcpy(m_pItem, rhs.m_pItem, rhs.size());
 
   
   
