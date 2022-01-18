@@ -99,7 +99,7 @@ public:
     
       virtual std::string typeName() const; // Textual type of item.
       virtual std::string toString() const; // Provide string dump of the item.
-      virtual void* setBodyData(const void* pSrc, uint32_t nBytes);
+      virtual void* appendBodyData(const void* pSrc, uint32_t nBytes);
           
 protected:
       void newIfNecessary(uint32_t newSize);

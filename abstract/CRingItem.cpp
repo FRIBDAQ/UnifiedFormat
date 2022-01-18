@@ -97,7 +97,7 @@ CRingItem::CRingItem(pRingItem pItem) :
   
   // Doing things this way gets the cursor right.
   m_pCursor = m_pItem;
-  setBodyData(pItem, pItem->s_header.s_size);
+  appendBodyData(pItem, pItem->s_header.s_size);
   // Note the size is already correct in the m_pItem if the input item was sane.
 
 }
@@ -449,7 +449,7 @@ CRingItem::toString() const
   return dump.str();
 }
 /**
- * setBodyData
+ * appendBodyData
  *    Adds data to the body of the ring item at the cursor:
  * @param pSrc - data to add.
  * @param nBytes - Number of bytes of data to add.
@@ -457,7 +457,7 @@ CRingItem::toString() const
  * @note the body cursor is updated as is the size.
  */
 void*
-CRingItem::setBodyData(const void* pSrc, uint32_t nBytes)
+CRingItem::appendBodyData(const void* pSrc, uint32_t nBytes)
 {
   
   uint8_t* p = reinterpret_cast<uint8_t*>(getBodyCursor());
