@@ -133,7 +133,7 @@ CRingItem::operator==(const CRingItem& rhs) const
 
   // Now there's nothing for it but to compare the contents:
 
-  return (memcmp(m_pItem, rhs.m_pItem, itemSize(m_pItem)) == 0);
+  return (memcmp(m_pItem, rhs.m_pItem, itemSize()) == 0);
 }
 /*!
   Inequality is just the logical inverse of equality.  This can take time, see
@@ -301,6 +301,19 @@ CRingItem::getBarrierType() const
     );
     return 0;
 }
+/**
+ * itemSize
+ *   @return number of bytes currently thought to be in the ring itme.
+ *   @note for this to be valid the cursor must be up to date and updateSize
+ *      must have been called since the last update of the cursor.
+ *   
+ */
+uint32_t
+CRingItem::itemSize() const
+{
+    
+    return m_pItem->s_header.s_size;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //
@@ -431,6 +444,27 @@ CRingItem::toString() const
 
   return dump.str();
 }
+/**
+ * setBodyData
+ *    Adds data to the body of the ring item at the cursor:
+ * @param pSrc - data to add.
+ * @param nBytes - Number of bytes of data to add.
+ * @return void* - Pointer just past where the data were added.
+ * @note the body cursor is updated as is the size.
+ */
+void*
+CRingItem::setBodyData(const void* pSrc, uint32_t nBytes)
+{
+  
+  uint8_t* p = reinterpret_cast<uint8_t*>(getBodyCursor());
+  memcpy(p, pSrc, nBytes);
+  p += nBytes;
+  setBodyCursor(p);
+  updateSize();
+  return p;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //
@@ -457,7 +491,7 @@ CRingItem::copyIn(const CRingItem& rhs)
   newIfNecessary(m_storageSize);
   
 
-  memcpy(m_pItem, rhs.m_pItem, itemSize(rhs.m_pItem));
+  memcpy(m_pItem, rhs.m_pItem, itemSize());
 
   
   

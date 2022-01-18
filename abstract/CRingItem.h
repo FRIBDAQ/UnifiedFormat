@@ -76,10 +76,11 @@ public:
       uint32_t size() const;
       virtual bool mustSwap() const;
       virtual bool hasBodyHeader() const;
-      virtual void* getBodyHeader() const;
+      virtual void* getBodyHeader() const = 0;
       virtual uint64_t getEventTimestamp() const;
       virtual uint32_t getSourceId() const;
       virtual uint32_t getBarrierType() const;
+      virtual uint32_t itemSize() const;
 // Mutators:
 
 public:
