@@ -36,6 +36,9 @@
 class CTestRingItem : public CRingItem {
 public:
     CTestRingItem(pRingItem pItem) : CRingItem(pItem) {}
+    CTestRingItem(uint16_t type, size_t maxBody = CRingItemStaticBufferSize -100) :
+        CRingItem(type, maxBody) {}
+    CTestRingItem(const CTestRingItem& rhs) : CRingItem(rhs) {}
     virtual void* getBodyHeader() const {return nullptr;}
     virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0) {}
@@ -45,6 +48,9 @@ public:
 class abringitemtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(abringitemtest);
     CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
+    CPPUNIT_TEST(construct_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -57,7 +63,11 @@ public:
         
     }
 protected:
-    void construct_1();
+    void construct_1();   // From raw items:
+    void construct_2();
+    
+    void construct_3();   // From type/size.
+    void construct_4();   // Copy construction.
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abringitemtest);
@@ -78,4 +88,85 @@ void abringitemtest::construct_1()
     pH += r.s_header.s_size;
     uint8_t* pC = reinterpret_cast<uint8_t*>(item.m_pCursor);
     EQ(pH, pC);
+}
+// Ring item with a payload:
+
+void abringitemtest::construct_2()
+{
+    struct myitem {
+        RingItemHeader hdr;
+        uint8_t payload[100];
+    } rawItem;
+    for (int i =0; i < 100; i++) {
+        rawItem.payload[i] = i;
+    }
+    rawItem.hdr.s_size= sizeof(rawItem);
+    rawItem.hdr.s_type= PHYSICS_EVENT;
+    
+    CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
+    EQ(sizeof(rawItem), size_t(item.m_pItem->s_header.s_size));
+    EQ(PHYSICS_EVENT, item.m_pItem->s_header.s_type);
+    
+    pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(item.m_pItem);
+    uint8_t* pPayload = reinterpret_cast<uint8_t*>(pH+1);
+    for (int i =0; i < 100; i++) {
+        EQ(rawItem.payload[i], *pPayload);
+        pPayload++;
+    }
+    // pPayload should match the cursor
+    //
+    EQ(pPayload, reinterpret_cast<uint8_t*>(item.m_pCursor));
+    
+}
+
+// Construct from type and (default)maxbody:
+
+void abringitemtest::construct_3()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    item.updateSize();            // Sets the header size field.
+    
+    EQ(sizeof(RingItemHeader), size_t(item.m_pItem->s_header.s_size));
+    EQ(PHYSICS_EVENT, item.m_pItem->s_header.s_type);
+    
+    // Cursor should point just after the header:
+    
+    pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(item.m_pItem);
+    uint8_t* pB = reinterpret_cast<uint8_t*>(pH+1);
+    EQ(pB, reinterpret_cast<uint8_t*>(item.m_pCursor));
+    EQ(CRingItemStaticBufferSize-100, item.m_storageSize);
+    
+}
+// copy construction test:
+
+void abringitemtest::construct_4()
+{
+    struct myitem {
+        RingItemHeader hdr;
+        uint8_t payload[100];
+    } rawItem;
+    for (int i =0; i < 100; i++) {
+        rawItem.payload[i] = i;
+    }
+    rawItem.hdr.s_size= sizeof(rawItem);
+    rawItem.hdr.s_type= PHYSICS_EVENT;
+    
+    CTestRingItem item1(reinterpret_cast<pRingItem>(&rawItem));
+    CTestRingItem item(item1);
+    
+    // all the construct_2 tests should be valid:
+    
+    EQ(sizeof(rawItem), size_t(item.m_pItem->s_header.s_size));
+    EQ(PHYSICS_EVENT, item.m_pItem->s_header.s_type);
+    
+    pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(item.m_pItem);
+    uint8_t* pPayload = reinterpret_cast<uint8_t*>(pH+1);
+    for (int i =0; i < 100; i++) {
+        EQ(rawItem.payload[i], *pPayload);
+        pPayload++;
+    }
+    // pPayload should match the cursor
+    //
+    EQ(pPayload, reinterpret_cast<uint8_t*>(item.m_pCursor));
+    
 }
