@@ -85,6 +85,22 @@ CRingItem::CRingItem(const CRingItem& rhs) :
 
   copyIn(rhs);
 }
+/**
+ * constructor from raw ring item.
+ * @param pItem - pointer to the raw ring item.
+ */
+CRingItem::CRingItem(pRingItem pItem) :
+  m_pItem(reinterpret_cast<RingItem*>(&m_staticBuffer))
+{
+  newIfNecessary(pItem->s_header.s_size + CRingItemFromRawSlop);
+  
+  
+  // Doing things this way gets the cursor right.
+  m_pCursor = m_pItem;
+  setBodyData(pItem, pItem->s_header.s_size);
+  // Note the size is already correct in the m_pItem if the input item was sane.
+
+}
 /*!
     Destroy the item. If the storage size was big, we need to delete the 
     storage as it was dynamically allocated.
