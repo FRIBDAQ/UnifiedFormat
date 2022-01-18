@@ -59,6 +59,10 @@ class abringitemtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getstoragesize_3);
     
     CPPUNIT_TEST(getbodysize_1);
+    CPPUNIT_TEST(getbodysize_2);
+    
+    CPPUNIT_TEST(getbodypointer_1);
+    CPPUNIT_TEST(getbodypointer_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -82,6 +86,10 @@ protected:
     void getstoragesize_3();  // Force allocation.
     
     void getbodysize_1();
+    void getbodysize_2();
+    
+    void getbodypointer_1();
+    void getbodypointer_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abringitemtest);
@@ -213,4 +221,42 @@ void abringitemtest::getbodysize_1()
     CTestRingItem item(PHYSICS_EVENT);
     item.updateSize();               // Probably don't need this.
     EQ(size_t(0), item.getBodySize());
+}
+// nonempty body:
+void abringitemtest::getbodysize_2()
+{
+    struct myitem {
+        RingItemHeader hdr;
+        uint8_t payload[100];
+    } rawItem;
+    for (int i =0; i < 100; i++) {
+        rawItem.payload[i] = i;
+    }
+    rawItem.hdr.s_size= sizeof(rawItem);
+    rawItem.hdr.s_type= PHYSICS_EVENT;
+    
+    CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
+    EQ(sizeof(rawItem.payload), item.getBodySize());
+    
+}
+
+// const
+void abringitemtest::getbodypointer_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    const void* pBodyPointer = item.getBodyPointer();
+    const RingItemHeader* pH        = reinterpret_cast<const RingItemHeader*>(item.m_pItem);
+    pH++;           /// Should be the body pointer in this impl.
+    
+    EQ(pBodyPointer, reinterpret_cast<const void*>(pH));
+}
+// non const
+void abringitemtest::getbodypointer_2()
+{
+CTestRingItem item(PHYSICS_EVENT);
+    void* pBodyPointer = item.getBodyPointer();
+    RingItemHeader* pH        = reinterpret_cast<RingItemHeader*>(item.m_pItem);
+    pH++;           /// Should be the body pointer in this impl.
+    
+    EQ(pBodyPointer, reinterpret_cast<void*>(pH));    
 }
