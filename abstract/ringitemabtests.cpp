@@ -51,6 +51,14 @@ class abringitemtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST(construct_4);
+    
+    // Selector tests:
+    
+    CPPUNIT_TEST(getstoragesize_1);
+    CPPUNIT_TEST(getstoragesize_2);
+    CPPUNIT_TEST(getstoragesize_3);
+    
+    CPPUNIT_TEST(getbodysize_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -68,6 +76,12 @@ protected:
     
     void construct_3();   // From type/size.
     void construct_4();   // Copy construction.
+    
+    void getstoragesize_1();
+    void getstoragesize_2();
+    void getstoragesize_3();  // Force allocation.
+    
+    void getbodysize_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abringitemtest);
@@ -169,4 +183,34 @@ void abringitemtest::construct_4()
     //
     EQ(pPayload, reinterpret_cast<uint8_t*>(item.m_pCursor));
     
+}
+
+//  default storage:
+
+void abringitemtest::getstoragesize_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    EQ(size_t(CRingItemStaticBufferSize -100), item.getStorageSize());
+}
+void abringitemtest::getstoragesize_2()
+{
+    CTestRingItem item(PHYSICS_EVENT, 100);
+    EQ(size_t(100), item.getStorageSize());
+}
+void abringitemtest::getstoragesize_3()
+{
+    CTestRingItem item(PHYSICS_EVENT, CRingItemStaticBufferSize*2);
+    EQ(size_t(CRingItemStaticBufferSize*2), item.getStorageSize());
+    
+    // m_pItem better not point at the static buffer:
+    
+    CPPUNIT_ASSERT(item.m_pItem != pRingItem(&item.m_staticBuffer[0]));
+}
+// empty body:
+
+void abringitemtest::getbodysize_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    item.updateSize();               // Probably don't need this.
+    EQ(size_t(0), item.getBodySize());
 }
