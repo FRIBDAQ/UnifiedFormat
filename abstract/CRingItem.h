@@ -30,6 +30,7 @@ typedef _RingItem RingItem, *pRingItem;
 class CRingBuffer;
 
 static const uint32_t CRingItemStaticBufferSize=8192;
+static const uint32_t CRingItemFromRawSlop = 1024;
 
 /**
  * @class CRingItem
