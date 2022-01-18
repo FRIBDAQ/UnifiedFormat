@@ -27,6 +27,7 @@
 #undef private
 #undef public
 #include <DataFormat.h>
+#include <stdint.h>
 
 /** Since the CRingItem class is abstract we need a minimal concrete sublcass
  * to test any of it.
@@ -71,4 +72,10 @@ void abringitemtest::construct_1()
     CTestRingItem item(&r);
     EQ(sizeof(RingItemHeader), size_t(item.m_pItem->s_header.s_size));
     EQ(PHYSICS_EVENT, item.m_pItem->s_header.s_type);
+    // The cursor should be just past the header.
+    
+    uint8_t* pH = reinterpret_cast<uint8_t*>(item.m_pItem);
+    pH += r.s_header.s_size;
+    uint8_t* pC = reinterpret_cast<uint8_t*>(item.m_pCursor);
+    EQ(pH, pC);
 }
