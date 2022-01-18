@@ -73,6 +73,17 @@ class abringitemtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(type_1);    // The type is right for items made using
     CPPUNIT_TEST(type_2);    // any of the three
     CPPUNIT_TEST(type_3);    // constructors!
+    
+    CPPUNIT_TEST(size_1);
+    CPPUNIT_TEST(size_2);
+    CPPUNIT_TEST(size_3);
+    
+    CPPUNIT_TEST(mustswap);
+    CPPUNIT_TEST(hasbodyheader);
+    
+    CPPUNIT_TEST(gettimestamp);   // These throw std::string
+    CPPUNIT_TEST(getsourceid);
+    CPPUNIT_TEST(getbarriertype);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -110,6 +121,17 @@ protected:
     void type_1();
     void type_2();
     void type_3();
+    
+    void size_1();
+    void size_2();
+    void size_3();
+    
+    void mustswap();
+    void hasbodyheader();
+    
+    void gettimestamp();
+    void getsourceid();
+    void getbarriertype();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abringitemtest);
@@ -366,4 +388,67 @@ void abringitemtest::type_3()
     
     CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
     EQ(PHYSICS_EVENT, item.type());
+}
+// 'normal' constructor.
+
+void abringitemtest::size_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    EQ(sizeof(RingItemHeader), size_t(item.size()));
+}
+// Copy constructor
+
+void abringitemtest::size_2()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    CTestRingItem i2(item);
+    EQ(sizeof(RingItemHeader), size_t(i2.size()));
+}
+// Raw constructor
+void abringitemtest::size_3()
+{
+    struct myitem {
+        RingItemHeader hdr;
+        uint8_t payload[100];
+    } rawItem;
+    for (int i =0; i < 100; i++) {
+        rawItem.payload[i] = i;
+    }
+    rawItem.hdr.s_size= sizeof(rawItem);
+    rawItem.hdr.s_type= PHYSICS_EVENT;
+    CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
+    
+    EQ(rawItem.hdr.s_size, item.size());
+}
+// must swap is hard-coded to false:
+
+void abringitemtest::mustswap()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    ASSERT(!item.mustSwap());
+}
+// hasbodyheader is hard-coded false.
+void abringitemtest::hasbodyheader()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    ASSERT(!item.hasBodyHeader());
+
+}
+// in the base type the three tests below should see std::string
+// exceptions.
+
+void abringitemtest::gettimestamp()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    CPPUNIT_ASSERT_THROW(item.getEventTimestamp(), std::string);
+}
+void abringitemtest::getsourceid()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    CPPUNIT_ASSERT_THROW(item.getSourceId(), std::string);
+}
+void abringitemtest::getbarriertype()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    CPPUNIT_ASSERT_THROW(item.getBarrierType(), std::string);
 }
