@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <vector>
 #include <CRingBuffer.h>
+#include <sstream>
 
 /** Since the CRingItem class is abstract we need a minimal concrete sublcass
  * to test any of it.
@@ -122,6 +123,15 @@ class abringitemtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(setbodycursor);
     CPPUNIT_TEST(commit_1);
+    CPPUNIT_TEST(commit_2);
+    
+    CPPUNIT_TEST(updatesize_1);
+    CPPUNIT_TEST(updatesize_2);
+    
+    CPPUNIT_TEST(typename_1);
+    CPPUNIT_TEST(tostring);       // Some ambitious person can write this test.
+    
+    CPPUNIT_TEST(append_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -174,6 +184,15 @@ protected:
     void setbodycursor();
     
     void commit_1();
+    void commit_2();
+    
+    void updatesize_1();
+    void updatesize_2();
+    
+    void typename_1();
+    void tostring();      // Some ambitious person can actually write this.
+    
+    void append_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abringitemtest);
@@ -516,4 +535,84 @@ void abringitemtest::commit_1()
     pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(ring.data());
     EQ(PHYSICS_EVENT, pH->s_type);
     EQ(sizeof(RingItemHeader), size_t(pH->s_size));
+}
+// commit an item with a body:
+
+void abringitemtest::commit_2()
+{
+    CRingBuffer b("mock");
+    
+    struct myitem {
+        RingItemHeader hdr;
+        uint8_t payload[100];
+    } rawItem;
+    for (int i =0; i < 100; i++) {
+        rawItem.payload[i] = i;
+    }
+    rawItem.hdr.s_size= sizeof(rawItem);
+    rawItem.hdr.s_type= PHYSICS_EVENT;
+    
+    CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
+    item.commitToRing(b);
+    
+    EQ(size_t(rawItem.hdr.s_size), ring.size());
+    
+    pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(ring.data());
+    EQ(PHYSICS_EVENT, pH->s_type);
+    EQ(sizeof(rawItem), size_t(pH->s_size));
+    
+    uint8_t* p = reinterpret_cast<uint8_t*>(pH+1);
+    for (int i=0; i < sizeof(rawItem.payload); i++ ) {
+        EQ(rawItem.payload[i], p[i]);
+    }
+}
+// If cursor did not change then the size won't.
+void abringitemtest::updatesize_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    auto s1 =item.size();
+    item.updateSize();
+    EQ(s1, item.size());
+}
+// if cursor did change the size changes appropriately:
+
+void abringitemtest::updatesize_2()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    auto s1 = item.size();
+    uint8_t* p = reinterpret_cast<uint8_t*>(item.getBodyCursor());
+    p += 100;
+    item.setBodyCursor(p);
+    item.updateSize();
+    EQ(s1+100, item.size());
+}
+
+void abringitemtest::typename_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    std::stringstream expected;
+    expected << "Unknown (" << std::hex << PHYSICS_EVENT << ")";
+    EQ(expected.str(), item.typeName());
+}
+// some ambitious person can actually write this:
+
+void abringitemtest::tostring()
+{
+    
+}
+//
+void abringitemtest::append_1()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    uint8_t data[100];
+    for (int i =0; i < sizeof(data); i++) {
+        data[i] = i;
+    }
+    item.appendBodyData(data, sizeof(data));
+    EQ(sizeof(RingItemHeader) + sizeof(data), size_t(item.size()));
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(item.getBodyPointer());
+    for (int i = 0; i < sizeof(data); i++) {
+        EQ(data[i], *p);
+        p++;
+    }
 }
