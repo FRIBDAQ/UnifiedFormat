@@ -507,7 +507,7 @@ CRingItem::copyIn(const CRingItem& rhs)
   newIfNecessary(m_storageSize);
   
 
-  memcpy(m_pItem, rhs.m_pItem, itemSize());
+  memcpy(m_pItem, rhs.m_pItem, rhs.itemSize());
 
   
   
