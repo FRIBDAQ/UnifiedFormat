@@ -28,6 +28,8 @@
 #undef public
 #include <DataFormat.h>
 #include <stdint.h>
+#include <vector>
+#include <CRingBuffer.h>
 
 /** Since the CRingItem class is abstract we need a minimal concrete sublcass
  * to test any of it.
@@ -43,7 +45,38 @@ public:
     virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0) {}
 };
+/////////////////////////////////
+/**
+ * testing commitToRing requires a mock CRingBuffer implementation
+ */
+std::vector<uint8_t> ring;
+CRingBuffer::CRingBuffer(std::string name, ClientMode mode) {}
+size_t CRingBuffer::put(const void* pBuffer, size_t nBytes, unsigned long timeout)
+{
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(pBuffer);
+    for (int i = 0; i < nBytes; i++) {
+        ring.push_back(*p++);
+    }
+    return nBytes;
+}
+CRingBuffer::~CRingBuffer()
+{
+    ring.clear();
+}
+size_t CRingBuffer::get(void* pBuffer, size_t maxBytes, size_t minBytes,
+             unsigned long timeout) {
+    return 0;
+}
+size_t CRingBuffer::peek(void* pBuffer, size_t maxbytes) {
+    return 0;
+}
+void CRingBuffer::skip(size_t nBytes) {
 
+}
+size_t CRingBuffer::availablePutSpace() { return 0;}
+size_t CRingBuffer:: availableData() {return 0;}
+void CRingBuffer::pollblock() {}
+/////////////////////////////////////////
 
 class abringitemtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(abringitemtest);
@@ -84,6 +117,11 @@ class abringitemtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(gettimestamp);   // These throw std::string
     CPPUNIT_TEST(getsourceid);
     CPPUNIT_TEST(getbarriertype);
+    
+    // Mutator tests
+    
+    CPPUNIT_TEST(setbodycursor);
+    CPPUNIT_TEST(commit_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -132,6 +170,10 @@ protected:
     void gettimestamp();
     void getsourceid();
     void getbarriertype();
+    
+    void setbodycursor();
+    
+    void commit_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abringitemtest);
@@ -451,4 +493,27 @@ void abringitemtest::getbarriertype()
 {
     CTestRingItem item(PHYSICS_EVENT);
     CPPUNIT_ASSERT_THROW(item.getBarrierType(), std::string);
+}
+
+void abringitemtest::setbodycursor()
+{
+    CTestRingItem item(PHYSICS_EVENT);
+    uint8_t* p = reinterpret_cast<uint8_t*>(item.getBodyCursor());
+    for (int i =0;i < 100; i++) {
+        *p++ = i;
+    }
+    item.setBodyCursor(p);
+    EQ(p, reinterpret_cast<uint8_t*>(item.getBodyCursor()));
+}
+// Commit minimal ring item:
+
+void abringitemtest::commit_1()
+{
+    CRingBuffer b("mock");
+    CTestRingItem item(PHYSICS_EVENT);
+    item.commitToRing(b);
+    
+    pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(ring.data());
+    EQ(PHYSICS_EVENT, pH->s_type);
+    EQ(sizeof(RingItemHeader), size_t(pH->s_size));
 }
