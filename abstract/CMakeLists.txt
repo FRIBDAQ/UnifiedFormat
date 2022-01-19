@@ -1,10 +1,10 @@
 add_library(
     AbstractFormat SHARED
-    CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp
+    CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp CGlomParameters.cpp
 )
 target_sources(
     AbstractFormat PUBLIC
-    CRingItem.h CAbnormalEndItem.h CDataFormatItem.h
+    CRingItem.h CAbnormalEndItem.h CDataFormatItem.h CGlomParameters.h
 )
 get_target_property(ABSTRACT_FORMAT_PUBLIC_HEADERS AbstractFormat INTERFACE_SOURCES)
 set_target_properties(
@@ -27,6 +27,7 @@ PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
 add_executable(
     unittests
     TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
+    glomabtests.cpp
     CRingItem.h CAbnormalEndItem.h Asserts.h
 )
 
