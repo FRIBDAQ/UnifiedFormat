@@ -1,5 +1,11 @@
-add_library(AbstractFormat SHARED CRingItem.cpp)
-target_sources(AbstractFormat PUBLIC CRingItem.h)
+add_library(
+    AbstractFormat SHARED
+    CRingItem.cpp CAbnormalEndItem.cpp
+)
+target_sources(
+    AbstractFormat PUBLIC
+    CRingItem.h CAbnormalEndItem.h
+)
 get_target_property(ABSTRACT_FORMAT_PUBLIC_HEADERS AbstractFormat INTERFACE_SOURCES)
 set_target_properties(
     AbstractFormat PROPERTIES PUBLIC_HEADER "${ABSTRACT_FORMAT_PUBLIC_HEADERS}"
@@ -20,7 +26,8 @@ PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
 
 add_executable(
     unittests
-    TestRunner.cpp ringitemabtests.cpp CRingItem.h Asserts.h
+    TestRunner.cpp ringitemabtests.cpp abendabtests.cpp
+    CRingItem.h CAbnormalEndItem.h Asserts.h
 )
 target_include_directories(
     unittests SYSTEM
