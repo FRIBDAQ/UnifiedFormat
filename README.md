@@ -23,4 +23,9 @@ denominator interface, provide a common multiple.  It's up to the
 implementation of concrete classes to figure out what to do with interface
 elements they cannot implement.
 
+Key to the directories:
+
+*  abstract - contains the various base classes. While functional for some
+version of NSCDAQ they are not meant to actually be used.
+
 

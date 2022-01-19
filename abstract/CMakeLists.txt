@@ -1,10 +1,10 @@
 add_library(
     AbstractFormat SHARED
-    CRingItem.cpp CAbnormalEndItem.cpp
+    CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp
 )
 target_sources(
     AbstractFormat PUBLIC
-    CRingItem.h CAbnormalEndItem.h
+    CRingItem.h CAbnormalEndItem.h CDataFormatItem.h
 )
 get_target_property(ABSTRACT_FORMAT_PUBLIC_HEADERS AbstractFormat INTERFACE_SOURCES)
 set_target_properties(
@@ -26,9 +26,10 @@ PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
 
 add_executable(
     unittests
-    TestRunner.cpp ringitemabtests.cpp abendabtests.cpp
+    TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
     CRingItem.h CAbnormalEndItem.h Asserts.h
 )
+
 target_include_directories(
     unittests SYSTEM
     PUBLIC /usr/opt/daq/12.0-pre3/include
