@@ -24,12 +24,14 @@
 
 //Fakey body header we use to support this 'abstract' type:
 
+#pragma pack(push, 1)
 struct AbstractBodyHeader {
 	uint32_t s_size;
 	uint64_t s_timestamp;
 	uint32_t s_sourceId;
 	uint32_t s_barrierType;
 };
+#pragma pack(pop)
 
 /*-------------------------------------------------------------------------------------
  *   Canonical methods
@@ -149,7 +151,9 @@ CRingFragmentItem::payloadSize()
 void*
 CRingFragmentItem::payloadPointer()
 {
-	return getBodyPointer();
+	AbstractBodyHeader* pH =
+        reinterpret_cast<AbstractBodyHeader*>(getBodyHeader());
+    return pH+1;
   
 
 }
@@ -162,6 +166,19 @@ uint32_t
 CRingFragmentItem::barrierType() const
 {
   return getBarrierType();
+}
+
+/**
+ * getBarrierType
+ *    Override from ringitem base class.
+ * @return uint32_t the barrier type.
+ */
+uint32_t
+CRingFragmentItem::getBarrierType() const
+{
+    AbstractBodyHeader* pH =
+        reinterpret_cast<AbstractBodyHeader*>(getBodyHeader());
+    return pH->s_barrierType;
 }
 /**
  * typeName 
@@ -333,7 +350,6 @@ CRingFragmentItem::init(size_t size)
   newIfNecessary(size);
 
   uint8_t* pCursor = reinterpret_cast<uint8_t*>(getBodyPointer());
-  pCursor         += size;
   setBodyCursor(pCursor);
   updateSize();
 

@@ -1,12 +1,12 @@
 add_library(
     AbstractFormat SHARED
     CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp CGlomParameters.cpp
-    CPhysicsEventItem.cpp
+    CPhysicsEventItem.cpp CRingFragmentItem.cpp
 )
 target_sources(
     AbstractFormat PUBLIC
     CRingItem.h CAbnormalEndItem.h CDataFormatItem.h CGlomParameters.h
-    CPhysicsEventItem.h
+    CPhysicsEventItem.h CRingFragmentItem.h
 )
 get_target_property(ABSTRACT_FORMAT_PUBLIC_HEADERS AbstractFormat INTERFACE_SOURCES)
 set_target_properties(
@@ -29,8 +29,9 @@ PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
 add_executable(
     unittests
     TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
-    glomabtests.cpp physabtests.cpp
+    glomabtests.cpp physabtests.cpp fragabtests.cpp 
     CRingItem.h CAbnormalEndItem.h CGlomParameters.h CPhysicsEventItem.h
+    CRingFragmentItem.h
     Asserts.h
 )
 

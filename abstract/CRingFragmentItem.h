@@ -58,11 +58,13 @@ public:
   size_t       payloadSize();
   void*        payloadPointer();
   uint32_t     barrierType() const;
+  
 
   // Virtual method overrides:
 
   virtual std::string typeName() const;
   virtual std::string toString() const;
+  virtual uint32_t getBarrierType() const;
   
   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0) ;
