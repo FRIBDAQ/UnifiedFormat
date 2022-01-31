@@ -213,7 +213,7 @@ CRingFragmentItem::toString() const
 
   out << "- - - - - -  Payload - - - - - - -\n";
    
-	out << "   Does not look like a ring item";
+	
 	out << std::hex << std::endl;
 	const uint8_t* p = reinterpret_cast<const uint8_t*>(This->payloadPointer());
 	for (int i = 0; i < This->payloadSize(); i++) {
