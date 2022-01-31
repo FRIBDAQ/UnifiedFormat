@@ -30,9 +30,9 @@ PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
 add_executable(
     unittests
     TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
-    glomabtests.cpp physabtests.cpp fragabtests.cpp 
+    glomabtests.cpp physabtests.cpp fragabtests.cpp counterabtests.cpp
     CRingItem.h CAbnormalEndItem.h CGlomParameters.h CPhysicsEventItem.h
-    CRingFragmentItem.h
+    CRingFragmentItem.h CRingPhysicsEventCountItem.h
     Asserts.h
 )
 
