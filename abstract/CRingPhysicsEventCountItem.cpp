@@ -16,6 +16,7 @@
 #include "CRingPhysicsEventCountItem.h"
 #include <sstream>
 #include <time.h>
+#include <stdexcept>
 
 using namespace std;
 
@@ -207,6 +208,30 @@ CRingPhysicsEventCountItem::getOriginalSourceId() const
 //
 // Virtual method overrides.
 
+/**
+ * setBodyHeader
+ *    @throws std::Logic_error as we don't have a body header in
+ *            abstract.
+ * @param timestamp - timestamp for event.
+ * @param sourceid  - Source id of event.
+ * @param barrierType - Barrier event type.
+ */
+void
+CRingPhysicsEventCountItem::setBodyHeader(
+    uint64_t timestamp, uint32_t sourceId, uint32_t barrierType 
+)
+{
+  throw std::logic_error("abstract CRingPhysicsEventCountItem has no body header");
+}
+/**
+ * getBodyHeader
+ *    @throw std::logic_error - we don't have a body header.
+ */
+void*
+CRingPhysicsEventCountItem::getBodyHeader()
+{
+  throw std::logic_error("abstract CRingPhysicsEventCountItem has no body header");
+}
 
 /**
  * typeName
