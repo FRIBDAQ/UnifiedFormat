@@ -31,6 +31,8 @@
 class counterabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(counterabtest);
     CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -44,6 +46,8 @@ public:
     }
 protected:
     void construct_1();
+    void construct_2();
+    void construct_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(counterabtest);
@@ -51,22 +55,89 @@ CPPUNIT_TEST_SUITE_REGISTRATION(counterabtest);
 // Default constructor 
 void counterabtest::construct_1()
 {
-    CRingPhysicsEventCountItem* pItem;
-    CPPUNIT_ASSERT_NO_THROW(pItem = new CRingPhysicsEventCountItem);
-    uint32_t* pBody =
-        reinterpret_cast<uint32_t*>(pItem->getBodyPointer());
-    EQ(uint32_t(0), *pBody);    // Time offset.
-    pBody++;
-    EQ(uint32_t(1), *pBody);    // Offset divisor.
-    pBody++;
-    
-    time_t now = time(nullptr);
-    ASSERT((now - *pBody) <= 1); // timestamp - might be on a sec. edge.
-    pBody++;
-    EQ(uint32_t(0), *pBody);     // original source id.
-    pBody++;
-    uint64_t* p64 = reinterpret_cast<uint64_t*>(pBody);
-    EQ(uint64_t(0), *p64);
-    
-    
+    CRingPhysicsEventCountItem* pItem(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(pItem = new CRingPhysicsEventCountItem);
+        uint32_t* pBody =
+            reinterpret_cast<uint32_t*>(pItem->getBodyPointer());
+        EQ(uint32_t(0), *pBody);    // Time offset.
+        pBody++;
+        EQ(uint32_t(1), *pBody);    // Offset divisor.
+        pBody++;
+        
+        time_t now = time(nullptr);
+        ASSERT((now - *pBody) <= 1); // timestamp - might be on a sec. edge.
+        pBody++;
+        EQ(uint32_t(0), *pBody);     // original source id.
+        pBody++;
+        uint64_t* p64 = reinterpret_cast<uint64_t*>(pBody);
+        EQ(uint64_t(0), *p64);
+    } catch (...) {
+        delete pItem;    // violated asertions are exceptions
+        throw;
+    }
+    delete pItem;
+}
+// COunt and offset contructor but original source id is defaulted.
+// as is clock timestamp.
+
+void counterabtest::construct_2()
+{
+    CRingPhysicsEventCountItem* pItem(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pItem = new CRingPhysicsEventCountItem(2345, 10, 2) 
+        );
+        uint32_t* pBody =
+            reinterpret_cast<uint32_t*>(pItem->getBodyPointer());
+        EQ(uint32_t(10), *pBody);    // Time offset.
+        pBody++;
+        EQ(uint32_t(2), *pBody);    // Offset divisor.
+        pBody++;
+        
+        time_t now = time(nullptr);
+        ASSERT((now - *pBody) <= 1); // timestamp - might be on a sec. edge.
+        pBody++;
+        EQ(uint32_t(0), *pBody);     // original source id.
+        pBody++;
+        uint64_t* p64 = reinterpret_cast<uint64_t*>(pBody);
+        EQ(uint64_t(2345), *p64);
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+// fully specified constructor
+
+void counterabtest::construct_3()
+{
+    CRingPhysicsEventCountItem* pItem(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pItem = new CRingPhysicsEventCountItem(
+                666, 15, time(nullptr), 5, 3
+            )
+        );
+        uint32_t* pBody =
+            reinterpret_cast<uint32_t*>(pItem->getBodyPointer());
+        EQ(uint32_t(15), *pBody);    // Time offset.
+        pBody++;
+        EQ(uint32_t(3), *pBody);    // Offset divisor.
+        pBody++;
+        
+        time_t now = time(nullptr);
+        ASSERT((now - *pBody) <= 1); // timestamp - might be on a sec. edge.
+        pBody++;
+        EQ(uint32_t(5), *pBody);     // original source id.
+        pBody++;
+        uint64_t* p64 = reinterpret_cast<uint64_t*>(pBody);
+        EQ(uint64_t(666), *p64);
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
 }

@@ -63,15 +63,18 @@ CRingPhysicsEventCountItem::CRingPhysicsEventCountItem(uint64_t count,
    \param count       - number of events.
    \param timeOffset  - Seconds into the active run time at which this item
    \param stamp       - Timestamp at which the event was produced.
+   @param sid         - Sourceid.
+   @param divisor     - Timestamp divisor defaults to 1
 */
 CRingPhysicsEventCountItem::CRingPhysicsEventCountItem(uint64_t count,
 						       uint32_t timeOffset,
-						       time_t   stamp, unsigned divisor) :
+						       time_t   stamp, uint32_t sid,
+                   unsigned divisor) :
   CRingItem(PHYSICS_EVENT_COUNT)
 {
   
   void* p =
-    fillEventCountBody(timeOffset, divisor, stamp, count, 0);
+    fillEventCountBody(timeOffset, divisor, stamp, count, sid);
   setBodyCursor(p);
   updateSize();
 }

@@ -45,7 +45,7 @@ public:
 			     uint32_t timeOffset, unsigned divisor = 1);
   CRingPhysicsEventCountItem(uint64_t count, 
 			     uint32_t timeoffset, 
-			     time_t stamp, unsigned divisor = 1);
+			     time_t stamp, uint32_t sid, unsigned divisor = 1);
   virtual ~CRingPhysicsEventCountItem();
 private:
   CRingPhysicsEventCountItem(const CRingPhysicsEventCountItem& rhs);
