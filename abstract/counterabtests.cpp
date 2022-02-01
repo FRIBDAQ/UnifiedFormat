@@ -25,7 +25,7 @@
 #include "CRingPhysicsEventCountItem.h"
 #include <time.h>
 #include <stdint.h>
-
+#include <stdexcept>
 
 
 class counterabtest : public CppUnit::TestFixture {
@@ -33,6 +33,22 @@ class counterabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
+    
+    CPPUNIT_TEST(toffset_1);
+    CPPUNIT_TEST(toffset_2);
+    CPPUNIT_TEST(toffset_3);
+    
+    CPPUNIT_TEST(tstamp_1);
+    CPPUNIT_TEST(tstamp_2);
+    
+    CPPUNIT_TEST(evtcount_1);
+    CPPUNIT_TEST(evtcount_2);
+    
+    CPPUNIT_TEST(originalsid);
+    
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
+    CPPUNIT_TEST(type_name);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -48,6 +64,23 @@ protected:
     void construct_1();
     void construct_2();
     void construct_3();
+    
+    void toffset_1();
+    void toffset_2();
+    void toffset_3();
+    
+    void tstamp_1();
+    void tstamp_2();
+    
+    void evtcount_1();
+    void evtcount_2();
+    
+    void originalsid();
+    
+    void bodyhdr_1();
+    void bodyhdr_2();
+    
+    void type_name();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(counterabtest);
@@ -140,4 +173,94 @@ void counterabtest::construct_3()
         throw;
     }
     delete pItem;
+}
+// Selector to geth the time offset:
+void counterabtest::toffset_1()
+{
+    CRingPhysicsEventCountItem item(124, 5);
+    EQ(uint32_t(5), item.getTimeOffset());
+}
+// set time offset revealed in get time offset.
+
+void counterabtest::toffset_2()
+{
+    CRingPhysicsEventCountItem item;
+    item.setTimeOffset(100);
+    EQ(uint32_t(100), item.getTimeOffset());
+}
+// COmpute the time offset properly given a divisor:
+
+void counterabtest::toffset_3()
+{
+    CRingPhysicsEventCountItem item(1234, 15, 3);
+    EQ(float(5.0), item.computeElapsedTime());
+    EQ(uint32_t(3), item.getTimeDivisor());
+}
+// Get the timestamp gives correct value:
+
+void counterabtest::tstamp_1()
+{
+    time_t t = time(nullptr);
+    CRingPhysicsEventCountItem item(246810, 10, t, 1);
+    EQ(t, item.getTimestamp());
+}
+// setting timestamp:
+
+void counterabtest::tstamp_2()
+{
+    time_t t = time(nullptr) + 10;    // 10 seconds into the future.
+    CRingPhysicsEventCountItem item;  // Stamped with now.
+    
+    item.setTimestamp(t);             // now 10 seconds + now.
+    EQ(t, item.getTimestamp());
+}
+// We can get the correct event count.
+
+void counterabtest::evtcount_1()
+{
+    CRingPhysicsEventCountItem item(1234, 15, 3);
+    EQ(uint64_t(1234), item.getEventCount());
+}
+// we can set an event countl
+void counterabtest::evtcount_2()
+{
+    CRingPhysicsEventCountItem item;
+    item.setEventCount(9876543210);
+    EQ(uint64_t(9876543210), item.getEventCount());
+}
+// Get the original source id
+
+void counterabtest::originalsid()
+{
+    CRingPhysicsEventCountItem item(
+        123456789, 10, time(nullptr), 12
+    );
+    
+    EQ(uint32_t(12), item.getOriginalSourceId());
+}
+// setbodyheader throws.
+
+void counterabtest::bodyhdr_1()
+{
+    CRingPhysicsEventCountItem item;
+    CPPUNIT_ASSERT_THROW(
+        item.setBodyHeader(1234, 2, 0),
+        std::logic_error
+    );
+}
+// Get body header throws.
+void counterabtest::bodyhdr_2()
+{
+    CRingPhysicsEventCountItem item;
+    CPPUNIT_ASSERT_THROW(
+        item.getBodyHeader(),
+        std::logic_error
+    );
+}
+// typeName is 'Trigger count'
+
+void counterabtest::type_name()
+{
+    CRingPhysicsEventCountItem item;
+    EQ(std::string("Trigger count"), item.typeName());
 }
