@@ -75,7 +75,7 @@ public:
 
   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0);
-  virtual void* getBodyHeader(); 
+  virtual void* getBodyHeader() const; 
 
   virtual std::string typeName() const;	// Textual type of item.
   virtual std::string toString() const; // Provide string dump of the item.

@@ -23,12 +23,14 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "CRingPhysicsEventCountItem.h"
+#include <time.h>
+#include <stdint.h>
 
 
 
 class counterabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(counterabtest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -41,11 +43,30 @@ public:
         
     }
 protected:
-    void test_1();
+    void construct_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(counterabtest);
 
-void counterabtest::test_1()
+// Default constructor 
+void counterabtest::construct_1()
 {
+    CRingPhysicsEventCountItem* pItem;
+    CPPUNIT_ASSERT_NO_THROW(pItem = new CRingPhysicsEventCountItem);
+    uint32_t* pBody =
+        reinterpret_cast<uint32_t*>(pItem->getBodyPointer());
+    EQ(uint32_t(0), *pBody);    // Time offset.
+    pBody++;
+    EQ(uint32_t(1), *pBody);    // Offset divisor.
+    pBody++;
+    
+    time_t now = time(nullptr);
+    ASSERT((now - *pBody) <= 1); // timestamp - might be on a sec. edge.
+    pBody++;
+    EQ(uint32_t(0), *pBody);     // original source id.
+    pBody++;
+    uint64_t* p64 = reinterpret_cast<uint64_t*>(pBody);
+    EQ(uint64_t(0), *p64);
+    
+    
 }

@@ -228,7 +228,7 @@ CRingPhysicsEventCountItem::setBodyHeader(
  *    @throw std::logic_error - we don't have a body header.
  */
 void*
-CRingPhysicsEventCountItem::getBodyHeader()
+CRingPhysicsEventCountItem::getBodyHeader() const
 {
   throw std::logic_error("abstract CRingPhysicsEventCountItem has no body header");
 }
