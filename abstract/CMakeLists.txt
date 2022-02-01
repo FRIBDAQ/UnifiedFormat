@@ -32,8 +32,9 @@ add_executable(
     unittests
     TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
     glomabtests.cpp physabtests.cpp fragabtests.cpp counterabtests.cpp
+    scabtests.cpp
     CRingItem.h CAbnormalEndItem.h CGlomParameters.h CPhysicsEventItem.h
-    CRingFragmentItem.h CRingPhysicsEventCountItem.h
+    CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
     Asserts.h
 )
 
