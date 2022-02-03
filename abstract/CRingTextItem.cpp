@@ -43,7 +43,7 @@ CRingTextItem::CRingTextItem(uint16_t type, vector<string> theStrings) :
 
     auto stringPtrs = makeStringPointers(theStrings);
     void* p = fillTextItemBody(
-      getItemPointer(), 0, 1, time(nullptr), stringPtrs.size(), stringPtrs.data(),
+     0, 1, time(nullptr), stringPtrs.size(), stringPtrs.data(),
       0
     );
     setBodyCursor(p);
@@ -70,7 +70,7 @@ CRingTextItem::CRingTextItem(uint16_t       type,
   
   auto stringPtrs = makeStringPointers(strings);
   void* p = fillTextItemBody(
-    getItemPointer(), offsetTime, 1, timestamp, stringPtrs.size(),
+    offsetTime, 1, timestamp, stringPtrs.size(),
     stringPtrs.data(), 0
   );
   setBodyCursor(p);
@@ -320,4 +320,54 @@ CRingTextItem::makeStringPointers(const std::vector<std::string>& strings)
   }
   
   return result;
+}
+/**
+ * fillTextItemBody
+ *    Fill the body of a text item.
+ * @param offset - offset into the run.
+ * @param divisor - offset/divisor (floating) is seconds into run.
+ * @param stamp  - Unix timestamp at which item was created.
+ * @param nStrings - Number of strings.
+ * @param ppStrings - Pointers to the strings.
+ * @param sid     - Source id.
+ * @return void*   - Pointer past the filled in item.
+ * @throw std::out_of_range if the strings won't fit in the item.
+ */
+void*
+CRingTextItem::fillTextItemBody(
+    uint32_t offset, uint32_t divisor, time_t stamp, uint32_t nStrings,
+    const char** ppStrings, int sid
+)
+{
+    pRingItemHeader pHeader = reinterpret_cast<pRingItemHeader>(getItemPointer());
+    pTextItemBody   pBody   = reinterpret_cast<pTextItemBody>(pHeader+1);
+    
+    // First fill in the fixed part:
+    
+    pBody->s_timeOffset = offset;
+    pBody->s_timestamp  = stamp;
+    pBody->s_stringCount = nStrings;
+    pBody->s_offsetDivisor = divisor;
+    pBody->s_originalSid   = sid;
+    
+    // Now the strings:
+    
+    size_t maxSize = getStorageSize();
+    size_t remainingSize = maxSize - sizeof(RingItemHeader) - sizeof(TextItemBody);
+    
+    char* p = pBody->s_strings;
+    for(int i =0; i < nStrings; i++) {
+      auto size = strlen(*ppStrings)+1;
+      if (size > remainingSize) {
+        throw std::out_of_range(
+            "CRingTextItem::fillTextItemBody: The string items won't fit in the ring item space!"
+        );
+      }
+      strcpy(p, *ppStrings);
+      ppStrings++;
+      p += size;
+      remainingSize -= size;
+    }
+    return p;
+    
 }

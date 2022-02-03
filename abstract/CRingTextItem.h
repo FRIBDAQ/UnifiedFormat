@@ -78,6 +78,10 @@ private:
   bool   validType() const;
   
   std::vector<const char*> makeStringPointers(const std::vector<std::string>& strings);
+  void* fillTextItemBody(
+    uint32_t offset, uint32_t divisor, time_t stamp, uint32_t nStrings,
+    const char** ppStrings, int sid
+  );
 };
 
 
