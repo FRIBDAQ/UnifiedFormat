@@ -44,7 +44,7 @@ public:
   CRingTextItem(uint16_t type,
 		std::vector<std::string> theStrings,
 		uint32_t                 offsetTime,
-		time_t                   timestamp) ;
+		time_t                   timestamp, uint32_t divisor=1) ;
   
 
   virtual ~CRingTextItem();

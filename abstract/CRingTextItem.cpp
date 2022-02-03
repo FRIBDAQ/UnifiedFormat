@@ -56,21 +56,21 @@ CRingTextItem::CRingTextItem(uint16_t type, vector<string> theStrings) :
   \param strings - The strings to put in the buffer.
   \param offsetTime - The time in to the run at which this is being inserted.
   \param timestamp  - The absolute time when this is being created.
+  @param divisor - offset divisor.
 
 
-   @note The use of sizeof(Bodyheader) is fine because we're  building the
-         we're building the  body header ourself.
 */
 CRingTextItem::CRingTextItem(uint16_t       type,
 			     vector<string> strings,
 			     uint32_t       offsetTime,
-			     time_t         timestamp) :
+			     time_t         timestamp,
+           uint32_t      divisor) :
   CRingItem(type, bodySize(strings) + sizeof(BodyHeader))
 {
   
   auto stringPtrs = makeStringPointers(strings);
   void* p = fillTextItemBody(
-    offsetTime, 1, timestamp, stringPtrs.size(),
+    offsetTime, divisor, timestamp, stringPtrs.size(),
     stringPtrs.data(), 0
   );
   setBodyCursor(p);
