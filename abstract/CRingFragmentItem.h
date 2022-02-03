@@ -41,10 +41,12 @@ public:
 		    uint32_t payloadSize, 
 		    const void* pBody,
 		    uint32_t barrier=0);
+  virtual ~CRingFragmentItem();
+private:
   CRingFragmentItem(const CRingItem& rhs) ;
   CRingFragmentItem(const CRingFragmentItem& rhs);
 
-  virtual ~CRingFragmentItem();
+  
 
   CRingFragmentItem& operator=(const CRingFragmentItem& rhs);
   int operator==(const CRingFragmentItem& rhs) const;

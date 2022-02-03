@@ -65,37 +65,6 @@ CRingFragmentItem::CRingFragmentItem(
 }
 
 /**
- * constructor 
- * 
- * Given a reference to a ring item create a CRingFragment item:
- * - If the type of the ring item is not EVB_FRAGMENT, throw std::bad_cast.
- * - Otherwise create this from the ring item.
- *
- * @param item - Reference to a generic ring item.
- */
-CRingFragmentItem::CRingFragmentItem(const CRingItem& rhs) :
-  CRingItem(rhs)
-{
-  if ((type() != EVB_FRAGMENT) && (type() != EVB_UNKNOWN_PAYLOAD)) {
-    throw std::bad_cast();
-  }
-  updateSize();
-
-}
-
-/**
- * Copy constructor.
- *
- * Construct this as an identical copy of an existing item.
- * 
- * @param rhs - const reference to what we are copying.
- */
-CRingFragmentItem::CRingFragmentItem(const CRingFragmentItem& rhs) :
-  CRingItem(rhs)
-{
-    updateSize();
-}
-/**
  * destructor
  *
  * Base class does everything we need:
