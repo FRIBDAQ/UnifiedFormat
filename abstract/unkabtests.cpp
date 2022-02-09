@@ -24,7 +24,7 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "CUnknownFragment.h"
-#include <DataFormat.h>
+#include "DataFormat.h"
 
 class unkabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(unkabtest);

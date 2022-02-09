@@ -27,7 +27,7 @@
 
 struct _RingItem;
 typedef _RingItem RingItem, *pRingItem;
-class CRingBuffer;
+
 
 static const uint32_t CRingItemStaticBufferSize=8192;
 static const uint32_t CRingItemFromRawSlop = 1024;
@@ -91,7 +91,7 @@ public:
     
       // Object actions:
     
-      virtual void commitToRing(CRingBuffer& ring);
+      
       virtual void updateSize();            /* Set the header size given the cursor. */
       
     

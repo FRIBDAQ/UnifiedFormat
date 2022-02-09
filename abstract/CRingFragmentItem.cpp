@@ -16,7 +16,7 @@
 
 #include "CRingFragmentItem.h"
 #include "DataFormat.h"
-#include "CRingItemFactory.h"
+
 
 #include <string.h>
 #include <sstream>

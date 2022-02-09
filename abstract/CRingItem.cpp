@@ -20,8 +20,6 @@
 #include "CRingItem.h"
 #include "DataFormat.h"
 
-#include <CRingBuffer.h>
-#include <CRingSelectionPredicate.h>
 #include <string.h>
 #include <iostream>
 #include <string>
@@ -352,27 +350,6 @@ CRingItem::updateSize()
 //
 //   Object operations.
 
-/*!
-   Commit the current version of the ring data to a ring.  
-   - Calculates the size field of the header
-   - puts the data in the ring buffer.
-
-   \param ring  - Reference to the ring buffer in which the item will be put.
-
-   \note The invoking process must already be the producing process for the ring.
-   \note This implementation has no mechanism to timeout the put, however that could be
-         added later.
-   \note This function is non-destructive. There's nothing to stop the caller from
-         issuing it on several rings.
-   
-*/
-void
-CRingItem::commitToRing(CRingBuffer& ring)
-{
-  
-    updateSize();
-    ring.put(m_pItem, m_pItem->s_header.s_size);
-}
 
 /*!
    This is primarily intended for items that have been constructed via

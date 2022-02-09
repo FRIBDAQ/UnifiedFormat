@@ -16,7 +16,7 @@
 	     East Lansing, MI 48824-1321
 */
 
-#include <CRingItem.h>		/* Base class */
+#include "CRingItem.h"		/* Base class */
 #include <unistd.h>
 #include <stdint.h>
 #include <string>

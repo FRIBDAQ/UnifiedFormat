@@ -22,7 +22,7 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "CRingTextItem.h"
-#include <DataFormat.h>
+#include "DataFormat.h"
 #include <time.h>
 #include <string.h>
 #include <stdexcept>

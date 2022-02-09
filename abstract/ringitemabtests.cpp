@@ -26,10 +26,10 @@
 #include "CRingItem.h"
 #undef private
 #undef public
-#include <DataFormat.h>
+#include "DataFormat.h"
 #include <stdint.h>
 #include <vector>
-#include <CRingBuffer.h>
+
 #include <sstream>
 
 /** Since the CRingItem class is abstract we need a minimal concrete sublcass
@@ -46,37 +46,7 @@ public:
     virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0) {}
 };
-/////////////////////////////////
-/**
- * testing commitToRing requires a mock CRingBuffer implementation
- */
-std::vector<uint8_t> ring;
-CRingBuffer::CRingBuffer(std::string name, ClientMode mode) {}
-size_t CRingBuffer::put(const void* pBuffer, size_t nBytes, unsigned long timeout)
-{
-    const uint8_t* p = reinterpret_cast<const uint8_t*>(pBuffer);
-    for (int i = 0; i < nBytes; i++) {
-        ring.push_back(*p++);
-    }
-    return nBytes;
-}
-CRingBuffer::~CRingBuffer()
-{
-    ring.clear();
-}
-size_t CRingBuffer::get(void* pBuffer, size_t maxBytes, size_t minBytes,
-             unsigned long timeout) {
-    return 0;
-}
-size_t CRingBuffer::peek(void* pBuffer, size_t maxbytes) {
-    return 0;
-}
-void CRingBuffer::skip(size_t nBytes) {
 
-}
-size_t CRingBuffer::availablePutSpace() { return 0;}
-size_t CRingBuffer:: availableData() {return 0;}
-void CRingBuffer::pollblock() {}
 /////////////////////////////////////////
 
 class abringitemtest : public CppUnit::TestFixture {
@@ -122,8 +92,6 @@ class abringitemtest : public CppUnit::TestFixture {
     // Mutator tests
     
     CPPUNIT_TEST(setbodycursor);
-    CPPUNIT_TEST(commit_1);
-    CPPUNIT_TEST(commit_2);
     
     CPPUNIT_TEST(updatesize_1);
     CPPUNIT_TEST(updatesize_2);
@@ -183,8 +151,6 @@ protected:
     
     void setbodycursor();
     
-    void commit_1();
-    void commit_2();
     
     void updatesize_1();
     void updatesize_2();
@@ -523,48 +489,6 @@ void abringitemtest::setbodycursor()
     }
     item.setBodyCursor(p);
     EQ(p, reinterpret_cast<uint8_t*>(item.getBodyCursor()));
-}
-// Commit minimal ring item:
-
-void abringitemtest::commit_1()
-{
-    CRingBuffer b("mock");
-    CTestRingItem item(PHYSICS_EVENT);
-    item.commitToRing(b);
-    
-    pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(ring.data());
-    EQ(PHYSICS_EVENT, pH->s_type);
-    EQ(sizeof(RingItemHeader), size_t(pH->s_size));
-}
-// commit an item with a body:
-
-void abringitemtest::commit_2()
-{
-    CRingBuffer b("mock");
-    
-    struct myitem {
-        RingItemHeader hdr;
-        uint8_t payload[100];
-    } rawItem;
-    for (int i =0; i < 100; i++) {
-        rawItem.payload[i] = i;
-    }
-    rawItem.hdr.s_size= sizeof(rawItem);
-    rawItem.hdr.s_type= PHYSICS_EVENT;
-    
-    CTestRingItem item(reinterpret_cast<pRingItem>(&rawItem));
-    item.commitToRing(b);
-    
-    EQ(size_t(rawItem.hdr.s_size), ring.size());
-    
-    pRingItemHeader pH = reinterpret_cast<pRingItemHeader>(ring.data());
-    EQ(PHYSICS_EVENT, pH->s_type);
-    EQ(sizeof(rawItem), size_t(pH->s_size));
-    
-    uint8_t* p = reinterpret_cast<uint8_t*>(pH+1);
-    for (int i=0; i < sizeof(rawItem.payload); i++ ) {
-        EQ(rawItem.payload[i], p[i]);
-    }
 }
 // If cursor did not change then the size won't.
 void abringitemtest::updatesize_1()

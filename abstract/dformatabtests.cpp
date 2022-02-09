@@ -21,7 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
-#include <DataFormat.h>
+#include "DataFormat.h"
 #include "CDataFormatItem.h"
 #include <stdexcept>
 #include <string>

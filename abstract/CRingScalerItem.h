@@ -20,7 +20,6 @@
 #include "DataFormat.h"
 #include <vector>
 #include <typeinfo>
-#include <RangeError.h>
 #include <string>
 
 /*!

@@ -17,11 +17,11 @@
 
 
 #include "CRingStateChangeItem.h"
-#include <RangeError.h>
+
 #include <sstream>
 #include <string.h>
 #include <stdexcept>
-#include <DataFormat.h>
+#include "DataFormat.h"
 #include <time.h>
 
 using namespace std;
@@ -115,8 +115,8 @@ CRingStateChangeItem::setRunNumber(uint32_t run)
 uint32_t
 CRingStateChangeItem::getRunNumber() const
 {
-    pStateChangeItemBody pItem =
-        reinterpret_cast<pStateChangeItemBody>(getBodyPointer());
+    const StateChangeItemBody* pItem =
+        reinterpret_cast<const StateChangeItemBody*>(getBodyPointer());
 
     return pItem->s_runNumber;
 }
@@ -140,8 +140,8 @@ CRingStateChangeItem::setElapsedTime(uint32_t offset)
 uint32_t
 CRingStateChangeItem::getElapsedTime() const
 {
-    pStateChangeItemBody pItem =
-        reinterpret_cast<pStateChangeItemBody>(getBodyPointer());
+    const StateChangeItemBody* pItem =
+        reinterpret_cast<const StateChangeItemBody*>(getBodyPointer());
 
     return pItem->s_timeOffset;
 }
@@ -153,8 +153,8 @@ CRingStateChangeItem::getElapsedTime() const
 uint32_t
 CRingStateChangeItem::getTimeDivisor() const
 {
-  pStateChangeItemBody pItem =
-        reinterpret_cast<pStateChangeItemBody>(getBodyPointer());
+  const StateChangeItemBody* pItem =
+        reinterpret_cast<const StateChangeItemBody*>(getBodyPointer());
   return pItem->s_offsetDivisor;
 }
 /**
@@ -165,8 +165,8 @@ CRingStateChangeItem::getTimeDivisor() const
 float
 CRingStateChangeItem::computeElapsedTime() const
 {
-    pStateChangeItemBody pItem =
-        reinterpret_cast<pStateChangeItemBody>(getBodyPointer());
+    const StateChangeItemBody* pItem =
+        reinterpret_cast<const StateChangeItemBody*>(getBodyPointer());
     
     float offset = pItem->s_timeOffset;
     float divisor = pItem->s_offsetDivisor;
@@ -199,8 +199,8 @@ CRingStateChangeItem::setTitle(string title)
 string
 CRingStateChangeItem::getTitle() const
 {
-    pStateChangeItemBody pItem =
-        reinterpret_cast<pStateChangeItemBody>(getBodyPointer());
+    const StateChangeItemBody* pItem =
+        reinterpret_cast<const StateChangeItemBody*>(getBodyPointer());
 
     return string(pItem->s_title);
 }
@@ -223,8 +223,8 @@ CRingStateChangeItem::setTimestamp(time_t stamp)
 time_t
 CRingStateChangeItem::getTimestamp() const
 {
-    pStateChangeItemBody pItem =
-        reinterpret_cast<pStateChangeItemBody>(getBodyPointer());
+    const StateChangeItemBody* pItem =
+        reinterpret_cast<const StateChangeItemBody*>(getBodyPointer());
 
     return pItem->s_Timestamp;
 }
@@ -240,8 +240,8 @@ CRingStateChangeItem::getTimestamp() const
 uint32_t
 CRingStateChangeItem::getOriginalSourceId() const
 {
-  pStateChangeItemBody pItem =
-        reinterpret_cast<pStateChangeItemBody>(getBodyPointer());
+  const StateChangeItemBody* pItem =
+        reinterpret_cast<const StateChangeItemBody*>(getBodyPointer());
   return pItem->s_originalSid;
 }
 

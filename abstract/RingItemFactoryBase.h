@@ -129,7 +129,13 @@ class RingItemFactoryBase {
     ) = 0;
     CUnknownFragment* makeUnknownFragent(const CRingItem& rhs) = 0;
     
-    
+    CRingStateChangeItem* makeStateChangeItem(
+        uint32_t itemType, uint32_t runNumber,
+        uint32_t timeOffset,
+        time_t   timestamp,
+        std::string title
+    ) = 0;
+    CRingStateChangeItem* makeStateChangeItem(uint32_t reason) = 0;
     
 };
 

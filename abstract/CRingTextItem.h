@@ -19,7 +19,6 @@
 
 #include "CRingItem.h"
 #include "DataFormat.h"
-#include <RangeError.h>
 #include <stdint.h>
 #include <time.h>
 #include <string>

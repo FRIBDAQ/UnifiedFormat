@@ -10,7 +10,7 @@ target_sources(
     CRingItem.h CAbnormalEndItem.h CDataFormatItem.h CGlomParameters.h
     CPhysicsEventItem.h CRingFragmentItem.h CRingPhysicsEventCountItem.h
     CRingScalerItem.h CRingTextItem.h CUnknownFragment.h RingItemFactoryBase.h
-    CRingStateChangeItem.h
+    CRingStateChangeItem.h DataFormat.h
 )
 get_target_property(ABSTRACT_FORMAT_PUBLIC_HEADERS AbstractFormat INTERFACE_SOURCES)
 set_target_properties(
@@ -18,9 +18,9 @@ set_target_properties(
 )
 
 
-target_include_directories(AbstractFormat SYSTEM
-PUBLIC /usr/opt/daq/12.0-pre3/include
-)
+#target_include_directories(AbstractFormat SYSTEM
+#PUBLIC /usr/opt/daq/12.0-pre3/include
+#)
 target_compile_options(AbstractFormat PRIVATE -g)
 target_link_options(AbstractFormat PRIVATE -g)
 
@@ -34,17 +34,17 @@ add_executable(
     unittests
     TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
     glomabtests.cpp physabtests.cpp fragabtests.cpp counterabtests.cpp
-    scabtests.cpp textabtest.cpp unkabtests.cpp
+    scabtests.cpp textabtest.cpp unkabtests.cpp sabchangetests.cpp
     CRingItem.h CAbnormalEndItem.h CGlomParameters.h CPhysicsEventItem.h
     CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
-    CRingTextItem.h CUnknownFragment.h
-    Asserts.h
+    CRingTextItem.h CUnknownFragment.h  CRingStateChangeItem.h
+    Asserts.h DataFormat.h
 )
 
-target_include_directories(
-    unittests SYSTEM
-    PUBLIC /usr/opt/daq/12.0-pre3/include
-)
+#target_include_directories(
+#    unittests SYSTEM
+#    PUBLIC /usr/opt/daq/12.0-pre3/include
+#)
 target_link_libraries(unittests AbstractFormat cppunit)
 target_compile_options(unittests PRIVATE -g)
 target_link_options(unittests PRIVATE -g)
