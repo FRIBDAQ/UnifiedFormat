@@ -63,7 +63,7 @@ private:
   int operator!=(const CRingStateChangeItem& rhs) const;
 
   // Accessors for elements of the item (selectors and mutators both).
-
+public:
   virtual void setRunNumber(uint32_t run);
   virtual uint32_t getRunNumber() const;
 
