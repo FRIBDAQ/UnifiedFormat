@@ -9,7 +9,7 @@ target_sources(
     AbstractFormat PUBLIC
     CRingItem.h CAbnormalEndItem.h CDataFormatItem.h CGlomParameters.h
     CPhysicsEventItem.h CRingFragmentItem.h CRingPhysicsEventCountItem.h
-    CRingScalerItem.h CRingTextItem.h CUnknownFragment.h
+    CRingScalerItem.h CRingTextItem.h CUnknownFragment.h RingItemFactoryBase.h
 )
 get_target_property(ABSTRACT_FORMAT_PUBLIC_HEADERS AbstractFormat INTERFACE_SOURCES)
 set_target_properties(
