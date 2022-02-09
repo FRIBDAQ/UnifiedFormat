@@ -67,7 +67,7 @@ private:                                   // Don't allow these vestigial
     
 public:
       size_t getStorageSize() const;
-      size_t getBodySize()    const;
+      virtual size_t getBodySize()    const;
       virtual const void*  getBodyPointer() const;
       virtual void* getBodyPointer();
       virtual void*  getBodyCursor();

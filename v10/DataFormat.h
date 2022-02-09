@@ -1,6 +1,6 @@
 #ifndef V10_DATAFORMAT_H
 #define V10_DATAFORMAT_H
-namespace v10 {
+
 /*
     This software is Copyright by the Board of Trustees of Michigan
     State University (c) Copyright 2005.
@@ -47,19 +47,11 @@ be zero.
 */
 
 
-#ifndef __CRT_STDINT_H
-#include <stdint.h>
-#ifndef __CRT_STDINT_H
-#define __CRT_STDINT_H
-#endif
-#endif
 
-#ifndef __CRT_TIME_H
+#include <stdint.h>
 #include <time.h>
-#ifndef __CRT_TIME_H
-#define __CRT_TIME_H
-#endif
-#endif
+
+namespace v10 {
 
 // state change item type codes:
 
