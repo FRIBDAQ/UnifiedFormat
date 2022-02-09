@@ -37,6 +37,8 @@ class CRingPhysicsEventCountItem;
 class CRingScalerItem;
 class CRingTextItem;
 class CUnknownFragment;
+class CRingStateChangeItem;
+
 /**
  * RingItemFactoryBase
  *    This is an abstract base class for a ring item factory.
