@@ -10,7 +10,7 @@ target_include_directories(V10Format PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abst
 install(FILES DataFormat.h CRingItem.h CPhysicsEventItem.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v10 )
 
 add_executable(v10unittests
-  TestRunner.cpp v10rbuftests.cpp
+  TestRunner.cpp v10rbuftests.cpp v10phystests.cpp
 )
 target_link_libraries(v10unittests AbstractFormat V10Format cppunit)
 target_include_directories(v10unittests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abstract)

@@ -103,7 +103,7 @@ CPhysicsEventItem::setBodyHeader(
 std::string
 CPhysicsEventItem::typeName() const
 {
-  return "Event ";
+  return "Event (V10)";
 }
 
 /**
