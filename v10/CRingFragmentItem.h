@@ -14,25 +14,22 @@
 	     East Lansing, MI 48824-1321
 */
 
-#ifndef CRINGFRAGMENTITEM_H
-#define CRINGFRAGMENTITEM_H
+#ifndef V10_CRINGFRAGMENTITEM_H
+#define V10_CRINGFRAGMENTITEM_H
 
-#include "CRingItem.h"
+#include <CRingFragmentItem.h>
+
 #include <typeinfo>
 
 
-
-// Forward definitions.
-
-
-typedef struct _EventBuilderFragment *pEventBuilderFragment;
-
+namespace v10 {
 
 /**
  * class to encapsulate ring items that are actually event builder output fragments.
  */
-class CRingFragmentItem : public CRingItem
+class CRingFragmentItem : public ::CRingFragmentItem
 {
+ 
   // Implemented canonical items:
 
 public:
@@ -41,44 +38,44 @@ public:
 		    uint32_t payloadSize, 
 		    const void* pBody,
 		    uint32_t barrier=0);
-  virtual ~CRingFragmentItem();
-private:
-  CRingFragmentItem(const CRingItem& rhs) ;
-  CRingFragmentItem(const CRingFragmentItem& rhs);
-
   
+  virtual ~CRingFragmentItem();
 
+private:
+  
+  CRingFragmentItem(const CRingFragmentItem& rhs);
   CRingFragmentItem& operator=(const CRingFragmentItem& rhs);
   int operator==(const CRingFragmentItem& rhs) const;
   int operator!=(const CRingFragmentItem& rhs) const;
 
+  
   // Accessor member functions:
 
 public:
   virtual uint64_t     timestamp() const;
   virtual uint32_t     source() const;
-  virtual size_t       payloadSize();
-  virtual void*        payloadPointer();
+  virtual size_t       payloadSize()   const;
+  virtual const void*  payloadPointer() const;
   virtual uint32_t     barrierType() const;
-  
 
   // Virtual method overrides:
 
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-  virtual uint32_t getBarrierType() const;
   
+  virtual bool hasBodyHeader() const;
+  virtual void* getBodyHeader() const;
   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0) ;
   
-  virtual void* getBodyHeader() const;
-  virtual bool hasBodyHeader() const;
+  virtual std::string typeName() const;
+  virtual std::string toString() const;
+  
+
   // private utilities:
 
 private:
   size_t bodySize(size_t payloadSize) const;
-  void   copyPayload(const void* pPayloadSource, size_t payloadSize);
+  void   copyPayload(const void* pPayloadSource);
   void   init(size_t size);
 };
-
+}
 #endif
