@@ -173,7 +173,7 @@ CRingFragmentItem::setBodyHeader(
 std::string
 CRingFragmentItem::typeName() const
 {
-  return "Event fragment ";
+  return "Event fragment";
 }
 
 /**
