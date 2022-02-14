@@ -207,7 +207,7 @@ CRingPhysicsEventCountItem::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
 std::string
 CRingPhysicsEventCountItem::typeName() const
 {
-  return std::string(" Trigger count:");
+  return std::string("Trigger count");
 }
 /**
  * toString
