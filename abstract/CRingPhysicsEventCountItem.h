@@ -57,18 +57,18 @@ public:
 
   // public interface:
 public:
-  uint32_t getTimeOffset() const;
-  void     setTimeOffset(uint32_t offset);
-  float    computeElapsedTime() const;
-  uint32_t getTimeDivisor() const;
+  virtual uint32_t getTimeOffset() const;
+  virtual void     setTimeOffset(uint32_t offset);
+  virtual float    computeElapsedTime() const;
+  virtual uint32_t getTimeDivisor() const;
 
-  time_t   getTimestamp() const;
-  void     setTimestamp(time_t stamp);
+  virtual time_t   getTimestamp() const;
+  virtual void     setTimestamp(time_t stamp);
 
-  uint64_t getEventCount() const;
-  void     setEventCount(uint64_t count);
+  virtual uint64_t getEventCount() const;
+  virtual void     setEventCount(uint64_t count);
   
-  uint32_t getOriginalSourceId() const;
+  virtual uint32_t getOriginalSourceId() const;
 
 
   // Virtual method overrides:
