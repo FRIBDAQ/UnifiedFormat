@@ -251,7 +251,7 @@ CRingPhysicsEventCountItem::init()
   
 
   uint8_t* pCursor = reinterpret_cast<uint8_t*>(getItemPointer());
-  pCursor         += sizeof(PhysicsEventCountItem);
+  pCursor         += sizeof(v10::PhysicsEventCountItem);
   setBodyCursor(pCursor);
   updateSize();
 
