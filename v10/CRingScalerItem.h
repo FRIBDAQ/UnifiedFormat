@@ -1,5 +1,5 @@
-#ifndef CRINGSCALERITEM_H
-#define CRINGSCALERITEM_H
+#ifndef __CRINGSCALERITEM_H
+#define __CRINGSCALERITEM_H
 /*
     This software is Copyright by the Board of Trustees of Michigan
     State University (c) Copyright 2005.
@@ -16,22 +16,28 @@
 	     East Lansing, MI 48824-1321
 */
 
-#include "CRingItem.h"
-#include "DataFormat.h"
+
+
+#include <CRingScalerItem.h>        // abstract.
+
+
 #include <vector>
 #include <typeinfo>
 #include <string>
 
 /*!
-   This class derived from CRingItem and represents a set of scalers that have been 
-   formatted as a ring item.  
+   This class derived from ::CRingScalerItem and represents a set of scalers that have been 
+   formatted as a ring item.  Note we need to deal with two cases:
+   incremental and non-incremental scalers which, in V10 are two different
+   ring item types.
 */
-class CRingScalerItem : public CRingItem
+namespace v10 {
+class CRingScalerItem : public ::CRingScalerItem
 {
-public:
-  static uint32_t m_ScalerFormatMask;
+  // private object data:
 
-  // Constructors and canonicals.:
+private:
+  bool m_isIncremental; 
 
 public:
   CRingScalerItem(size_t numScalers);
@@ -39,36 +45,38 @@ public:
 		  uint32_t stopTime,
 		  time_t   timestamp,
 		  std::vector<uint32_t> scalers,
-                  bool                  isIncremental = true,
-                  uint32_t              sid = 0,
-                  uint32_t              timeOffsetDivisor = 1);
+      bool                  isIncremental = true,
+      uint32_t              sid = 0,
+      uint32_t              timeOffsetDivisor = 1);
+  
   virtual ~CRingScalerItem();
 private:
-  
+  CRingScalerItem(const CRingItem& rhs) ;
   CRingScalerItem(const CRingScalerItem& rhs);
   CRingScalerItem& operator=(const CRingScalerItem& rhs);
   int operator==(const CRingScalerItem& rhs) const;
   int operator!=(const CRingScalerItem& rhs) const;
+  
 public:
   // Accessor member functions.
 
   virtual void     setStartTime(uint32_t startTime);
   virtual uint32_t getStartTime() const;
   virtual float    computeStartTime() const;
-  
+
   virtual void     setEndTime(uint32_t endTime);
   virtual uint32_t getEndTime() const;
   virtual float    computeEndTime() const;
 
   virtual uint32_t getTimeDivisor() const;
 
+
   virtual void     setTimestamp(time_t stamp);
   virtual time_t   getTimestamp() const;
-  
   virtual bool isIncremental() const;
-
-  virtual void     setScaler(uint32_t channel, uint32_t value) ;
-  virtual uint32_t getScaler(uint32_t channel) const ;
+  
+  virtual void     setScaler(uint32_t channel, uint32_t value);
+  virtual uint32_t getScaler(uint32_t channel) const;
   virtual std::vector<uint32_t> getScalers() const;
 
   virtual uint32_t getScalerCount() const;
@@ -87,16 +95,11 @@ public:
   // utility.
 
 private:
-  void fillScalerBody(
-      uint32_t startOffset, uint32_t endOffset, uint32_t divisor,
-      time_t timestamp, bool incremental,
-      std::vector<uint32_t>& scalers, uint32_t sid
-  );
-  size_t bodySize(size_t n);
+ 
   void init(size_t n);
   void throwIfInvalidChannel(uint32_t channel, 
 			     const char* message) const ;
 };
    
-
+}
 #endif

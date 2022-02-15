@@ -1,10 +1,10 @@
 add_library(
     V10Format SHARED CRingItem.cpp CPhysicsEventItem.cpp CRingFragmentItem.cpp
-    CRingPhysicsEventCountItem.cpp
+    CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp
 )
 target_sources(
     V10Format PRIVATE CRingItem.h DataFormat.h CPhysicsEventItem.h
-    CRingFragmentItem.h CRingPhysicsEventCountItem.h
+    CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
 )
 
 target_include_directories(V10Format PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abstract)
