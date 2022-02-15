@@ -67,7 +67,8 @@ CRingScalerItem::CRingScalerItem(uint32_t startTime,
 				 time_t   timestamp,
 				 std::vector<uint32_t> scalers,
          bool isIncremental, uint32_t sid, uint32_t timeOffsetDivisor) :
-  ::CRingScalerItem(startTime, stopTime, timestamp, scalers, isIncremental, sid, timeOffsetDivisor)
+  ::CRingScalerItem(startTime, stopTime, timestamp, scalers, isIncremental, sid, timeOffsetDivisor),
+  m_isIncremental(isIncremental)
 {
   init(scalers.size());
   
@@ -384,7 +385,9 @@ CRingScalerItem::init(size_t n)
   uint8_t* p = reinterpret_cast<uint8_t*>(getItemPointer());
   v10::pRingItemHeader pH = reinterpret_cast<v10::pRingItemHeader>(p);
   uint32_t nBytes;
-  if (isIncremental()) {
+  // This is the one time we need that flag:
+  
+  if (m_isIncremental) {
     pH->s_type = v10::INCREMENTAL_SCALERS;
     nBytes    = sizeof(ScalerItem) + (n-1)*sizeof(uint32_t);
   } else {
