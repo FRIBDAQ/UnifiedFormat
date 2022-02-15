@@ -9,11 +9,13 @@ target_sources(
 
 target_include_directories(V10Format PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abstract)
 
-install(FILES DataFormat.h CRingItem.h CPhysicsEventItem.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v10 )
+install(FILES DataFormat.h CRingItem.h CPhysicsEventItem.h
+  CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v10 )
 
 add_executable(v10unittests
   TestRunner.cpp v10rbuftests.cpp v10phystests.cpp v10fragtests.cpp
-  v10counttests.cpp
+  v10counttests.cpp v10scalertests.cpp
 )
 target_link_libraries(v10unittests AbstractFormat V10Format cppunit)
 target_include_directories(v10unittests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abstract)
