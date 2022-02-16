@@ -165,10 +165,7 @@ static const uint16_t GLOM_TIMESTAMP_AVERAGE = 2;
 
 /* Longest allowed title: */
 
-#ifndef TITLE_MAXSIZE
-#define TITLE_MAXSIZE 80
-#endif
-
+static const uint32_t  TITLE_MAXSIZE(80);
 
 /* Macro to make packed structs: */
 

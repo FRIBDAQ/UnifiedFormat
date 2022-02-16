@@ -89,9 +89,7 @@ static const uint32_t FIRST_USER_ITEM_CODE = 32768; /* 0x8000 */
 
 // Longest allowed title:
 
-#ifndef TITLE_MAXSIZE
-#define TITLE_MAXSIZE 80
-#endif
+static const uint32_t TITLE_MAXSIZE(80);
 
 
 
