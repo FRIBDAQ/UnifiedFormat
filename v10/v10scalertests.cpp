@@ -68,6 +68,18 @@ class v10scalertest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getall_1);
     CPPUNIT_TEST(getall_2);
+    
+    CPPUNIT_TEST(count_1);
+    CPPUNIT_TEST(count_2);
+    
+    CPPUNIT_TEST(sid_1);
+    CPPUNIT_TEST(sid_2);
+    
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
+    
+    CPPUNIT_TEST(type_1);
+    CPPUNIT_TEST(type_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -122,6 +134,17 @@ protected:
     void getall_1();
     void getall_2();
     
+    void count_1();
+    void count_2();
+    
+    void sid_1();
+    void sid_2();
+    
+    void bodyhdr_1();
+    void bodyhdr_2();
+    
+    void type_1();
+    void type_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10scalertest);
@@ -677,4 +700,113 @@ void v10scalertest::getall_2()
     for (int i =0; i < scalers.size(); i++) {
         EQ(scalers[i], gotten[i]);
     }
+}
+
+// get count of scalers from incremental:
+void v10scalertest::count_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    EQ(uint32_t(scalers.size()), item.getScalerCount());
+}
+// get scaler count from non incremental:
+
+void v10scalertest::count_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    EQ(uint32_t(scalers.size()), item.getScalerCount());
+}
+// original sid is always zero for v10:
+
+void v10scalertest::sid_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+void v10scalertest::sid_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// getbody7 header gives null for both - black box.
+
+void v10scalertest::bodyhdr_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    ASSERT(nullptr == item.getBodyHeader());
+}
+void v10scalertest::bodyhdr_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    ASSERT(nullptr == item.getBodyHeader());
+}
+
+// typename incremental:
+
+void v10scalertest::type_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    EQ(std::string("Incremental Scalers"), item.typeName());
+}
+// non
+
+void v10scalertest::type_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    EQ(std::string("Nonincremental Scalers"), item.typeName());
 }
