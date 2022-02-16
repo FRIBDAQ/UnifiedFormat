@@ -44,6 +44,30 @@ class v10scalertest : public CppUnit::TestFixture {
     CPPUNIT_TEST(end_4);
     CPPUNIT_TEST(end_5);
     CPPUNIT_TEST(end_6);
+    
+    CPPUNIT_TEST(divisor_1);
+    CPPUNIT_TEST(divisor_2);
+    
+    CPPUNIT_TEST(stamp_1);
+    CPPUNIT_TEST(stamp_2);
+    CPPUNIT_TEST(stamp_3);
+    CPPUNIT_TEST(stamp_4);
+    
+    CPPUNIT_TEST(isincr_1);
+    CPPUNIT_TEST(isincr_2);
+    
+    CPPUNIT_TEST(get_1);
+    CPPUNIT_TEST(get_2);
+    CPPUNIT_TEST(get_3);
+    CPPUNIT_TEST(get_4);
+    
+    CPPUNIT_TEST(set_1);
+    CPPUNIT_TEST(set_2);
+    CPPUNIT_TEST(set_3);
+    CPPUNIT_TEST(set_4);
+    
+    CPPUNIT_TEST(getall_1);
+    CPPUNIT_TEST(getall_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -73,6 +97,31 @@ protected:
     void end_4();
     void end_5();
     void end_6();
+    
+    void divisor_1();
+    void divisor_2();
+    
+    void stamp_1();
+    void stamp_2();
+    void stamp_3();
+    void stamp_4();
+    
+    void isincr_1();
+    void isincr_2();
+    
+    void get_1();
+    void get_2();
+    void get_3();
+    void get_4();
+    
+    void set_1();
+    void set_2();
+    void set_3();
+    void set_4();
+    
+    void getall_1();
+    void getall_2();
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10scalertest);
@@ -332,4 +381,300 @@ void v10scalertest::end_6()
         10, 20, now, scalers, false, 0, 2
     );
     EQ(float(10.0), item.computeEndTime());
+}
+
+// divisor for incremental is always 1:
+
+void v10scalertest::divisor_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    EQ(uint32_t(1), item.getTimeDivisor());
+}
+// Divisor for nonincremental can be non 1.
+
+void v10scalertest::divisor_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    EQ(uint32_t(2), item.getTimeDivisor());
+}
+
+// Can fetch clock time stamp - incremental
+
+void v10scalertest::stamp_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    EQ(now, item.getTimestamp());
+}
+
+// can set clock times tamp - incremental
+
+void v10scalertest::stamp_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+}
+// can fetch clock time stamp non-incremental
+
+void v10scalertest::stamp_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    EQ(now, item.getTimestamp());
+}
+
+// can set clock time stamp non-incremental.
+
+void v10scalertest::stamp_4()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+}
+// incremental are incremental:
+//
+void v10scalertest::isincr_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    ASSERT(item.isIncremental());
+}
+// non in cremental arenot:
+
+void v10scalertest::isincr_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    ASSERT(!(item.isIncremental()));
+}
+
+// Can get legal scaler values in incremental scalers:
+
+void v10scalertest::get_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i], item.getScaler(i));
+    }
+}
+// illegal scaler index is std::range_error
+
+void v10scalertest::get_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getScaler(scalers.size()),
+        std::range_error
+    );
+}
+// can get scaler values from non incremental:
+
+void v10scalertest::get_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    for (int i = 0; i < scalers.size(); i++) {
+        EQ(scalers[i], item.getScaler(i));
+    }
+}
+// Out of range throws:
+
+void v10scalertest::get_4()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getScaler(scalers.size()),
+        std::range_error
+    );
+}
+
+// Can set incremental values:
+
+void v10scalertest::set_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    for (int i =0; i < scalers.size(); i++) {
+        item.setScaler(i, item.getScaler(i)*2);
+    }
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i]*2, item.getScaler(i));
+    }
+}
+// But must be in range:
+
+void v10scalertest::set_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.setScaler(scalers.size(), 0),
+        std::range_error
+    );
+}
+// Can set non-incremental scalers:
+
+void v10scalertest::set_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    for (int i =0; i < scalers.size(); i++) {
+        item.setScaler(i, item.getScaler(i)*2);
+    }
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i]*2, item.getScaler(i));
+    }
+}
+// but must be in range
+
+void v10scalertest::set_4()
+{
+    
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.setScaler(scalers.size(), 0),
+        std::range_error
+    );
+}
+// Get all scalers (incremental)
+void v10scalertest::getall_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, true, 0, 2
+    );
+    auto gotten = item.getScalers();
+    EQ(scalers.size(), gotten.size());
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i], gotten[i]);
+    }
+}
+
+// get all scalers non incremental:
+
+void v10scalertest::getall_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i);
+    }
+    v10::CRingScalerItem item(
+        10, 20, now, scalers, false, 0, 2
+    );
+    auto gotten = item.getScalers();
+    EQ(scalers.size(), gotten.size());
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i], gotten[i]);
+    }
 }
