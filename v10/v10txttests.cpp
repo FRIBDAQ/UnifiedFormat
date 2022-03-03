@@ -31,6 +31,8 @@
 class v10txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10txttest);
     CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -44,6 +46,8 @@ public:
     }
 protected:
     void construct_1();
+    void construct_2();
+    void construct_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10txttest);
@@ -56,10 +60,69 @@ void v10txttest::construct_1()
     v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings);
     const v10::TextItem* p = reinterpret_cast<const v10::TextItem*>(item.getItemPointer());
     
-    EQ(MONITORED_VARIABLES, p->s_header.s_type);
+    EQ(v10::MONITORED_VARIABLES, p->s_header.s_type);
     EQ(uint32_t(sizeof(v10::TextItem)), p->s_header.s_size);
     
     EQ(uint32_t(0), p->s_timeOffset);
-    ASSERT(p->s_timeOffset - now <= 1);
+    ASSERT(p->s_timestamp - now <= 1);
     EQ(uint32_t(0), p->s_stringCount);
+}
+// Construct with type and non empty strings.
+void v10txttest::construct_2()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings);
+    const v10::TextItem* p = reinterpret_cast<const v10::TextItem*>(item.getItemPointer());
+    
+    
+    EQ(v10::MONITORED_VARIABLES, p->s_header.s_type);
+    uint32_t expectedSize = sizeof(v10::TextItem);
+    for (int i =0; i < strings.size(); i++) {
+        expectedSize += strings[i].size() + 1;
+    }
+    EQ(expectedSize, p->s_header.s_size);
+    
+    EQ(uint32_t(0), p->s_timeOffset);
+    ASSERT(p->s_timestamp - now <= 1);
+    EQ(uint32_t(strings.size()), p->s_stringCount);
+    
+    const char* pS = p->s_strings;
+    for (int i =0; i < strings.size(); i++) {
+        std::string s = pS;
+        EQ(strings[i], s);
+        pS += s.size() +1;
+    }
+    
+}
+// Full construction with strings:
+
+void v10txttest::construct_3()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    const v10::TextItem* p = reinterpret_cast<const v10::TextItem*>(item.getItemPointer());
+    uint32_t expectedSize = sizeof(v10::TextItem);
+    for (int i =0; i < strings.size(); i++) {
+        expectedSize += strings[i].size() + 1;
+    }
+    
+    EQ(v10::MONITORED_VARIABLES, p->s_header.s_type);
+    EQ(expectedSize, p->s_header.s_size);
+   
+    EQ(uint32_t(100), p->s_timeOffset);
+    EQ(uint32_t(now), p->s_timestamp);
+    EQ(uint32_t(strings.size()), p->s_stringCount);
+
+    const char* pS = p->s_strings;
+    for (int i =0; i < strings.size(); i++) {
+        std::string s = pS;
+        EQ(strings[i], s);
+        pS += s.size() +1;
+    }
 }
