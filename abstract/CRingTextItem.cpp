@@ -27,6 +27,14 @@ using namespace std;
 //   Constructors and other canonical member functions.
 //
 
+/**
+ *  Construct but just provide the item type and maxsize.
+ */
+
+CRingTextItem::CRingTextItem(uint16_t type, size_t maxsize) :
+  CRingItem(type, maxsize)
+{}
+
 /*!
    Construct a ring item that contains text strings.
    The item will have a timestamp of 'now' and an offset time of 0.

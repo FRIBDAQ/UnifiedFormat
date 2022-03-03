@@ -1,5 +1,3 @@
-#ifndef CRINGTEXTITEM_H
-#define CRINGTEXTITEM_H
 
 /*
     This software is Copyright by the Board of Trustees of Michigan
@@ -17,28 +15,23 @@
 	     East Lansing, MI 48824-1321
 */
 
-#include "CRingItem.h"
-#include "DataFormat.h"
-#include <stdint.h>
-#include <time.h>
-#include <string>
-#include <vector>
-#include <typeinfo>
+#ifndef V10_CRINGTEXTITEM_H
+#define V10_CRINGTEXTITEM_H
 
+#include <CRingTextItem.h>
 
+namespace v10 {
 /*!
   The text ring item provides a mechanism to put an item in/take an item out of 
   a ring buffer that consists of null terminated text strings.  
 */
-class CRingTextItem : public CRingItem
+class CRingTextItem : public ::CRingTextItem
 {
   // Private data:
-
 
 public:
   // Constructors and other canonicals:
 
-  CRingTextItem(uint16_t type, size_t maxsize);
   CRingTextItem(uint16_t type,
 		std::vector<std::string> theStrings);
   CRingTextItem(uint16_t type,
@@ -46,8 +39,17 @@ public:
 		uint32_t                 offsetTime,
 		time_t                   timestamp, uint32_t divisor=1) ;
   
-
   virtual ~CRingTextItem();
+  
+private:
+  CRingTextItem(const CRingItem& rhs);
+  CRingTextItem(const CRingTextItem& rhs);
+
+  
+
+  CRingTextItem& operator=(const CRingTextItem& rhs);
+  int operator==(const CRingTextItem& rhs) const;
+  int operator!=(const CRingTextItem& rhs) const;
 
   // Public interface:
 public:
@@ -63,6 +65,7 @@ public:
   virtual uint32_t getOriginalSourceId() const;
   
   // Virtual methods all ring overrides.
+ 
 
   virtual void* getBodyHeader() const;
   virtual void setBodyHeader(
@@ -70,19 +73,14 @@ public:
   );
   virtual std::string typeName() const;
   virtual std::string toString() const;
-  
 
   //private utilities:
 private:
   size_t bodySize(std::vector<std::string> strings) const;
   bool   validType() const;
+  void   copyStrings(std::vector<std::string> strings);
   
-  std::vector<const char*> makeStringPointers(const std::vector<std::string>& strings);
-  void* fillTextItemBody(
-    uint32_t offset, uint32_t divisor, time_t stamp, uint32_t nStrings,
-    const char** ppStrings, int sid
-  );
 };
 
-
+}                        // v10 namespace
 #endif

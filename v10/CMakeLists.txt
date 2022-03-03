@@ -1,18 +1,19 @@
 add_library(
     V10Format SHARED CRingItem.cpp CPhysicsEventItem.cpp CRingFragmentItem.cpp
     CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp CRingStateChangeItem.cpp
+    CRingTextItem.cpp
 )
 target_sources(
     V10Format PRIVATE CRingItem.h DataFormat.h CPhysicsEventItem.h
     CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
-    CRingStateChangeItem.h
+    CRingStateChangeItem.h CRingTextItem.h
 )
 
 target_include_directories(V10Format PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abstract)
 
 install(FILES DataFormat.h CRingItem.h CPhysicsEventItem.h
   CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
-  CRingStateChangeItem.h
+  CRingStateChangeItem.h CRingTextItem.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v10 )
 
 add_executable(v10unittests
