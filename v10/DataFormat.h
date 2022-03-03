@@ -164,7 +164,7 @@ typedef struct _TextItem {
   uint32_t       s_timeOffset;
   uint32_t         s_timestamp;
   uint32_t       s_stringCount;
-  char           s_strings[1];
+  char           s_strings[0];
 } TextItem, *pTextItem;
 
 
