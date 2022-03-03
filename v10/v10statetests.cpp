@@ -46,6 +46,13 @@ class v10statetest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(tstamp_1);
     CPPUNIT_TEST(tstamp_2);
+    
+    CPPUNIT_TEST(bodyhdr);
+    
+    CPPUNIT_TEST(type_1);
+    CPPUNIT_TEST(type_2);
+    CPPUNIT_TEST(type_3);
+    CPPUNIT_TEST(type_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -75,6 +82,13 @@ protected:
     
     void tstamp_1();
     void tstamp_2();
+    
+    void bodyhdr();
+    
+    void type_1();
+    void type_2();
+    void type_3();
+    void type_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10statetest);
@@ -201,4 +215,42 @@ void v10statetest::tstamp_2()
     
     item.setTimestamp(now+100);
     EQ(now+100, item.getTimestamp());
+}
+// body header pointer is always null.
+void v10statetest::bodyhdr()
+{
+    time_t now = time(nullptr);
+    v10::CRingStateChangeItem item(v10::PAUSE_RUN, 123, 100, now, "This is a title");
+    
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+// Type name tests.
+
+void v10statetest::type_1()
+{
+    time_t now = time(nullptr);
+    v10::CRingStateChangeItem item(v10::PAUSE_RUN, 123, 100, now, "This is a title");
+    
+    EQ(std::string(" Pause Run "), item.typeName());
+}
+void v10statetest::type_2()
+{
+    time_t now = time(nullptr);
+    v10::CRingStateChangeItem item(v10::BEGIN_RUN, 123, 100, now, "This is a title");
+    
+    EQ(std::string(" Begin Run "), item.typeName());
+}
+void v10statetest::type_3()
+{
+    time_t now = time(nullptr);
+    v10::CRingStateChangeItem item(v10::RESUME_RUN, 123, 100, now, "This is a title");
+    
+    EQ(std::string(" Resume Run "), item.typeName());
+}
+void v10statetest::type_4() {
+    time_t now = time(nullptr);
+    v10::CRingStateChangeItem item(v10::END_RUN, 123, 100, now, "This is a title");
+    
+    EQ(std::string(" End Run "), item.typeName());
+    
 }
