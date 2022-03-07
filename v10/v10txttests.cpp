@@ -33,6 +33,20 @@ class v10txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
+    
+    CPPUNIT_TEST(getstrings);
+    
+    CPPUNIT_TEST(offset_1);
+    CPPUNIT_TEST(offset_2);
+    CPPUNIT_TEST(elapsed);
+    CPPUNIT_TEST(divisor);
+    
+    CPPUNIT_TEST(timestamp_1);
+    CPPUNIT_TEST(timestamp_2);
+    
+    CPPUNIT_TEST(originalsid);
+    CPPUNIT_TEST(getbodyheader);
+    CPPUNIT_TEST(typestring);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -48,6 +62,20 @@ protected:
     void construct_1();
     void construct_2();
     void construct_3();
+    
+    void getstrings();
+    
+    void offset_1();
+    void offset_2();
+    void elapsed();
+    void divisor();
+    
+    void timestamp_1();
+    void timestamp_2();
+    
+    void originalsid();
+    void getbodyheader();
+    void typestring();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10txttest);
@@ -125,4 +153,111 @@ void v10txttest::construct_3()
         EQ(strings[i], s);
         pS += s.size() +1;
     }
+}
+void v10txttest::getstrings()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    auto gotten = item.getStrings();
+    EQ(strings.size(), gotten.size());
+    for (int i = 0; i < strings.size(); i++) {
+        EQ(strings[i], gotten[i]);
+    }
+}
+
+void v10txttest::offset_1()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    EQ(uint32_t(100), item.getTimeOffset());
+}
+void v10txttest::offset_2()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    item.setTimeOffset(200);
+    EQ(uint32_t(200), item.getTimeOffset());
+}
+void v10txttest::elapsed()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    EQ(float(100.0), item.computeElapsedTime());
+}
+void v10txttest::divisor()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    EQ(uint32_t(1), item.getTimeDivisor());
+}
+
+void v10txttest::timestamp_1()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    EQ(now, item.getTimestamp());
+}
+void v10txttest::timestamp_2()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    item.setTimestamp(now+100);
+    EQ(now+100, item.getTimestamp());
+}
+
+void v10txttest::originalsid()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+void v10txttest::getbodyheader()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+void v10txttest::typestring()
+{
+    std::vector<std::string> strings = {
+        "String 1", "String 2", "Could have more strings"
+    };
+    time_t now = time(nullptr);
+    v10::CRingTextItem item(v10::MONITORED_VARIABLES, strings, 100, now);
+    EQ(std::string(" Monitored Variables: "), item.typeName());
 }
