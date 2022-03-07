@@ -52,9 +52,17 @@ namespace v10 {
         virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) ;
         
         // Data format items for 10.x
+    
+        virtual CDataFormatItem* makeDataFormatItem() ;
+        virtual CDataFormatItem* makeDataFormatItem(const CRingItem& rhs);
         
-            virtual CDataFormatItem* makeDataFormatItem() ;
-            virtual CDataFormatItem* makeDataFormatItem(const CRingItem& rhs);
+        // GLom parameter items for 10.x
+        
+        virtual CGlomParameters* makeGlomParameters(
+            uint64_t interval, bool isBuilding, uint16_t policy
+        );
+        virtual CGlomParameters* makeGlomParameters(const CRingItem& rhs) ;
+        
     
     };
     

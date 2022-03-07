@@ -262,5 +262,20 @@ namespace v10 {
   {
     throw std::bad_cast();
   }
+  //////////////////////////////////////////////////////////////////
+  // Glom parameters items - don't exist on V10.
+  
+  CGlomParameters*
+  RingItemFactory::makeGlomParameters(
+        uint64_t interval, bool isBuilding, uint16_t policy
+  )
+  {
+    return nullptr;
+  }
+  CGlomParameters*
+  RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
+  {
+    throw std::bad_cast();
+  }
 
 }                          // v10 namespace.
