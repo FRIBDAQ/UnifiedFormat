@@ -50,7 +50,12 @@ namespace v10 {
         
         virtual CAbnormalEndItem* makeAbnormalEndItem() ;
         virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) ;
-  
+        
+        // Data format items for 10.x
+        
+            virtual CDataFormatItem* makeDataFormatItem() ;
+            virtual CDataFormatItem* makeDataFormatItem(const CRingItem& rhs);
+    
     };
     
 

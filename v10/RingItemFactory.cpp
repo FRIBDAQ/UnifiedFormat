@@ -249,5 +249,18 @@ namespace v10 {
   {
     throw std::bad_cast();
   }
+  
+  // Data format items Not supported in v10:
+  
+  CDataFormatItem*
+  RingItemFactory::makeDataFormatItem()
+  {
+    return nullptr;
+  }
+  CDataFormatItem*
+  RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
+  {
+    throw std::bad_cast();
+  }
 
 }                          // v10 namespace.
