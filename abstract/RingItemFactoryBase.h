@@ -60,9 +60,9 @@ class RingItemFactoryBase {
     virtual CRingItem* getRingItem(int fd) = 0;
     virtual CRingItem* getRingItem(std::istream& in) = 0;
     
-    virtual std::ostream& putRingItem(CRingItem* pItem, std::ostream& out) = 0;
-    virtual void putRingItem(CRingItem* pItem, int fd) = 0;
-    virtual void putRingItem(CRingItem* pItem, CRingBuffer& ringbuf) = 0;
+    virtual std::ostream& putRingItem(const CRingItem* pItem, std::ostream& out) = 0;
+    virtual void putRingItem(const CRingItem* pItem, int fd) = 0;
+    virtual void putRingItem(const CRingItem* pItem, CRingBuffer& ringbuf) = 0;
     
     virtual CAbnormalEndItem* makeAbnormalEndItem() = 0;
     virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) = 0;

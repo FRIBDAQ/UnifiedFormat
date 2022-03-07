@@ -45,6 +45,12 @@ namespace v10 {
         virtual std::ostream& putRingItem(const CRingItem* pItem, std::ostream& out) ;
         virtual void putRingItem(const CRingItem* pItem, int fd) ;
         virtual void putRingItem(const CRingItem* pItem, CRingBuffer& ringbuf) ;
+        
+        // abnormal end items for 10.x:
+        
+        virtual CAbnormalEndItem* makeAbnormalEndItem() ;
+        virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) ;
+  
     };
     
 

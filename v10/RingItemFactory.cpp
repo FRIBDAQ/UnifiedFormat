@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <stdexcept>
+#include <typeinfo>            // std::bad_cast
 
 namespace v10 {
 /////////////////////////////////////////////////////////////////////////////
@@ -233,5 +234,20 @@ namespace v10 {
         reinterpret_cast<const ::v10::RingItemHeader*>(pItem->getItemPointer());
     ringbuf.put(hdr, hdr->s_size);
  }
+ //////////////////////////////////////////////////////////////
+ // Abnormal end items are not supported by V10.
+ // Attempts to create them from scratch return nullptr.
+ // Attempts to create from another CRingItem throw std::bad_cast
+ 
+ CAbnormalEndItem*
+ RingItemFactory::makeAbnormalEndItem()
+ {
+    return nullptr;
+ }
+  CAbnormalEndItem*
+  RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
+  {
+    throw std::bad_cast();
+  }
 
 }                          // v10 namespace.
