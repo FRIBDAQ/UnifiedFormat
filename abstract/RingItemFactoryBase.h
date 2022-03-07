@@ -23,6 +23,7 @@
 #include <DataFormat.h>
 #include <stdint.h>
 #include <iostream>
+#include <vector>
 // Forward definitions
 
 class CRingBuffer;
@@ -48,59 +49,57 @@ class CRingStateChangeItem;
  *   
  */
 class RingItemFactoryBase {
-    CRingItem* makeRingItem(uint16_t type, size_t maxBody) = 0;
-    CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+    virtual CRingItem* makeRingItem(uint16_t type, size_t maxBody) = 0;
+    virtual CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
             size_t maxBody, uint32_t barrierType = 0 ) = 0;
-    CRingItem* makeRingItem(const CRingItem& rhs) = 0;
-    CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
+    virtual CRingItem* makeRingItem(const CRingItem& rhs) = 0;
+    virtual CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
     
     
-    CRingItem* getRingItem(CRingBuffer& ringbuf) = 0;
-    CRingItem* getRingItem(int fd) = 0;
-    CRingItem* getRingItem(std::istream& in) = 0;
+    virtual CRingItem* getRingItem(CRingBuffer& ringbuf) = 0;
+    virtual CRingItem* getRingItem(int fd) = 0;
+    virtual CRingItem* getRingItem(std::istream& in) = 0;
     
-    std::ostream& putRingItem(CRingItem* pItem, std::ostream& out) = 0;
-    void putRingItem(CRingItem* pItem, int fd);
-    void putRingItem(CRingItem* pItem, CRingBuffer& ringbuf) = 0;
+    virtual std::ostream& putRingItem(CRingItem* pItem, std::ostream& out) = 0;
+    virtual void putRingItem(CRingItem* pItem, int fd) = 0;
+    virtual void putRingItem(CRingItem* pItem, CRingBuffer& ringbuf) = 0;
     
-    CAbnormalEndItem* makeAbnormalEndItem() = 0;
-    CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) = 0;
+    virtual CAbnormalEndItem* makeAbnormalEndItem() = 0;
+    virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) = 0;
     
-    CDataFormatItem* makeDataFormatItem() = 0;
-    CDataFormatItem* makeDataFormatItem(const CRingItem& rhs) = 0;
+    virtual CDataFormatItem* makeDataFormatItem() = 0;
+    virtual CDataFormatItem* makeDataFormatItem(const CRingItem& rhs) = 0;
     
-    CGlomParameters* makeGlomParameters(
+    virtual CGlomParameters* makeGlomParameters(
         uint64_t interval, bool isBuilding, uint16_t policy
     )  = 0;
-    CGlomParameters* makeGlomParameters(const CRingItem& rhs) = 0;
+    virtual CGlomParameters* makeGlomParameters(const CRingItem& rhs) = 0;
     
-    CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) = 0;
-    CPhysicsEventItem* makePhysicsEventItem(
+    virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) = 0;
+    virtual CPhysicsEventItem* makePhysicsEventItem(
         uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
     ) = 0;
-    CPhysicsEventItem* makePhysicsEventItem(const CRingItem& rhs) = 0;
+    virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem& rhs) = 0;
     
-    CRingFragmentItem* makeRingFragmentItem(
+    virtual CRingFragmentItem* makeRingFragmentItem(
         uint64_t timestamp, uint32_t source, uint32_t payloadSize,
         const void* payload, uint32_t barrier=0
     ) = 0;
-    CRingFragmentItem* makeRingFragmentItem(const CRingItem& rhs) = 0;
+    virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem& rhs) = 0;
     
-    CRingPhysicsEventCountItem* makePhysicsEventCountItem() = 0;
-    CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem() = 0;
+    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
         uint64_t count, uint32_t timeOffset
     ) = 0;
-    CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        uint64_t count, uint32_t timeOffset
-    ) = 0;
-    CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+    
+    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
         uint64_t count, uint32_t timeoffset, time_t stamp,
     int divisor=1
     ) = 0;
-    CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem& rhs);
+    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem& rhs) = 0;
     
-    CRingScalerItem* makeScalerItem(size_t numScalers) = 0;
-    CRingScalerItem* makeScalerItem(
+    virtual CRingScalerItem* makeScalerItem(size_t numScalers) = 0;
+    virtual CRingScalerItem* makeScalerItem(
         uint32_t startTime,
         uint32_t stopTime,
         time_t   timestamp,
@@ -109,33 +108,33 @@ class RingItemFactoryBase {
         uint32_t              sid = 0,
         uint32_t              timeOffsetDivisor = 1
     ) = 0;
-    CRingScalerItem* makeScalerItem(const CRingItem& rhs) = 0;
+    virtual CRingScalerItem* makeScalerItem(const CRingItem& rhs) = 0;
     
-    CRingTextItem* makeTextItem(
+    virtual CRingTextItem* makeTextItem(
         uint16_t type,
 		std::vector<std::string> theStrings
     ) = 0;
-    CRingTextItem* makeTextItem(
+    virtual CRingTextItem* makeTextItem(
         uint16_t type,
 		std::vector<std::string> theStrings,
 		uint32_t                 offsetTime,
 		time_t                   timestamp, uint32_t divisor=1
     ) = 0;
-    CRingTextItem* makeTextItem(const CRingItem& rhs) = 0;
+    virtual CRingTextItem* makeTextItem(const CRingItem& rhs) = 0;
     
-    CUnknownFragment* makeUnknownFragment(
+    virtual CUnknownFragment* makeUnknownFragment(
         uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
         uint32_t size, void* pPayload
     ) = 0;
-    CUnknownFragment* makeUnknownFragent(const CRingItem& rhs) = 0;
+    virtual CUnknownFragment* makeUnknownFragent(const CRingItem& rhs) = 0;
     
-    CRingStateChangeItem* makeStateChangeItem(
+    virtual CRingStateChangeItem* makeStateChangeItem(
         uint32_t itemType, uint32_t runNumber,
         uint32_t timeOffset,
         time_t   timestamp,
         std::string title
     ) = 0;
-    CRingStateChangeItem* makeStateChangeItem(uint32_t reason) = 0;
+    virtual CRingStateChangeItem* makeStateChangeItem(uint32_t reason) = 0;
     
 };
 

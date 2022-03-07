@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.13)
 project(UnifiedFormat VERSION 0.1)
 
+set(NSCLDAQ_ROOT /usr/opt/daq/current CACHE STRING "/usr/opt/daq/current")
+set(NSCLDAQ_INC ${NSCLDAQ_ROOT}/include CACHE STRING "${NSCLDAQ_ROOT}/include")
+set(NSCLDAQ_LIB ${NSCLDAQ_ROOT}/lib CACHE STRING "${NSCLDAQ_ROOT}/lib")
+
+
 enable_testing()
 
 
@@ -12,4 +17,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(abstract)
 add_subdirectory(v10)
+
+
+
 

@@ -66,11 +66,11 @@ private:                                   // Don't allow these vestigial
       // Selectors:
     
 public:
-      size_t getStorageSize() const;
+      virtual size_t getStorageSize() const;
       virtual size_t getBodySize()    const;
       virtual const void*  getBodyPointer() const;
       virtual void* getBodyPointer();
-      virtual void*  getBodyCursor();
+      void*  getBodyCursor();
       pRingItem  getItemPointer();
       const RingItem*  getItemPointer() const;
       uint32_t type() const;
