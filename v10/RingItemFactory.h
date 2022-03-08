@@ -101,8 +101,29 @@ namespace v10 {
             uint32_t              timeOffsetDivisor = 1
         );
         virtual CRingScalerItem* makeScalerItem(const CRingItem& rhs);
-        };
-        // scaler items:
+        
+        // Text items:
+        
+        
+        
+        virtual CRingTextItem* makeTextItem(
+            uint16_t type,
+            std::vector<std::string> theStrings
+        );
+        virtual CRingTextItem* makeTextItem(
+            uint16_t type,
+            std::vector<std::string> theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp, uint32_t divisor=1
+        );
+        virtual CRingTextItem* makeTextItem(const CRingItem& rhs);
+    private:
+        static bool isValidTextItemType(uint32_t itemType);
+        static std::vector<std::string> stringsToVector(
+            uint32_t nStrings, const char* pStrings
+        );
+    };
+        
         
         
 

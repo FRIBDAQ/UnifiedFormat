@@ -25,6 +25,7 @@
 #include "CPhysicsEventItem.h"
 #include "CRingPhysicsEventCountItem.h"
 #include "CRingScalerItem.h"
+#include "CRingTextItem.h"
 #include <CRingBuffer.h>
 #include <io.h>
 
@@ -33,6 +34,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <typeinfo>            // std::bad_cast
+#include <set>
 
 namespace v10 {
 /////////////////////////////////////////////////////////////////////////////
@@ -463,6 +465,111 @@ namespace v10 {
         scalerValues
         
       );
-      
  }
+     /**
+      * makeTextitem (overloaded)
+      *     Create a ring text item.
+      *
+      *  @param type   - type of the item.
+      *  @param theStrings - vector of strings.
+      *  @param offsetTime - Offset into the run.
+      *  @param timestamp  - Absolute time.
+      *  @param divsior    - offsetTime/divisor = seconds - unused for v10.
+      *  @param rhs        - Generic ring item from which to construct.
+      *  @return ::CRingTextItem* - pointer to a newly created item.
+      *  @throw std::bad_cast if the type is wrong or rhs does not
+      *         seem to be a valid text item.
+      */
+     
+     ::CRingTextItem*
+     RingItemFactory::makeTextItem(
+         uint16_t type,
+         std::vector<std::string> theStrings
+     )
+     {
+         if (!isValidTextItemType(type)) throw std::bad_cast();
+         
+         return new CRingTextItem(type, theStrings);
+     }
+     
+     
+     ::CRingTextItem*
+     RingItemFactory::makeTextItem(
+            uint16_t type,
+            std::vector<std::string> theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp, uint32_t divisor
+     )
+     {
+          if (!isValidTextItemType(type)) throw std::bad_cast();
+          
+          return new CRingTextItem(
+             type, theStrings, offsetTime, timestamp, divisor
+          );
+     }
+     
+     ::CRingTextItem*
+     RingItemFactory::makeTextItem(const ::CRingItem& rhs)
+     {
+        const v10::TextItem* pItem =
+             reinterpret_cast<const v10::TextItem*>(rhs.getItemPointer());
+        if (!isValidTextItemType(pItem->s_header.s_type)) throw std::bad_cast();
+        
+        // Collect the strings and see if everything is consistent.
+        
+        auto strings = stringsToVector(pItem->s_stringCount, pItem->s_strings);
+        uint32_t expectedSize = sizeof(v10::TextItem);
+        for (const auto &s : strings) {
+           expectedSize += s.size() + 1;      // + 1 for the null terminator byte.
+        }
+        if (pItem->s_header.s_size != expectedSize) throw std::bad_cast();
+        
+        return makeTextItem(
+           pItem->s_header.s_type, strings, pItem->s_timeOffset,
+           pItem->s_timestamp, 1
+        );
+        
+        
+     }
+     //////////////////////////////////////////////////////////
+     // Private utilities
+     
+     
+     // Valid item types for text items
+     
+     static std::set<uint32_t> validTextTypes = {
+         v10::PACKET_TYPES, v10::MONITORED_VARIABLES
+     };
+     
+     /**
+      *  isValidTextItemType
+      *     @param itemType  -  a ring item type.
+      *     @return bool - true if so.
+      */
+     bool
+     RingItemFactory::isValidTextItemType(uint32_t type)
+     {
+        return (validTextTypes.count(type)) > 0;
+     }
+     /**
+      *  stringsToVector
+      *     Given a counted pot of strings returns a vector
+      *     containing all of the strings.
+      *  @param nStrings - number of strings.
+      *  @param pStrings - Pointer to the null terminated strings.
+      *  @return std::vector<std::string>
+      */
+     std::vector<std::string>
+     RingItemFactory::stringsToVector(
+         uint32_t nStrings, const char* pStrings
+     )
+     {
+          std::vector<std::string> result;
+          for (int i =0; i < nStrings; i++) {
+              result.push_back(std::string(pStrings));
+              pStrings += strlen(pStrings) + 1;
+          }
+          
+          return result;
+     }
 }                          // v10 namespace.
