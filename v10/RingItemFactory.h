@@ -80,8 +80,15 @@ namespace v10 {
         ) ;
         virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem& rhs) ;
     
-    };
-    
+        // Scaler items:
+        
+        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            uint64_t count, uint32_t timeoffset, time_t stamp,
+            int divisor=1
+        );
+        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem& rhs);
+        };
+        
 
 }                            // V10
 

@@ -23,6 +23,8 @@
 #include "DataFormat.h"
 #include "CRingItem.h"
 #include "CPhysicsEventItem.h"
+#include "CRingPhysicsEventCountItem.h"
+#include "CRingScalerItem.h"
 #include <CRingBuffer.h>
 #include <io.h>
 
@@ -345,4 +347,55 @@ namespace v10 {
   {
      throw std::bad_cast();
   }
+  /////////////////////////////////////////////////////////////////
+  // CRingPhysicsEventCountItems.
+  
+  
+  /**
+   * makePhysicsEventCountItem
+   *    Create a new physics event count item:
+   * @param count - number of triggers.
+   * @param timeoffset - seconds into the run.
+   * @param stamp      - Absolute time.
+   * @param divisor    - not supported/ignored in v10.
+   * @return CRingPhysicsEventCountItem*
+   *     Pointer to a newly created ring item.
+   */
+  ::CRingPhysicsEventCountItem*
+  RingItemFactory::makePhysicsEventCountItem(
+      uint64_t count, uint32_t timeoffset, time_t stamp,
+      int divisor
+  )
+  {
+      return new v10::CRingPhysicsEventCountItem(count, timeoffset, stamp);
+  }
+  /**
+   * makePhysicsEventCountItem
+   *    @param rhs - ring item to cast into a physics event count
+   *                 item.
+   *    @return CRingPhysicsEventCountItem*
+   *    @throw std::bad_cast if the rhs is not a physics event count item.
+   */
+  ::CRingPhysicsEventCountItem*
+  RingItemFactory::makePhysicsEventCountItem(
+      const ::CRingItem& rhs
+  )
+  {
+     const v10::RingItemHeader* pHeader =
+       reinterpret_cast<const v10::RingItemHeader*>(rhs.getItemPointer());
+       if (pHeader->s_type != v10::PHYSICS_EVENT_COUNT) {
+          throw std::bad_cast();
+       }
+       if (pHeader->s_size != sizeof(PhysicsEventCountItem)) {
+          throw std::bad_cast();
+       }
+       const PhysicsEventCountItem* p =
+         reinterpret_cast<const PhysicsEventCountItem*>(pHeader);
+        
+       return makePhysicsEventCountItem(
+          p->s_eventCount, p->s_timeOffset, p->s_timestamp, 1
+       );
+       
+  }
+  
 }                          // v10 namespace.
