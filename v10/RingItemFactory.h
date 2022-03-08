@@ -80,14 +80,30 @@ namespace v10 {
         ) ;
         virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem& rhs) ;
     
-        // Scaler items:
+        // Event count items.
         
         virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
             uint64_t count, uint32_t timeoffset, time_t stamp,
             int divisor=1
         );
         virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem& rhs);
+        
+        // Scaler items:
+        
+        virtual CRingScalerItem* makeScalerItem(size_t numScalers);
+        virtual CRingScalerItem* makeScalerItem(
+            uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector<uint32_t> scalers,
+            bool                  isIncremental = true,
+            uint32_t              sid = 0,
+            uint32_t              timeOffsetDivisor = 1
+        );
+        virtual CRingScalerItem* makeScalerItem(const CRingItem& rhs);
         };
+        // scaler items:
+        
         
 
 }                            // V10

@@ -398,4 +398,71 @@ namespace v10 {
        
   }
   
+  /**
+ * makeScalerItem (overloads)
+ *  @param numScalers - the number of scalers in the event.
+ *  @param startTime  - interval count start time into the run.
+ *  @param stopTime   - interval count end time into the run.
+ *  @param timestamp  - clock time
+ *  @param scalers    - scaler values.
+ *  @param isIncremental - true if incremental scalers.
+ *  @param sid        - Source id (ignored).
+ *  @param timeOffsetDivisor - divisor to convert star/stopTime to seconds
+ *                         ignored.
+ *  @param rhs        - ring item from which to construct.
+ *  @return CRingScalerItem* - pointer to new'd scaler item.
+ *  @throw std::bad_cast if rhs is not INCREMENAL_SCALERS.
+ */
+
+ ::CRingScalerItem*
+ RingItemFactory::makeScalerItem(size_t numScalers)
+ {
+    return new v10::CRingScalerItem(numScalers);
+ }
+ 
+ ::CRingScalerItem*
+ RingItemFactory::makeScalerItem(
+            uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector<uint32_t> scalers,
+            bool                  isIncremental ,
+            uint32_t              sid,
+            uint32_t              timeOffsetDivisor
+ )
+ {
+    return new CRingScalerItem(
+        startTime, stopTime, timestamp, scalers, isIncremental,
+        sid, timeOffsetDivisor
+    );
+ }
+ 
+ ::CRingScalerItem*
+ RingItemFactory::makeScalerItem(const ::CRingItem& rhs)
+ {
+      // Check for rhs being consistent with a v10 scaler item:
+      
+      const v10::ScalerItem* pItem =
+          reinterpret_cast<const v10::ScalerItem*>(rhs.getItemPointer());
+      if (pItem->s_header.s_type != v10::INCREMENTAL_SCALERS) {
+          throw std::bad_cast();
+      }
+      size_t expectedSize =
+          (pItem->s_scalerCount - 1) *sizeof(uint32_t) + sizeof(v10::ScalerItem);
+      if (pItem->s_header.s_size != expectedSize) {
+          throw std::bad_cast();
+      }
+      
+      std::vector<uint32_t>
+          scalerValues(pItem->s_scalers, pItem->s_scalers + pItem->s_scalerCount);
+      
+      return v10::RingItemFactory::makeScalerItem(
+        pItem->s_intervalStartOffset,
+        pItem->s_intervalEndOffset,
+        pItem->s_timestamp,
+        scalerValues
+        
+      );
+      
+ }
 }                          // v10 namespace.
