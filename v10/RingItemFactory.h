@@ -134,7 +134,7 @@ namespace v10 {
             time_t   timestamp,
             std::string title
         );
-        virtual CRingStateChangeItem* makeStateChangeItem(uint32_t reason);
+        virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem& rhs);
     
         
     private:
@@ -142,6 +142,8 @@ namespace v10 {
         static std::vector<std::string> stringsToVector(
             uint32_t nStrings, const char* pStrings
         );
+        
+        static bool isValidStateChangeType(uint32_t reason);
     };
         
         

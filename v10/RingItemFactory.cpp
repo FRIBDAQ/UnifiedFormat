@@ -26,6 +26,7 @@
 #include "CRingPhysicsEventCountItem.h"
 #include "CRingScalerItem.h"
 #include "CRingTextItem.h"
+#include "CRingStateChangeItem.h"
 #include <CRingBuffer.h>
 #include <io.h>
 
@@ -531,6 +532,66 @@ namespace v10 {
         
         
      }
+     ///////////////////////////////////////////////////////////
+     // Unknown fragments are not supported in v10:
+     
+     ::CUnknownFragment*
+     RingItemFactory::makeUnknownFragment(
+         uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+         uint32_t size, void* pPayload
+     )
+     {
+         return nullptr;
+     }
+     ::CUnknownFragment*
+     RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
+     {
+        throw std::bad_cast();
+     }
+     
+     //////////////////////////////////////////////////////////
+     // State change items.
+     
+     /**
+      * makeStateChangeItem (overload)
+      *  @param itemType  - Specific type of state change.
+      *  @param runNumber - Run number changing stat.
+      *  @param timeOffset -Offset into the run of the state change.
+      *  @param timestamp - Absolute time of the state change.
+      *  @param title     - Run TItle.
+      *  @param rhs       - Ring item turn into a state change object.
+      *  @return ::CRingStateChangeItem* pointer to new state change item.
+      *  @throw std::bad_cast for a number of illegalities (e.g. bad type).
+      */
+     ::CRingStateChangeItem*
+     RingItemFactory::makeStateChangeItem(
+         uint32_t itemType, uint32_t runNumber,
+         uint32_t timeOffset,
+         time_t   timestamp,
+         std::string title
+     )
+     {
+         if(!isValidStateChangeType(itemType)) throw std::bad_cast();
+         return new CRingStateChangeItem(
+             itemType, runNumber, timeOffset, timestamp, title 
+         );
+     }
+     
+     ::CRingStateChangeItem*
+     RingItemFactory::makeStateChangeItem(const ::CRingItem& rhs)
+     {
+          const v10::StateChangeItem* pItem =
+              reinterpret_cast<const v10::StateChangeItem*>(rhs.getItemPointer());
+          if (!isValidStateChangeType(pItem->s_header.s_type)) throw std::bad_cast();
+          if (pItem->s_header.s_size != sizeof(v10::StateChangeItem)) {
+               throw std::bad_cast();
+          }
+          
+          return makeStateChangeItem(
+              pItem->s_header.s_type, pItem->s_runNumber, pItem->s_timeOffset,
+              pItem->s_Timestamp, std::string(pItem->s_title)
+          );
+     }
      //////////////////////////////////////////////////////////
      // Private utilities
      
@@ -572,19 +633,18 @@ namespace v10 {
           
           return result;
      }
-     // Unknown fragments are not supported in v10:
      
-     ::CUnknownFragment*
-     RingItemFactory::makeUnknownFragment(
-         uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-         uint32_t size, void* pPayload
-     )
+     static std::set<uint32_t> validStateChangeType = {
+         v10::BEGIN_RUN, v10::END_RUN, v10:PAUSE_RUN, v10::RESUME_RUN
+     };
+     /**
+      * isValidStateChangeType
+      *    @param reason - state change item type (proposed).
+      *    @return bool true if the reason is a valid state change item type.
+      */
+     bool
+     RingItemFactory::isValidStateChangeType(uint32_t reason)
      {
-         return nullptr;
-     }
-     ::CUnknownFragment*
-     RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
-     {
-        throw std::bad_cast();
+          return validStateChangeType.count(reason) > 0;
      }
 }                          // v10 namespace.

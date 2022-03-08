@@ -134,7 +134,7 @@ class RingItemFactoryBase {
         time_t   timestamp,
         std::string title
     ) = 0;
-    virtual CRingStateChangeItem* makeStateChangeItem(uint32_t reason) = 0;
+    virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem& rhs) = 0;
     
 };
 
