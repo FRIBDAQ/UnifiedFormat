@@ -71,6 +71,15 @@ namespace v10 {
             size_t maxBody
         ) ;
         virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem& rhs) ;
+        
+        // RingFragment items (not supported in v10):
+        
+        virtual CRingFragmentItem* makeRingFragmentItem(
+            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+            const void* payload, uint32_t barrier=0
+        ) ;
+        virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem& rhs) ;
+    
     };
     
 

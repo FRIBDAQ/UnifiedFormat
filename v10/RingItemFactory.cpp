@@ -328,5 +328,21 @@ namespace v10 {
        
        return result;
   }
-
+  ///////////////////////////////////////////////////////////////
+  // Ring Fragment items are not supported in v10 so:
+  
+  CRingFragmentItem*
+  RingItemFactory::makeRingFragmentItem(
+            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+            const void* payload, uint32_t barrie
+  )
+  {
+     return nullptr;
+  }
+  
+  CRingFragmentItem*
+  RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
+  {
+     throw std::bad_cast();
+  }
 }                          // v10 namespace.
