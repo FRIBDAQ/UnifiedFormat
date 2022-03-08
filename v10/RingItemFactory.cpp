@@ -103,6 +103,7 @@ namespace v10 {
     memcpy(p, pBody, bodySize);
     p += bodySize;
     result->setBodyCursor(p);
+    result->updateSize();
     
     return result;    
  }

@@ -24,13 +24,16 @@
 #include "RingItemFactory.h"
 #include "DataFormat.h"
 #include <CRingBuffer.h>
-#include <CRingItem.h>
+#include "CRingItem.h"
+#include <string.h>
+
 
 
 class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10factorytest);
     CPPUNIT_TEST(ring_1);
     CPPUNIT_TEST(ring_2);
+    CPPUNIT_TEST(ring_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -45,6 +48,7 @@ public:
 protected:
     void ring_1();
     void ring_2();
+    void ring_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10factorytest);
@@ -82,4 +86,33 @@ CRingItem* item(0);
         throw;
     }
     delete item;    
+}
+// Make a ring item from an existing CRingItem object:
+
+void
+v10factorytest::ring_3()
+{
+    v10::CRingItem src(PHYSICS_EVENT, 100);
+    uint16_t* p = reinterpret_cast<uint16_t*>(src.getBodyCursor());
+    for (int i =0; i < 10; i++) {
+        *p++ = i;
+    }
+    src.setBodyCursor(p); src.updateSize();
+    
+    
+    ::CRingItem* pItem(0);
+    try {
+        pItem = m_pFactory->makeRingItem(src);
+        v10::pRingItemHeader p1 = reinterpret_cast<v10::pRingItemHeader>(src.getItemPointer());
+        ::pRingItemHeader p2 = reinterpret_cast<::pRingItemHeader>(pItem->getItemPointer());
+        
+        EQ(p1->s_size, p2->s_size);
+        EQ(0, memcmp(p1, p2, p1->s_size));
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    
+    delete pItem;
 }
