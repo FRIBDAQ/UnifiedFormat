@@ -22,6 +22,7 @@
 #include "RingItemFactory.h"
 #include "DataFormat.h"
 #include "CRingItem.h"
+#include "CPhysicsEventItem.h"
 #include <CRingBuffer.h>
 #include <io.h>
 
@@ -276,6 +277,56 @@ namespace v10 {
   RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
   {
     throw std::bad_cast();
+  }
+  ////////////////////////////////////////////////////////////////
+  // Physics event items
+  // Note that event building isn't supported so the
+ 
+ /**
+  * makePhysicsEventItem overloads:
+  * The parameters below are used in the various overloads.
+  * 
+  *  @param maxBody    - maximum body size.
+  *  @param timestamp  - Even builder timestamp (ignored).
+  *  @param source     - data source id (ignored).
+  *  @param barrier     - Barrier type (ignored).
+  *  @param rhs        - Ring item from which to construct
+  *  @throw std::bad_cast if rhs above is not a PHYSICS_EVENT.
+  *  @return ::CPhysicEventItem*
+  */
+ 
+  ::CPhysicsEventItem*
+  RingItemFactory::makePhysicsEventItem(size_t maxBody)
+  {
+   return new v10::CPhysicsEventItem(maxBody);
+  }
+  
+  ::CPhysicsEventItem*
+  RingItemFactory::makePhysicsEventItem(
+            uint64_t timestamp, uint32_t source, uint32_t barrier,
+            size_t maxBody
+  )
+  {
+    return makePhysicsEventItem(maxBody);
+  }
+  
+  ::CPhysicsEventItem*
+  RingItemFactory::makePhysicsEventItem(const ::CRingItem& rhs)
+  {
+       const v10::RingItemHeader* pHeader =
+           reinterpret_cast<const v10::RingItemHeader*>(rhs.getItemPointer());
+       if (pHeader->s_type != v10::PHYSICS_EVENT) {
+           throw std::bad_cast();
+       }
+       
+       auto result = makePhysicsEventItem(pHeader->s_size);
+       uint8_t* p = reinterpret_cast<uint8_t*>(result->getBodyCursor());
+       size_t bodySize = pHeader->s_size - sizeof(v10::RingItemHeader);
+       memcpy(p, pHeader+1, bodySize);
+       p += bodySize;
+       result->setBodyCursor(p);
+       
+       return result;
   }
 
 }                          // v10 namespace.

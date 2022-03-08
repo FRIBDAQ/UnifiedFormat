@@ -19,7 +19,8 @@
  *  @brief: Abstract base class of the CRingItem:
  */
 #ifndef ABSTRACTRINGITEM_H
-#define ASBTRACTRINGITEM_H
+#define ABSTRACTRINGITEM_H
+
 #include <unistd.h>
 #include <stdint.h>
 #include <string>

@@ -1,5 +1,5 @@
-#ifndef __CRINGITEM_H
-#define __CRINGITEM_H
+#ifndef V10_CRINGITEM_H
+#define V10_CRINGITEM_H
 
 /*
     This software is Copyright by the Board of Trustees of Michigan
@@ -28,7 +28,7 @@ namespace v10 {
 struct _RingItem;
 // Constants:
 
-static const uint32_t CRingItemStaticBufferSize(8192);
+
 
 /*!  
   This class is a base class for objects that encapsulate ring buffer items

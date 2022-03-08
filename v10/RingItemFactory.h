@@ -63,7 +63,14 @@ namespace v10 {
         );
         virtual CGlomParameters* makeGlomParameters(const CRingItem& rhs) ;
         
-    
+        // Physics event items:
+        
+        virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
+        virtual CPhysicsEventItem* makePhysicsEventItem(
+            uint64_t timestamp, uint32_t source, uint32_t barrier,
+            size_t maxBody
+        ) ;
+        virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem& rhs) ;
     };
     
 
