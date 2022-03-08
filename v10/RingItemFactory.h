@@ -117,6 +117,26 @@ namespace v10 {
             time_t                   timestamp, uint32_t divisor=1
         );
         virtual CRingTextItem* makeTextItem(const CRingItem& rhs);
+        
+        // unknown fragments.
+        
+        virtual CUnknownFragment* makeUnknownFragment(
+            uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+            uint32_t size, void* pPayload
+        );
+        virtual CUnknownFragment* makeUnknownFragment(const CRingItem& rhs);
+        
+        // state change items.
+        
+        virtual CRingStateChangeItem* makeStateChangeItem(
+            uint32_t itemType, uint32_t runNumber,
+            uint32_t timeOffset,
+            time_t   timestamp,
+            std::string title
+        );
+        virtual CRingStateChangeItem* makeStateChangeItem(uint32_t reason);
+    
+        
     private:
         static bool isValidTextItemType(uint32_t itemType);
         static std::vector<std::string> stringsToVector(

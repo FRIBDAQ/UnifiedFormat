@@ -126,7 +126,7 @@ class RingItemFactoryBase {
         uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
         uint32_t size, void* pPayload
     ) = 0;
-    virtual CUnknownFragment* makeUnknownFragent(const CRingItem& rhs) = 0;
+    virtual CUnknownFragment* makeUnknownFragment(const CRingItem& rhs) = 0;
     
     virtual CRingStateChangeItem* makeStateChangeItem(
         uint32_t itemType, uint32_t runNumber,

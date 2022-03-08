@@ -572,4 +572,19 @@ namespace v10 {
           
           return result;
      }
+     // Unknown fragments are not supported in v10:
+     
+     ::CUnknownFragment*
+     RingItemFactory::makeUnknownFragment(
+         uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+         uint32_t size, void* pPayload
+     )
+     {
+         return nullptr;
+     }
+     ::CUnknownFragment*
+     RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
+     {
+        throw std::bad_cast();
+     }
 }                          // v10 namespace.
