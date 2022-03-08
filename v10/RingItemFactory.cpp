@@ -73,7 +73,7 @@ namespace v10 {
     size_t maxBody, uint32_t barrierType 
 )
  {
-    return new v10::CRingItem(type, timestamp);
+    return new v10::CRingItem(type, maxBody);
  }
  
  // From an existing item -

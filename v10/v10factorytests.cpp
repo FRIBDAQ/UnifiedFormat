@@ -22,12 +22,15 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "RingItemFactory.h"
+#include "DataFormat.h"
 #include <CRingBuffer.h>
+#include <CRingItem.h>
 
 
 class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10factorytest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(ring_1);
+    CPPUNIT_TEST(ring_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -40,11 +43,43 @@ public:
         delete m_pFactory;
     }
 protected:
-    void test_1();
+    void ring_1();
+    void ring_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10factorytest);
 
-void v10factorytest::test_1()
+// 'normal' CRingItem creation.
+
+void v10factorytest::ring_1()
 {
+    CRingItem* item(0);
+    try {
+        item = m_pFactory->makeRingItem(v10::PHYSICS_EVENT, 100);
+        EQ(v10::PHYSICS_EVENT, item->type());
+        EQ(sizeof(v10::RingItemHeader), size_t(item->size()));
+        EQ(size_t(100), item->getStorageSize());
+    } catch (...) {
+        delete item;
+        throw;
+    }
+    delete item;
+}
+// advanced CRingItem create looks like normal.
+void
+v10factorytest::ring_2()
+{
+CRingItem* item(0);
+    try {
+        item = m_pFactory->makeRingItem(
+            v10::PHYSICS_EVENT, uint64_t(1234675890), 0, 100
+        );
+        EQ(v10::PHYSICS_EVENT, item->type());
+        EQ(sizeof(v10::RingItemHeader), size_t(item->size()));
+        EQ(size_t(100), item->getStorageSize());
+    } catch (...) {
+        delete item;
+        throw;
+    }
+    delete item;    
 }
