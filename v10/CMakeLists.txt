@@ -27,6 +27,9 @@ add_executable(v10unittests
   v10factorytests.cpp
 )
 target_link_libraries(v10unittests AbstractFormat V10Format cppunit)
-target_include_directories(v10unittests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abstract)
+target_include_directories(v10unittests PRIVATE
+${CMAKE_CURRENT_SOURCE_DIR}/../abstract
+${NSCLDAQ_INC}
+)
 
 add_test(NAME v10Format COMMAND v10unittests)

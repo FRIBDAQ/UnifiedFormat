@@ -86,11 +86,7 @@ class RingItemFactoryBase {
         const void* payload, uint32_t barrier=0
     ) = 0;
     virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem& rhs) = 0;
-    
-    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem() = 0;
-    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        uint64_t count, uint32_t timeOffset
-    ) = 0;
+
     
     virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
         uint64_t count, uint32_t timeoffset, time_t stamp,

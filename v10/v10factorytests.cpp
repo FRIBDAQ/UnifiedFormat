@@ -22,6 +22,7 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "RingItemFactory.h"
+#include <CRingBuffer.h>
 
 
 class v10factorytest : public CppUnit::TestFixture {
@@ -30,13 +31,13 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
     
 private:
-
+    v10::RingItemFactory* m_pFactory;
 public:
     void setUp() {
-        
+        m_pFactory = new v10::RingItemFactory;
     }
     void tearDown() {
-        
+        delete m_pFactory;
     }
 protected:
     void test_1();
