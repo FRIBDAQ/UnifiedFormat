@@ -35,9 +35,10 @@
 #include <stdexcept>
 #include <ios>
 #include <typeinfo>
+#include <time.h>
 
 #include "CPhysicsEventItem.h"
-
+#include "CRingPhysicsEventCountItem.h"
 
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
@@ -90,6 +91,11 @@ class v10factorytest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(frag_1);
     CPPUNIT_TEST(frag_2);
+    
+    CPPUNIT_TEST(count_1);
+    CPPUNIT_TEST(count_2);
+    CPPUNIT_TEST(count_3);
+    CPPUNIT_TEST(count_4);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -120,6 +126,11 @@ protected:
     
     void frag_1();
     void frag_2();
+    
+    void count_1();
+    void count_2();
+    void count_3();
+    void count_4();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -697,4 +708,127 @@ v10factorytest::frag_2()
         std::bad_cast
     );
     delete pItem;
+}
+// Made from parameters:L
+void v10factorytest::count_1()
+{
+    time_t now = time(nullptr);
+    ::CRingPhysicsEventCountItem* pItem(0);
+    try {
+        pItem = m_pFactory->makePhysicsEventCountItem(
+            12345, 10, now,
+            2                 // 1 regardless.
+        );
+        EQ(v10::PHYSICS_EVENT_COUNT, pItem->type());
+        
+        v10::CRingPhysicsEventCountItem* p;
+        CPPUNIT_ASSERT_NO_THROW(
+            p = dynamic_cast<v10::CRingPhysicsEventCountItem*>(pItem)
+        );
+        EQ(uint32_t(10), p->getTimeOffset());
+        EQ(float(10), p->computeElapsedTime());
+        EQ(uint32_t(1), p->getTimeDivisor());
+        EQ(now, p->getTimestamp());
+        EQ(uint64_t(12345), p->getEventCount());
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+// Good copy creation.
+
+void
+v10factorytest::count_2()
+{
+    time_t now = time(nullptr);
+    v10::PhysicsEventCountItem item;
+    item.s_header.s_type = v10::PHYSICS_EVENT_COUNT;
+    item.s_header.s_size = sizeof(item);
+    item.s_timeOffset = 10;
+    item.s_timestamp = now;
+    item.s_eventCount = 543210;
+    
+    auto p = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&item));
+    ::CRingPhysicsEventCountItem* pItem(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pItem = m_pFactory->makePhysicsEventCountItem(*p)
+        );
+        v10::CRingPhysicsEventCountItem* p10 =
+            dynamic_cast<v10::CRingPhysicsEventCountItem*>(pItem);
+        EQ(PHYSICS_EVENT_COUNT, p10->type());
+        EQ(uint32_t(10), pItem->getTimeOffset());
+        EQ(float(10), pItem->computeElapsedTime());
+        EQ(uint32_t(1), pItem->getTimeDivisor());
+        EQ(now, pItem->getTimestamp());
+        EQ(uint64_t(543210), pItem->getEventCount());
+    }
+    catch(...) {
+        delete pItem;
+        delete p;
+        throw;
+    }
+    delete pItem;
+    delete p;
+}
+// Wrong type throws
+
+void
+v10factorytest::count_3()
+{
+    
+    time_t now = time(nullptr);
+    v10::PhysicsEventCountItem item;
+    item.s_header.s_type = v10::PHYSICS_EVENT;
+    item.s_header.s_size = sizeof(item);
+    item.s_timeOffset = 10;
+    item.s_timestamp = now;
+    item.s_eventCount = 543210;
+    
+    auto p = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&item));
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeRingFragmentItem(*p),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete p;
+        throw;
+    }
+    delete p;
+}
+// Wrong size!
+void
+v10factorytest::count_4()
+{
+    time_t now = time(nullptr);
+    v10::PhysicsEventCountItem item;
+    item.s_header.s_type = v10::PHYSICS_EVENT;
+    item.s_header.s_size = sizeof(item);
+    item.s_timeOffset = 10;
+    item.s_timestamp = now;
+    item.s_eventCount = 543210;
+    
+    struct _bad {
+        v10::PhysicsEventCountItem s_item;
+        uint8_t                     s_extra;
+    } bad;
+    bad.s_item = item;
+    bad.s_extra= 0;
+    
+    auto p = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&bad));
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeRingFragmentItem(*p),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete p;
+        throw;
+    }
+    delete p;
 }
