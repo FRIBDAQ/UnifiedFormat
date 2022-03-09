@@ -77,6 +77,9 @@ class v10factorytest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(fmt_1);
     CPPUNIT_TEST(fmt_2);
+    
+    CPPUNIT_TEST(glompar_1);
+    CPPUNIT_TEST(glompar_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -117,6 +120,8 @@ protected:
     void fmt_1();
     void fmt_2();
     
+    void glompar_1();
+    void glompar_2();
 private:
     std::pair<std::string, int> makeTempFile();
 };
@@ -517,6 +522,32 @@ v10factorytest::fmt_2()
     try {
         CPPUNIT_ASSERT_THROW(
             m_pFactory->makeDataFormatItem(*pItem),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+
+// Cannot create a glom parameters item:
+
+void
+v10factorytest::glompar_1()
+{
+    auto pItem = m_pFactory->makeGlomParameters(100, true, 1);
+    ASSERT(pItem == nullptr);
+}
+// Creating from existing throws
+void
+v10factorytest::glompar_2()
+{
+    auto pItem = m_pFactory->makeRingItem(PHYSICS_EVENT, 100);
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeGlomParameters(*pItem),
             std::bad_cast
         );
     }
