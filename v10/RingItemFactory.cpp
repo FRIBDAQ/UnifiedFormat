@@ -334,6 +334,7 @@ namespace v10 {
        memcpy(p, pHeader+1, bodySize);
        p += bodySize;
        result->setBodyCursor(p);
+       result->updateSize();
        
        return result;
   }

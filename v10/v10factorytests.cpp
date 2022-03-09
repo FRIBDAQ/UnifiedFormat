@@ -36,6 +36,8 @@
 #include <ios>
 #include <typeinfo>
 
+#include "CPhysicsEventItem.h"
+
 
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
@@ -80,28 +82,13 @@ class v10factorytest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(glompar_1);
     CPPUNIT_TEST(glompar_2);
+    
+    CPPUNIT_TEST(phys_1);
+    CPPUNIT_TEST(phys_2);
+    CPPUNIT_TEST(phys_3);
+    CPPUNIT_TEST(phys_4);
     CPPUNIT_TEST_SUITE_END();
     
-private:
-    v10::RingItemFactory* m_pFactory;
-    CRingBuffer*          m_pProducer;
-    CRingBuffer*          m_pConsumer;
-public:
-    void setUp() {
-        if ( CRingBuffer::isRing(ringName)) {
-            CRingBuffer::remove(ringName);
-        }
-        m_pProducer = CRingBuffer::createAndProduce(ringName);
-        m_pConsumer = new CRingBuffer(ringName);
-        
-        m_pFactory = new v10::RingItemFactory;
-    }
-    void tearDown() {
-        delete m_pFactory;
-        delete m_pProducer;
-        delete m_pConsumer;
-        CRingBuffer::remove(ringName);
-    }
 protected:
     void ring_1();
     void ring_2();
@@ -122,6 +109,32 @@ protected:
     
     void glompar_1();
     void glompar_2();
+    
+    void phys_1();
+    void phys_2();
+    void phys_3();
+    void phys_4();
+private:
+    v10::RingItemFactory* m_pFactory;
+    CRingBuffer*          m_pProducer;
+    CRingBuffer*          m_pConsumer;
+public:
+    void setUp() {
+        if ( CRingBuffer::isRing(ringName)) {
+            CRingBuffer::remove(ringName);
+        }
+        m_pProducer = CRingBuffer::createAndProduce(ringName);
+        m_pConsumer = new CRingBuffer(ringName);
+        
+        m_pFactory = new v10::RingItemFactory;
+    }
+    void tearDown() {
+        delete m_pFactory;
+        delete m_pProducer;
+        delete m_pConsumer;
+        CRingBuffer::remove(ringName);
+    }
+
 private:
     std::pair<std::string, int> makeTempFile();
 };
@@ -556,4 +569,95 @@ v10factorytest::glompar_2()
         throw;
     }
     delete pItem;
+}
+// Empty physics event item:
+
+void
+v10factorytest::phys_1()
+{
+    auto pItem = m_pFactory->makePhysicsEventItem(100);
+    v10::CPhysicsEventItem* p = dynamic_cast<v10::CPhysicsEventItem*>(pItem);
+    ASSERT(p != nullptr);
+    
+    EQ(PHYSICS_EVENT, pItem->type());
+    EQ(sizeof(v10::RingItemHeader), size_t(pItem->size()));
+}
+// providing all those event source parameter still gives only
+// a header:
+
+void
+v10factorytest::phys_2()
+{
+    auto pItem = m_pFactory->makePhysicsEventItem(
+        uint64_t(0x12345678909), 1, 0, 100
+    );
+    v10::CPhysicsEventItem* p = dynamic_cast<v10::CPhysicsEventItem*>(pItem);
+    ASSERT(p != nullptr);
+    
+    EQ(PHYSICS_EVENT, pItem->type());
+    EQ(sizeof(v10::RingItemHeader), size_t(pItem->size()));
+}
+// Making from a physics item is ok:
+
+void
+v10factorytest::phys_3()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    auto pItem = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    ::CPhysicsEventItem* pCopied(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pCopied = m_pFactory->makePhysicsEventItem(*pItem)
+        );
+        EQ(rawItem.s_header.s_size, pCopied->size());
+        EQ(0, memcmp(&rawItem, pCopied->getItemPointer(), pItem->size()));
+    }
+    catch (...) {
+        delete pItem;
+        delete pCopied;
+        throw;
+    }
+    delete pItem;
+    delete pCopied;
+}
+// Copy construction from non physics item blows with bad_cast:
+
+void
+v10factorytest::phys_4()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = v10::BEGIN_RUN;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    auto pItem = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    ::CRingItem* pCopied(0);
+    try {
+        CPPUNIT_ASSERT_THROW(
+            pCopied = m_pFactory->makePhysicsEventItem(*pItem),
+            std::bad_cast
+        );
+    }catch (...) {
+        delete pItem;
+        delete pCopied;
+    }
+    delete pItem;
+    // If we got here, pCopied is still null.
+    
 }
