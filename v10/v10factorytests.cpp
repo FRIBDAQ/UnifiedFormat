@@ -39,6 +39,7 @@
 
 #include "CPhysicsEventItem.h"
 #include "CRingPhysicsEventCountItem.h"
+#include "CRingScalerItem.h"
 
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
@@ -96,6 +97,9 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(count_2);
     CPPUNIT_TEST(count_3);
     CPPUNIT_TEST(count_4);
+    
+    CPPUNIT_TEST(scaler_1);
+    CPPUNIT_TEST(scaler_2);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -131,6 +135,9 @@ protected:
     void count_2();
     void count_3();
     void count_4();
+    
+    void scaler_1();
+    void scaler_2();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -806,7 +813,7 @@ v10factorytest::count_4()
 {
     time_t now = time(nullptr);
     v10::PhysicsEventCountItem item;
-    item.s_header.s_type = v10::PHYSICS_EVENT;
+    item.s_header.s_type = v10::PHYSICS_EVENT_COUNT;
     item.s_header.s_size = sizeof(item);
     item.s_timeOffset = 10;
     item.s_timestamp = now;
@@ -831,4 +838,74 @@ v10factorytest::count_4()
         throw;
     }
     delete p;
+}
+// Minimal scaler item.  No scaler values.
+
+void
+v10factorytest::scaler_1()
+{
+    time_t now = time(nullptr);
+    ::CRingScalerItem* pBase(0);
+    v10::CRingScalerItem* pActual(0);   
+    try {
+        pBase = m_pFactory->makeScalerItem(32);
+        CPPUNIT_ASSERT_NO_THROW(
+            pActual = dynamic_cast<v10::CRingScalerItem*>(pBase)
+            
+        );
+        EQ(v10::INCREMENTAL_SCALERS, pActual->type());
+        EQ(sizeof(v10::ScalerItem) + 31*sizeof(uint32_t), size_t(pActual->size()));
+        
+        EQ(uint32_t(0), pActual->getStartTime());
+        EQ(float(0), pActual->computeStartTime());
+        EQ(uint32_t(0), pActual ->getEndTime());
+        EQ(float(0), pActual->computeEndTime());
+        EQ(uint32_t(1), pActual->getTimeDivisor());
+        ASSERT(pActual->getTimestamp() - now <= 1);
+        
+        
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// scaler with scalers.
+
+void
+v10factorytest::scaler_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i = 0; i < 32; i++) {scalers.push_back(i);}
+    
+    ::CRingScalerItem* pBase(0);
+    try {
+        pBase = m_pFactory->makeScalerItem(
+            0, 10, now, scalers,
+            true
+        );
+        v10::CRingScalerItem* pActual(0);
+        CPPUNIT_ASSERT_NO_THROW(
+            pActual = dynamic_cast<v10::CRingScalerItem*>(pBase)
+        );
+        EQ(v10::INCREMENTAL_SCALERS, pActual->type());
+        EQ(sizeof(v10::ScalerItem) + 31*sizeof(uint32_t), size_t(pActual->size()));
+        
+        EQ(uint32_t(0), pActual->getStartTime());
+        EQ(float(0), pActual->computeStartTime());
+        EQ(uint32_t(10), pActual ->getEndTime());
+        EQ(float(10), pActual->computeEndTime());
+        EQ(uint32_t(1), pActual->getTimeDivisor());
+        EQ(now, pActual->getTimestamp());
+        auto itemsc = pActual->getScalers();
+        EQ(uint32_t(scalers.size()), uint32_t(itemsc.size()));
+        EQ(0, memcmp(scalers.data(), itemsc.data(), scalers.size()*sizeof(uint32_t)));
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
 }

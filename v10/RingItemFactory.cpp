@@ -439,7 +439,7 @@ namespace v10 {
             uint32_t              timeOffsetDivisor
  )
  {
-    return new CRingScalerItem(
+    return new v10::CRingScalerItem(
         startTime, stopTime, timestamp, scalers, isIncremental,
         sid, timeOffsetDivisor
     );
