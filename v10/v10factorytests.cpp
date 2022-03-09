@@ -34,7 +34,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <ios>
-
+#include <typeinfo>
 
 
 // A comment about all the try catch blocks:
@@ -71,6 +71,9 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(ring_8);
     CPPUNIT_TEST(ring_9);
     CPPUNIT_TEST(ring_10);
+    
+    CPPUNIT_TEST(abend_1);
+    CPPUNIT_TEST(abend_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -104,6 +107,10 @@ protected:
     void ring_8();
     void ring_9();
     void ring_10();
+    
+    void abend_1();
+    void abend_2();
+    
 private:
     std::pair<std::string, int> makeTempFile();
 };
@@ -462,4 +469,29 @@ v10factorytest::ring_10()
     }
     delete pItem;
     delete pReadItem;
+}
+// Can't create an abnormal end item:
+
+void
+v10factorytest::abend_1()
+{
+    auto pItem = m_pFactory->makeAbnormalEndItem();
+    ASSERT(pItem == nullptr);
+}
+// from  a ring item is a bad cast:
+void
+v10factorytest::abend_2()
+{
+    auto pItem = m_pFactory->makeRingItem(PHYSICS_EVENT, 100);
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeAbnormalEndItem(*pItem),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
 }
