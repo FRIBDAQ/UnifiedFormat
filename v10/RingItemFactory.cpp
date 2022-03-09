@@ -155,6 +155,7 @@ namespace v10 {
     io::readData(fd, p, bodySize);
     p += bodySize;
     result->setBodyCursor(p);
+    result->updateSize();
     
     return result;
  }
@@ -190,6 +191,7 @@ namespace v10 {
     }
     p += bodySize;
     result->setBodyCursor(p);
+    result->updateSize();
     return result;
     
  }
