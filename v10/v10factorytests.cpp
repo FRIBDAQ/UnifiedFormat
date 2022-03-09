@@ -87,6 +87,9 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(phys_2);
     CPPUNIT_TEST(phys_3);
     CPPUNIT_TEST(phys_4);
+    
+    CPPUNIT_TEST(frag_1);
+    CPPUNIT_TEST(frag_2);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -114,6 +117,9 @@ protected:
     void phys_2();
     void phys_3();
     void phys_4();
+    
+    void frag_1();
+    void frag_2();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -660,4 +666,35 @@ v10factorytest::phys_4()
     delete pItem;
     // If we got here, pCopied is still null.
     
+}
+// Can't make a fragment:
+void
+v10factorytest::frag_1()
+{
+    auto ptr =m_pFactory->makeRingFragmentItem(
+        1243, 1, 100, nullptr
+    );
+    ASSERT(ptr == nullptr);
+}
+// bad cast to make from another item:
+void
+v10factorytest::frag_2()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = v10::PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    auto pItem = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeRingFragmentItem(*pItem),
+        std::bad_cast
+    );
+    delete pItem;
 }
