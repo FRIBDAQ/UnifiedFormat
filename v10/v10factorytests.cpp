@@ -27,6 +27,16 @@
 #include "CRingItem.h"
 #include <string.h>
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <fstream>
+#include <stdexcept>
+#include <ios>
+
+
+
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
 // exceptions and delete any dynamically created ring item and then
@@ -47,6 +57,8 @@
 //   in all of our tests.
 
 static const char* ringName="v10FactoryRing";
+static const char* tempFileTemplate="v10FactoryXXXXXX";
+
 class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10factorytest);
     CPPUNIT_TEST(ring_1);
@@ -54,6 +66,8 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(ring_3);
     CPPUNIT_TEST(ring_4);
     CPPUNIT_TEST(ring_5);
+    CPPUNIT_TEST(ring_6);
+    CPPUNIT_TEST(ring_7);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -82,10 +96,38 @@ protected:
     void ring_3();
     void ring_4();
     void ring_5();
-    
+    void ring_6();
+    void ring_7();
+private:
+    std::pair<std::string, int> makeTempFile();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10factorytest);
+
+// private utilities:
+
+/**
+ * makeTempFile
+ *    Makes a temporary file (needed to attach streams):
+ * @return std::pair<std::string, int>  The string is the
+ *    name of the file and the int is the file descriptor.
+ *    Errors throw std::runtime_error
+ *    The caller must close the file.
+ */
+std::pair<std::string, int>
+v10factorytest::makeTempFile()
+{
+    char nameBuffer[strlen(tempFileTemplate) + 1];
+    strncpy(nameBuffer, tempFileTemplate, strlen(tempFileTemplate) + 1);
+    
+    int fd = mkstemp(nameBuffer);
+    if (fd == -1) {
+        throw std::runtime_error("Failed to make temp file");
+    }
+    return std::pair<std::string, int>(std::string(nameBuffer), fd);
+            
+
+}
 
 // 'normal' CRingItem creation.
 
@@ -186,7 +228,7 @@ v10factorytest::ring_4()
 void
 v10factorytest::ring_5()
 {
-    #pragma packed(push, 1)
+#pragma packed(push, 1)
     struct {
         v10::RingItemHeader s_header;
         uint16_t             s_body[100];
@@ -214,4 +256,83 @@ v10factorytest::ring_5()
         throw;
     }
     delete pItem;
+}
+// get ring item from an fd:
+void
+v10factorytest::ring_6()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    
+    int fd = memfd_create("TestFile", 0);
+    write(fd, &rawItem, sizeof(rawItem));
+    lseek(fd, 0, SEEK_SET);            // Rewinde:
+    
+    ::CRingItem* pItem(0);
+    try {
+        pItem = m_pFactory->getRingItem(fd);
+        EQ(rawItem.s_header.s_size, pItem->size());
+        EQ(0, memcmp(&rawItem, pItem->getItemPointer(), sizeof(rawItem)));
+    }
+    catch (...) {
+        close(fd);
+        delete pItem;
+        throw;
+    }
+    
+    close(fd);
+    delete pItem;
+}
+
+// get ring item from std::ifstream.
+//
+void
+v10factorytest::ring_7()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+
+    auto fileInfo = makeTempFile();
+    int fd = fileInfo.second;
+    write(fd, &rawItem, sizeof(rawItem));
+    std::ifstream in(fileInfo.first.c_str(), std::ios::binary | std::ios::in);
+    if (!in) ASSERT(false);
+    
+    CRingItem* pItem(0);
+    try {
+        pItem = m_pFactory->getRingItem(in);
+        ASSERT(pItem);
+        EQ(rawItem.s_header.s_size, pItem->size());
+        EQ(0, memcmp(&rawItem, pItem->getItemPointer(), sizeof(rawItem)));
+    }
+    catch (...)  {
+        delete pItem;
+        close(fd);
+        in.close();
+        unlink(fileInfo.first.c_str());
+        throw;       
+    }
+    
+    delete pItem;
+    close(fd);
+    in.close();
+    unlink(fileInfo.first.c_str());
 }
