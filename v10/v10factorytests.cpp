@@ -68,6 +68,9 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(ring_5);
     CPPUNIT_TEST(ring_6);
     CPPUNIT_TEST(ring_7);
+    CPPUNIT_TEST(ring_8);
+    CPPUNIT_TEST(ring_9);
+    CPPUNIT_TEST(ring_10);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -98,6 +101,9 @@ protected:
     void ring_5();
     void ring_6();
     void ring_7();
+    void ring_8();
+    void ring_9();
+    void ring_10();
 private:
     std::pair<std::string, int> makeTempFile();
 };
@@ -335,4 +341,125 @@ v10factorytest::ring_7()
     close(fd);
     in.close();
     unlink(fileInfo.first.c_str());
+}
+// write ring item to an ostream:
+void
+v10factorytest::ring_8()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    auto fileinfo = makeTempFile();
+    CRingItem* pItem = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    CRingItem* pReadItem(0);
+    std::ofstream out(fileinfo.first.c_str(), std::ios::binary | std::ios::out);
+    try {
+        m_pFactory->putRingItem(pItem, out);
+        out.flush();        // Put it in the file.
+        pReadItem = m_pFactory->getRingItem(fileinfo.second);
+        
+        EQ(pItem->size(), pReadItem->size());
+        EQ(0, memcmp(
+            pItem->getItemPointer(), pReadItem->getItemPointer(), pItem->size()
+        ));
+        
+    } catch(...) {
+        out.close();
+        delete pReadItem;
+        delete pItem;
+        close(fileinfo.second);
+        unlink(fileinfo.first.c_str());
+        throw;
+    }
+    
+    
+    
+    close(fileinfo.second);
+    unlink(fileinfo.first.c_str());
+    delete pItem;
+    delete pReadItem;
+}
+// Write ring item to an fd:
+
+void
+v10factorytest::ring_9()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    auto fileinfo = makeTempFile();
+    CRingItem* pItem = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    CRingItem* pReadItem(0);
+    m_pFactory->putRingItem(pItem, fileinfo.second);
+    lseek(fileinfo.second, 0, SEEK_SET);
+    try {
+        pReadItem = m_pFactory->getRingItem(fileinfo.second);
+        EQ(pItem->size(), pReadItem->size());
+        EQ(0, memcmp(
+            pItem->getItemPointer(), pReadItem->getItemPointer(), pItem->size()
+        ));
+    }
+    catch (...) {
+        close(fileinfo.second);
+        unlink(fileinfo.first.c_str());
+        delete pItem;
+        delete pReadItem;
+        throw;
+    }
+    
+    close(fileinfo.second);
+    unlink(fileinfo.first.c_str());
+    delete pItem;
+    delete pReadItem;
+}
+// Put/get ring item from a ringbuffer.
+
+void
+v10factorytest::ring_10()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    CRingItem* pItem = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    CRingItem* pReadItem(0);
+    
+    try {
+        m_pFactory->putRingItem(pItem, *m_pProducer);
+        pReadItem = m_pFactory->getRingItem(*m_pConsumer);
+        EQ(pItem->size(), pReadItem->size());
+        EQ(0, memcmp(
+            pItem->getItemPointer(), pReadItem->getItemPointer(), pItem->size()
+        ));
+    }
+    catch(...) {
+        delete pItem;
+        delete pReadItem;
+        throw;
+    }
+    delete pItem;
+    delete pReadItem;
 }
