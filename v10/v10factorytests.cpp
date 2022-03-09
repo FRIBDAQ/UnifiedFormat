@@ -27,28 +27,62 @@
 #include "CRingItem.h"
 #include <string.h>
 
+// A comment about all the try catch blocks:
+// ASSERTIONS that fail trigger an exception so we catch all
+// exceptions and delete any dynamically created ring item and then
+// rethrow allowing CPPUNIT to report the assertion failure.
+// SO there's a recurring pattern of:
+//
+//   ::CsomeRingItemType* pItem(0);
+//   try {
+//      pItem = makesometypeofitem(....);
+//      ... assertions
+//   }
+//   catch (...) {
+//     delete pItem;
+//     throw;
+//   }
+///  delete pItem;
+//
+//   in all of our tests.
 
-
+static const char* ringName="v10FactoryRing";
 class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10factorytest);
     CPPUNIT_TEST(ring_1);
     CPPUNIT_TEST(ring_2);
     CPPUNIT_TEST(ring_3);
+    CPPUNIT_TEST(ring_4);
+    CPPUNIT_TEST(ring_5);
     CPPUNIT_TEST_SUITE_END();
     
 private:
     v10::RingItemFactory* m_pFactory;
+    CRingBuffer*          m_pProducer;
+    CRingBuffer*          m_pConsumer;
 public:
     void setUp() {
+        if ( CRingBuffer::isRing(ringName)) {
+            CRingBuffer::remove(ringName);
+        }
+        m_pProducer = CRingBuffer::createAndProduce(ringName);
+        m_pConsumer = new CRingBuffer(ringName);
+        
         m_pFactory = new v10::RingItemFactory;
     }
     void tearDown() {
         delete m_pFactory;
+        delete m_pProducer;
+        delete m_pConsumer;
+        CRingBuffer::remove(ringName);
     }
 protected:
     void ring_1();
     void ring_2();
     void ring_3();
+    void ring_4();
+    void ring_5();
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v10factorytest);
@@ -114,5 +148,70 @@ v10factorytest::ring_3()
         throw;
     }
     
+    delete pItem;
+}
+// from raw ring item struct:
+
+void
+v10factorytest::ring_4()
+{
+#pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    ::CRingItem* pItem(0);
+    try {
+        pItem = m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+        EQ(rawItem.s_header.s_size, pItem->size());
+        
+        EQ(0, memcmp(
+            &rawItem, pItem->getItemPointer(), rawItem.s_header.s_size
+        ));
+    }
+    catch(...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+// Test getRingItem with ring buffer.
+
+void
+v10factorytest::ring_5()
+{
+    #pragma packed(push, 1)
+    struct {
+        v10::RingItemHeader s_header;
+        uint16_t             s_body[100];
+    } rawItem;
+#pragma packed(pop)
+    rawItem.s_header.s_type = PHYSICS_EVENT;
+    rawItem.s_header.s_size = sizeof(rawItem);
+    for (int i =0; i < 100; i++) {
+        rawItem.s_body[i] = i;
+    }
+    
+    m_pProducer->put(&rawItem, rawItem.s_header.s_size);
+    
+    ::CRingItem* pItem(0);
+    try {
+        pItem = m_pFactory->getRingItem(*m_pConsumer);
+        ASSERT(pItem);
+        EQ(rawItem.s_header.s_size, pItem->size());
+        EQ(0, memcmp(
+            &rawItem, pItem->getItemPointer(), rawItem.s_header.s_size
+        ));
+    }
+    catch(...) {
+        delete pItem;
+        throw;
+    }
     delete pItem;
 }

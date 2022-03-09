@@ -130,6 +130,7 @@ namespace v10 {
     ringbuf.get(p, bodySize);
     p += bodySize;
     result->setBodyCursor(p);
+    result->updateSize();
     
     return result;
  }

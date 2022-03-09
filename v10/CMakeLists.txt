@@ -1,3 +1,6 @@
+add_compile_options(-g)
+add_link_options(-g)
+
 add_library(
     V10Format SHARED CRingItem.cpp CPhysicsEventItem.cpp CRingFragmentItem.cpp
     CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp CRingStateChangeItem.cpp
