@@ -74,6 +74,9 @@ class v10factorytest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(abend_1);
     CPPUNIT_TEST(abend_2);
+    
+    CPPUNIT_TEST(fmt_1);
+    CPPUNIT_TEST(fmt_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -110,6 +113,9 @@ protected:
     
     void abend_1();
     void abend_2();
+    
+    void fmt_1();
+    void fmt_2();
     
 private:
     std::pair<std::string, int> makeTempFile();
@@ -486,6 +492,31 @@ v10factorytest::abend_2()
     try {
         CPPUNIT_ASSERT_THROW(
             m_pFactory->makeAbnormalEndItem(*pItem),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+/// cannot create a data format item:
+void
+v10factorytest::fmt_1()
+{
+    auto pItem = m_pFactory->makeDataFormatItem();
+    ASSERT(pItem == nullptr);
+}
+// create from ring item throws bad cast.
+
+void
+v10factorytest::fmt_2()
+{
+    auto pItem = m_pFactory->makeRingItem(PHYSICS_EVENT, 100);
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeDataFormatItem(*pItem),
             std::bad_cast
         );
     }
