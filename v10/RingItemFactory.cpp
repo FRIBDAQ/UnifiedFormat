@@ -452,25 +452,56 @@ namespace v10 {
       
       const v10::ScalerItem* pItem =
           reinterpret_cast<const v10::ScalerItem*>(rhs.getItemPointer());
-      if (pItem->s_header.s_type != v10::INCREMENTAL_SCALERS) {
-          throw std::bad_cast();
-      }
-      size_t expectedSize =
-          (pItem->s_scalerCount - 1) *sizeof(uint32_t) + sizeof(v10::ScalerItem);
-      if (pItem->s_header.s_size != expectedSize) {
-          throw std::bad_cast();
-      }
+      if (pItem->s_header.s_type == v10::INCREMENTAL_SCALERS) {
       
-      std::vector<uint32_t>
-          scalerValues(pItem->s_scalers, pItem->s_scalers + pItem->s_scalerCount);
-      
-      return v10::RingItemFactory::makeScalerItem(
-        pItem->s_intervalStartOffset,
-        pItem->s_intervalEndOffset,
-        pItem->s_timestamp,
-        scalerValues
-        
-      );
+          size_t expectedSize =
+              (pItem->s_scalerCount - 1) *sizeof(uint32_t) + sizeof(v10::ScalerItem);
+          if (pItem->s_header.s_size != expectedSize) {
+              throw std::bad_cast();
+          }
+          
+          std::vector<uint32_t>
+              scalerValues(pItem->s_scalers, pItem->s_scalers + pItem->s_scalerCount);
+          
+          return v10::RingItemFactory::makeScalerItem(
+            pItem->s_intervalStartOffset,
+            pItem->s_intervalEndOffset,
+            pItem->s_timestamp,
+            scalerValues
+            
+          );
+      } else if(pItem->s_header.s_type == v10::TIMESTAMPED_NONINCR_SCALERS) {
+         const v10::NonIncrTimestampedScaler* pNonItem =
+            reinterpret_cast<const v10::NonIncrTimestampedScaler*>(pItem);
+         size_t expectedSize =
+             sizeof(v10::NonIncrTimestampedScaler) +
+             (pNonItem->s_scalerCount-1)*sizeof(uint32_t);
+         if (expectedSize != pNonItem->s_header.s_size) {
+             throw std::bad_cast();           
+         }
+         // Create the non incremental item .. and stuff the timestamp:
+         
+         std::vector<uint32_t>
+              scalerValues(pNonItem->s_scalers, pNonItem->s_scalers + pNonItem->s_scalerCount);         
+         auto result = v10::RingItemFactory::makeScalerItem(
+             pNonItem->s_intervalStartOffset,
+             pNonItem->s_intervalEndOffset,
+             pNonItem->s_clockTimestamp,
+             scalerValues,
+             false
+         );
+         // Now retouch the event timestamp and the
+         // divisor from the raw item:
+         
+         v10::NonIncrTimestampedScaler* p =
+            reinterpret_cast<v10::NonIncrTimestampedScaler*>(result->getItemPointer());
+         p->s_eventTimestamp = pNonItem->s_eventTimestamp;
+         p->s_intervalDivisor = pNonItem->s_intervalDivisor;
+         return result;
+      } else {
+          std::bad_cast();
+      }
+      return nullptr;   // should not get here.
  }
      /**
       * makeTextitem (overloaded)

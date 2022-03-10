@@ -100,6 +100,9 @@ class v10factorytest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(scaler_1);
     CPPUNIT_TEST(scaler_2);
+    CPPUNIT_TEST(scaler_3);
+    CPPUNIT_TEST(scaler_4);
+    CPPUNIT_TEST(scaler_5);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -138,6 +141,9 @@ protected:
     
     void scaler_1();
     void scaler_2();
+    void scaler_3();
+    void scaler_4();
+    void scaler_5();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -887,12 +893,12 @@ v10factorytest::scaler_2()
             true
         );
         v10::CRingScalerItem* pActual(0);
-        CPPUNIT_ASSERT_NO_THROW(
-            pActual = dynamic_cast<v10::CRingScalerItem*>(pBase)
-        );
+        
+        pActual = dynamic_cast<v10::CRingScalerItem*>(pBase);
+        ASSERT(pActual);
         EQ(v10::INCREMENTAL_SCALERS, pActual->type());
         EQ(sizeof(v10::ScalerItem) + 31*sizeof(uint32_t), size_t(pActual->size()));
-        
+        ASSERT(pActual->isIncremental());
         EQ(uint32_t(0), pActual->getStartTime());
         EQ(float(0), pActual->computeStartTime());
         EQ(uint32_t(10), pActual ->getEndTime());
@@ -908,4 +914,135 @@ v10factorytest::scaler_2()
         throw;
     }
     delete pBase;
+}
+// scaler with scalers -nonincremental gives a different beast:
+
+void
+v10factorytest::scaler_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i = 0; i < 32; i++) {scalers.push_back(i);}
+    
+    ::CRingScalerItem* pBase(0);
+    try {
+        pBase = m_pFactory->makeScalerItem(
+            0, 10, now, scalers,
+            false
+        );
+        v10::CRingScalerItem* pActual(0);
+        pActual = dynamic_cast<v10::CRingScalerItem*>(pBase);
+        ASSERT(pActual);
+        EQ(v10::TIMESTAMPED_NONINCR_SCALERS , pActual->type());
+        EQ(sizeof(v10::NonIncrTimestampedScaler) + 31*sizeof(uint32_t), size_t(pActual->size()));
+        ASSERT(!pActual->isIncremental());
+        EQ(uint32_t(0), pActual->getStartTime());
+        EQ(float(0), pActual->computeStartTime());
+        EQ(uint32_t(10), pActual ->getEndTime());
+        EQ(float(10), pActual->computeEndTime());
+        EQ(uint32_t(1), pActual->getTimeDivisor());
+        EQ(now, pActual->getTimestamp());
+        auto itemsc = pActual->getScalers();
+        EQ(uint32_t(scalers.size()), uint32_t(itemsc.size()));
+        EQ(0, memcmp(scalers.data(), itemsc.data(), scalers.size()*sizeof(uint32_t)));
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// Make incremental scaler from raw ring item:
+
+void
+v10factorytest::scaler_4()
+{
+    time_t now = time(nullptr);
+#pragma pack(push, 1)
+    struct {
+        v10::ScalerItem s_base;
+        uint32_t   s_moreScalers[31];    // 32 total.
+    } rawItem;
+#pragma pack(pop)
+    rawItem.s_base.s_header.s_size = sizeof(rawItem);
+    rawItem.s_base.s_header.s_type = v10::INCREMENTAL_SCALERS;
+    rawItem.s_base.s_intervalStartOffset  = 0;
+    rawItem.s_base.s_intervalEndOffset    = 10;
+    rawItem.s_base.s_timestamp            = now;
+    rawItem.s_base.s_scalerCount          = 32;
+    // This loop spills over into s_moreScalers - thanks to C++'s lack
+    // of bound checking:
+    for (int i =0; i < 32; i++) {
+        rawItem.s_base.s_scalers[i] = i;
+    }
+    
+    auto pItem =
+        m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    ::CRingScalerItem* pBaseScaler(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pBaseScaler = m_pFactory->makeScalerItem(*pItem)
+        );
+        ::v10::CRingScalerItem* pActual =
+            dynamic_cast<::v10::CRingScalerItem*>(pBaseScaler);
+        ASSERT(pActual);
+        EQ(v10::INCREMENTAL_SCALERS, pActual->type());
+        EQ(sizeof(rawItem), size_t(pActual->size()));
+        EQ(0, memcmp(&rawItem, pActual->getItemPointer(), sizeof(rawItem)));
+    }
+    catch (...) {
+        delete pItem;
+        delete pBaseScaler;
+        throw;
+    }
+    delete pItem;
+    delete pBaseScaler;
+}
+// Make nonincremental timstamped scaler from ring item:
+
+void
+v10factorytest::scaler_5()
+{
+    time_t now = time(nullptr);
+#pragma pack(push, 1)
+    struct {
+        v10::NonIncrTimestampedScaler s_base;
+        uint32_t                 s_moreScalers[31];
+    } rawItem;
+#pragma pack(pop)
+    // Fill in the raw item:
+    
+    rawItem.s_base.s_header.s_size = sizeof(rawItem);
+    rawItem.s_base.s_header.s_type = v10::TIMESTAMPED_NONINCR_SCALERS;
+    rawItem.s_base.s_eventTimestamp = 0x1234567890;
+    rawItem.s_base.s_intervalStartOffset = 0;
+    rawItem.s_base.s_intervalEndOffset    = 10;
+    rawItem.s_base.s_intervalDivisor      = 2;
+    rawItem.s_base.s_clockTimestamp       = now;
+    rawItem.s_base.s_scalerCount          = 32;
+    for (int i =0; i < 32; i++) {
+        rawItem.s_base.s_scalers[i] = i;
+    }
+    
+    auto pItem =
+        m_pFactory->makeRingItem(reinterpret_cast<const ::RingItem*>(&rawItem));
+    ::CRingScalerItem* pBase(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pBase = m_pFactory->makeScalerItem(*pItem)
+        );
+        v10::CRingScalerItem* pActual =
+            dynamic_cast<v10::CRingScalerItem*>(pBase);
+        ASSERT(pActual);
+        EQ(v10::TIMESTAMPED_NONINCR_SCALERS, pActual->type());
+        EQ(sizeof(rawItem), size_t(pActual->size()));
+        EQ(0, memcmp(&rawItem, pActual->getItemPointer(), sizeof(rawItem)));
+    }
+    catch (...) {
+        delete pBase;
+        delete pItem;
+        throw;
+    }
+    delete pBase;
+    delete pItem;
 }
