@@ -104,6 +104,8 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(scaler_4);
     CPPUNIT_TEST(scaler_5);
     CPPUNIT_TEST(scaler_6);
+    CPPUNIT_TEST(scaler_7);
+    CPPUNIT_TEST(scaler_8);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -146,6 +148,8 @@ protected:
     void scaler_4();
     void scaler_5();
     void scaler_6();
+    void scaler_7();
+    void scaler_8();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -1053,7 +1057,7 @@ v10factorytest::scaler_5()
 void
 v10factorytest::scaler_6()
 {
-    #pragma pack(push, 1)
+#pragma pack(push, 1)
     struct {
         v10::ScalerItem s_base;
         uint32_t   s_moreScalers[31];    // 32 total.
@@ -1064,6 +1068,51 @@ v10factorytest::scaler_6()
     
     auto pRingItem = m_pFactory->makeRingItem(
         reinterpret_cast<const ::RingItem*>(&rawItem)
+    );
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeScalerItem(*pRingItem),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete pRingItem;
+        throw;
+    }
+    delete pRingItem;
+}
+// Wrong size but right type throws:
+
+void
+v10factorytest::scaler_7()
+{
+    ::RingItemHeader hdr;
+    hdr.s_size = sizeof(hdr);
+    hdr.s_type = v10::INCREMENTAL_SCALERS;
+    
+    auto pRingItem = m_pFactory->makeRingItem(
+        reinterpret_cast<const ::RingItem*>(&hdr)
+    );
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeScalerItem(*pRingItem),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete pRingItem;
+        throw;
+    }
+    delete pRingItem;
+}
+void v10factorytest::scaler_8()
+{
+    ::RingItemHeader hdr;
+    hdr.s_size = sizeof(hdr);
+    hdr.s_type = v10::TIMESTAMPED_NONINCR_SCALERS;
+    
+    auto pRingItem = m_pFactory->makeRingItem(
+        reinterpret_cast<const ::RingItem*>(&hdr)
     );
     try {
         CPPUNIT_ASSERT_THROW(
