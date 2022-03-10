@@ -1,3 +1,4 @@
+
 /*
     This software is Copyright by the Board of Trustees of Michigan
     State University (c) Copyright 2017.
@@ -40,6 +41,7 @@
 #include "CPhysicsEventItem.h"
 #include "CRingPhysicsEventCountItem.h"
 #include "CRingScalerItem.h"
+#include "CRingTextItem.h"
 
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
@@ -106,6 +108,15 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(scaler_6);
     CPPUNIT_TEST(scaler_7);
     CPPUNIT_TEST(scaler_8);
+    
+    CPPUNIT_TEST(text_1);
+    CPPUNIT_TEST(text_2);
+    CPPUNIT_TEST(text_3);
+    CPPUNIT_TEST(text_4);
+    CPPUNIT_TEST(text_5);
+    CPPUNIT_TEST(text_6);
+    CPPUNIT_TEST(text_7);
+    CPPUNIT_TEST(text_8);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -150,6 +161,15 @@ protected:
     void scaler_6();
     void scaler_7();
     void scaler_8();
+    
+    void text_1();
+    void text_2();
+    void text_3();
+    void text_4();
+    void text_5();
+    void text_6();
+    void text_7();
+    void text_8();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -1125,4 +1145,164 @@ void v10factorytest::scaler_8()
         throw;
     }
     delete pRingItem;
+}
+// minimal text item creation:
+
+void v10factorytest::text_1()
+{
+    time_t now = time(nullptr);
+    std::vector<std::string> empty;
+    auto pBase = m_pFactory->makeTextItem(v10::PACKET_TYPES, empty);
+    try {
+        v10::CRingTextItem* pItem = dynamic_cast<v10::CRingTextItem*>(pBase);
+        ASSERT(pItem);
+        EQ(v10::PACKET_TYPES, pItem->type());
+        EQ(sizeof(v10::TextItem), size_t(pItem->size()));
+        EQ(uint32_t(0), pItem->getTimeOffset());
+        ASSERT(pItem->getTimestamp() - now <= 1);
+        auto strings = pItem->getStrings();
+        EQ(size_t(0), strings.size());
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// Minmal text item creation with strings:
+
+void v10factorytest::text_2()
+{
+    std::vector<std::string> inputStrings = {
+        "Green strings", "Blue Strings", "Old strings", "New Strings",
+        "Singing their strange familiar tune"
+    };
+    auto pBase = m_pFactory->makeTextItem(v10::PACKET_TYPES, inputStrings);
+    v10::CRingTextItem* pItem = dynamic_cast<v10::CRingTextItem*>(pBase);
+    try {
+        auto strings = pItem->getStrings();
+        EQ(inputStrings.size(), strings.size());
+        for (int i =0; i < inputStrings.size(); i++) {
+            EQ(inputStrings[i], strings[i]);
+        }
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// makeTextItem with full argument list:
+
+void
+v10factorytest::text_3()
+{
+    std::vector<std::string> inputStrings = {
+        "Green strings", "Blue Strings", "Old strings", "New Strings",
+        "Singing their strange familiar tune"
+    };
+    time_t now = time(nullptr);
+    
+    auto pBase = m_pFactory->makeTextItem(
+        v10::MONITORED_VARIABLES,  inputStrings,
+        10, now,
+        2                        // Becomes 1 in the end anyway.
+    );
+    v10::CRingTextItem* pItem = dynamic_cast<v10::CRingTextItem*>(pBase);
+   
+    try {
+        ASSERT(pItem);
+        auto s = pItem->getStrings();
+        EQ(inputStrings.size(), s.size());
+        ASSERT(inputStrings == s);
+        EQ(uint32_t(10), pItem->getTimeOffset());
+        EQ(now, pItem->getTimestamp());
+        EQ(uint32_t(1), pItem->getTimeDivisor());
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// Illegal types in creationals.
+
+void v10factorytest::text_4()
+{
+    std::vector<std::string> empty;
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeTextItem(PHYSICS_EVENT, empty), std::bad_cast
+    );
+}
+void v10factorytest::text_5()
+{
+    std::vector<std::string> empty;
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeTextItem(PHYSICS_EVENT, empty, 10, time(nullptr)),
+        std::bad_cast
+    );
+}
+
+// good constrution from existing item:
+
+void v10factorytest::text_6()
+{
+    std::vector<std::string> inputStrings = {
+        "Green strings", "Blue Strings", "Old strings", "New Strings",
+        "Singing their strange familiar tune"
+    };
+    
+    v10::CRingTextItem src(
+        v10::MONITORED_VARIABLES,
+        inputStrings
+    );
+    auto pBase = m_pFactory->makeTextItem(src);
+    v10::CRingTextItem* pCopy = dynamic_cast<v10::CRingTextItem*>(pBase);
+    try {
+        ASSERT(pCopy);
+        EQ(src.size(), pCopy->size());
+        EQ(0, memcmp(src.getItemPointer(), pCopy->getItemPointer(), src.size()));
+    }
+    catch(...) {
+        delete pCopy;
+        throw;
+    }
+    delete pCopy;
+}
+// Construction with item that has wrong type:
+
+void v10factorytest::text_7()
+{
+    std::vector<std::string> inputStrings = {
+        "Green strings", "Blue Strings", "Old strings", "New Strings",
+        "Singing their strange familiar tune"
+    };
+    
+    v10::CRingTextItem src(
+        v10::MONITORED_VARIABLES,
+        inputStrings
+    );
+    src.getItemPointer()->s_header.s_type=PHYSICS_EVENT;   // bad type.
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeTextItem(src), std::bad_cast
+    );
+}
+// Construction of item that has wrong size:
+
+void v10factorytest::text_8()
+{
+    std::vector<std::string> inputStrings = {
+        "Green strings", "Blue Strings", "Old strings", "New Strings",
+        "Singing their strange familiar tune"
+    };
+    
+    v10::CRingTextItem src(
+        v10::MONITORED_VARIABLES,
+        inputStrings
+    );
+    src.getItemPointer()->s_header.s_size--;
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeTextItem(src), std::bad_cast
+    );
 }
