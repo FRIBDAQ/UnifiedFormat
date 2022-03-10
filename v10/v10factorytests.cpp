@@ -117,6 +117,9 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(text_6);
     CPPUNIT_TEST(text_7);
     CPPUNIT_TEST(text_8);
+    
+    CPPUNIT_TEST(unknown_1);
+    CPPUNIT_TEST(unknown_2);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -170,6 +173,9 @@ protected:
     void text_6();
     void text_7();
     void text_8();
+    
+    void unknown_1();
+    void unknown_2();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -1305,4 +1311,28 @@ void v10factorytest::text_8()
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeTextItem(src), std::bad_cast
     );
+}
+// Unknonw item types are not supported:
+
+void v10factorytest::unknown_1()
+{
+    auto p = m_pFactory->makeUnknownFragment(
+        12345, 1, 0, 0, nullptr
+    );
+    ASSERT(p == nullptr);
+}
+void v10factorytest::unknown_2()
+{
+    auto p = m_pFactory->makeRingItem(1234, 100);
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeUnknownFragment(*p),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete p;
+        throw;
+    }
+    delete p;
 }
