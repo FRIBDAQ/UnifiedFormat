@@ -103,6 +103,7 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(scaler_3);
     CPPUNIT_TEST(scaler_4);
     CPPUNIT_TEST(scaler_5);
+    CPPUNIT_TEST(scaler_6);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -144,6 +145,7 @@ protected:
     void scaler_3();
     void scaler_4();
     void scaler_5();
+    void scaler_6();
 private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
@@ -1045,4 +1047,33 @@ v10factorytest::scaler_5()
     }
     delete pBase;
     delete pItem;
+}
+// Ok format but bad type:
+
+void
+v10factorytest::scaler_6()
+{
+    #pragma pack(push, 1)
+    struct {
+        v10::ScalerItem s_base;
+        uint32_t   s_moreScalers[31];    // 32 total.
+    } rawItem;
+#pragma pack(pop)
+    rawItem.s_base.s_header.s_size = sizeof(rawItem);
+    rawItem.s_base.s_header.s_type = v10::PHYSICS_EVENT_COUNT;
+    
+    auto pRingItem = m_pFactory->makeRingItem(
+        reinterpret_cast<const ::RingItem*>(&rawItem)
+    );
+    try {
+        CPPUNIT_ASSERT_THROW(
+            m_pFactory->makeScalerItem(*pRingItem),
+            std::bad_cast
+        );
+    }
+    catch (...) {
+        delete pRingItem;
+        throw;
+    }
+    delete pRingItem;
 }

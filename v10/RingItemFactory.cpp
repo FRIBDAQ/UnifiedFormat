@@ -499,7 +499,7 @@ namespace v10 {
          p->s_intervalDivisor = pNonItem->s_intervalDivisor;
          return result;
       } else {
-          std::bad_cast();
+          throw std::bad_cast();
       }
       return nullptr;   // should not get here.
  }
