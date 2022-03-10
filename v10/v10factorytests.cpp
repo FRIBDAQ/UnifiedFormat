@@ -42,6 +42,7 @@
 #include "CRingPhysicsEventCountItem.h"
 #include "CRingScalerItem.h"
 #include "CRingTextItem.h"
+#include "CRingStateChangeItem.h"
 
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
@@ -120,6 +121,15 @@ class v10factorytest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(unknown_1);
     CPPUNIT_TEST(unknown_2);
+    
+    CPPUNIT_TEST(state_1);
+    CPPUNIT_TEST(state_2);
+    CPPUNIT_TEST(state_3);
+    CPPUNIT_TEST(state_4);
+    CPPUNIT_TEST(state_5);
+    CPPUNIT_TEST(state_6);
+    CPPUNIT_TEST(state_7);
+    CPPUNIT_TEST(state_8);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -176,7 +186,16 @@ protected:
     
     void unknown_1();
     void unknown_2();
-private:
+    
+    void state_1();
+    void state_2();
+    void state_3();
+    void state_4();
+    void state_5();
+    void state_6();
+    void state_7();
+    void state_8();
+    private:
     v10::RingItemFactory* m_pFactory;
     CRingBuffer*          m_pProducer;
     CRingBuffer*          m_pConsumer;
@@ -1336,3 +1355,185 @@ void v10factorytest::unknown_2()
     }
     delete p;
 }
+
+// Good state change: BEGIN
+
+void v10factorytest::state_1()
+{
+    time_t now = time(nullptr);
+    ::CRingStateChangeItem* pBase(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pBase= m_pFactory->makeStateChangeItem(
+             v10::BEGIN_RUN, 12, 0, now, "This is a title"
+            )
+        );
+        v10::CRingStateChangeItem* pItem =
+            reinterpret_cast<v10::CRingStateChangeItem*>(pBase);
+        ASSERT(pItem);
+        EQ(v10::BEGIN_RUN, pItem->type());
+        EQ(sizeof(v10::StateChangeItem), size_t(pItem->size()));
+        EQ(uint32_t(12), pItem->getRunNumber());
+        EQ(uint32_t(0), pItem->getElapsedTime());
+        EQ(now, pItem->getTimestamp());
+        EQ(std::string("This is a title"), pItem->getTitle());
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// good state change END
+void v10factorytest::state_2()
+{
+    time_t now = time(nullptr);
+    ::CRingStateChangeItem* pBase(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pBase= m_pFactory->makeStateChangeItem(
+             v10::END_RUN, 12, 100, now, "This is a title"
+            )
+        );
+        v10::CRingStateChangeItem* pItem =
+            reinterpret_cast<v10::CRingStateChangeItem*>(pBase);
+        ASSERT(pItem);
+        EQ(v10::END_RUN, pItem->type());
+        EQ(sizeof(v10::StateChangeItem), size_t(pItem->size()));
+        EQ(uint32_t(12), pItem->getRunNumber());
+        EQ(uint32_t(100), pItem->getElapsedTime());
+        EQ(now, pItem->getTimestamp());
+        EQ(std::string("This is a title"), pItem->getTitle());
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// good state change PAUSE
+void v10factorytest::state_3()
+{
+    time_t now = time(nullptr);
+    ::CRingStateChangeItem* pBase(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pBase= m_pFactory->makeStateChangeItem(
+             v10::PAUSE_RUN, 12, 100, now, "This is a title"
+            )
+        );
+        v10::CRingStateChangeItem* pItem =
+            reinterpret_cast<v10::CRingStateChangeItem*>(pBase);
+        ASSERT(pItem);
+        EQ(v10::PAUSE_RUN, pItem->type());
+        EQ(sizeof(v10::StateChangeItem), size_t(pItem->size()));
+        EQ(uint32_t(12), pItem->getRunNumber());
+        EQ(uint32_t(100), pItem->getElapsedTime());
+        EQ(now, pItem->getTimestamp());
+        EQ(std::string("This is a title"), pItem->getTitle());
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+// good state change RESUME
+
+void v10factorytest::state_4()
+{
+    time_t now = time(nullptr);
+    ::CRingStateChangeItem* pBase(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pBase= m_pFactory->makeStateChangeItem(
+             v10::RESUME_RUN, 12, 100, now, "This is a title"
+            )
+        );
+        v10::CRingStateChangeItem* pItem =
+            reinterpret_cast<v10::CRingStateChangeItem*>(pBase);
+        ASSERT(pItem);
+        EQ(v10::RESUME_RUN, pItem->type());
+        EQ(sizeof(v10::StateChangeItem), size_t(pItem->size()));
+        EQ(uint32_t(12), pItem->getRunNumber());
+        EQ(uint32_t(100), pItem->getElapsedTime());
+        EQ(now, pItem->getTimestamp());
+        EQ(std::string("This is a title"), pItem->getTitle());
+    }
+    catch (...) {
+        delete pBase;
+        throw;
+    }
+    delete pBase;
+}
+
+// bad state change type
+
+void v10factorytest::state_5()
+{
+    time_t now = time(nullptr);
+    ::CRingStateChangeItem* pBase(0);
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(
+            v10::INCREMENTAL_SCALERS, 12, 100, now, "This is a title"
+        ),
+        std::bad_cast
+    );
+}
+
+// state change from item (good).
+
+void v10factorytest::state_6()
+{
+    v10::CRingStateChangeItem item(
+        v10::BEGIN_RUN, 12, 10, time_t(nullptr),
+        "this is the title"
+    );
+    ::CRingStateChangeItem* pItem(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(
+            pItem = m_pFactory->makeStateChangeItem(item)
+        );
+        EQ(item.size(), pItem->size());
+        EQ(0, memcmp(item.getItemPointer(), pItem->getItemPointer(), item.size()));
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+
+// state chagne from invalid item type
+
+void v10factorytest::state_7()
+{
+    v10::CRingStateChangeItem item(
+        v10::BEGIN_RUN, 12, 10, time_t(nullptr),
+        "this is the title"
+    );
+    auto p = item.getItemPointer();
+    p->s_header.s_type = PHYSICS_EVENT;     // bad type.
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(item), std::bad_cast
+    );
+}
+
+// state change from invalid item size.
+
+void v10factorytest::state_8()
+{
+    
+    v10::CRingStateChangeItem item(
+        v10::BEGIN_RUN, 12, 10, time_t(nullptr),
+        "this is the title"
+    );
+    auto p = item.getItemPointer();
+    p->s_header.s_size--;             // Bad size.
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(item), std::bad_cast
+    );
+}
+
