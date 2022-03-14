@@ -262,10 +262,14 @@ CRingItem::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
         uint8_t* pCursor = reinterpret_cast<uint8_t*>(getBodyCursor());
         pCursor += moveSize;
         setBodyCursor(pCursor);
-
+        
+        // Set the size.  We leave the size alone after } so that
+        // any body header with an existing extension still has it.
+        
+        pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size = sizeof(BodyHeader);
+  
     }
     pBodyHeader pHeader = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader); //Getbody header won't yet work.
-    pHeader->s_size = sizeof(BodyHeader);
     pHeader->s_timestamp = timestamp;
     pHeader->s_sourceId  = sourceId;
     pHeader->s_barrier   = barrierType;

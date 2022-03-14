@@ -50,6 +50,12 @@ class v11ringtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getsrcid_1);
     CPPUNIT_TEST(getsrcid_2);
+    
+    CPPUNIT_TEST(btype_1);
+    CPPUNIT_TEST(btype_2);
+    
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -84,6 +90,12 @@ protected:
     
     void getsrcid_1();
     void getsrcid_2();
+    
+    void btype_1();
+    void btype_2();
+    
+    void bodyhdr_1();
+    void bodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11ringtest);
@@ -287,4 +299,109 @@ void v11ringtest::getsrcid_2()
         sid = item.getSourceId()
     );
     EQ(uint32_t(2), sid);
+}
+// getBarrierType.
+
+void v11ringtest::btype_1()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT, 1000);
+    CPPUNIT_ASSERT_THROW(
+        item.getBarrierType(),
+        std::logic_error
+    );
+}
+void v11ringtest::btype_2()
+{
+    v11::CRingItem item(
+        v11::PHYSICS_EVENT,
+        0x1234567890, 2, 0, 1000
+    );
+    uint32_t bid;
+    CPPUNIT_ASSERT_NO_THROW(
+        bid = item.getSourceId()
+    );
+    EQ(uint32_t(2), bid);
+}
+// Have to move the body down to accomodate a post-facto body header:
+
+void v11ringtest::bodyhdr_1()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT, 1000);
+    uint8_t* p = reinterpret_cast<uint8_t*>(item.getBodyCursor());
+    for (int i =0; i < 100; i++) {
+        *p++ = i;
+    }
+    item.setBodyCursor(p);
+    item.updateSize();
+    size_t originalSize = item.size();
+    
+    item.setBodyHeader(0x1234567890, 2, 0);
+    size_t postSize = item.size();
+    EQ(originalSize + sizeof(v11::BodyHeader) - sizeof(uint32_t), postSize);
+    
+    v11::pRingItem pItem = reinterpret_cast<v11::pRingItem>(item.getItemPointer());
+    EQ(uint64_t(0x1234567890),
+       pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp
+    );
+    EQ(uint32_t(2),
+        pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_sourceId
+    );
+    EQ(uint32_t(0),
+        pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_barrier
+    );
+    EQ(sizeof(v11::BodyHeader),
+        size_t(pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size)
+    );
+    // Make sure the slide worked -- body size is still 100, Body Pointer
+    // gives me the counting pattern and the cursor is after all that:
+    
+    EQ(size_t(100), item.getBodySize());
+    p = reinterpret_cast<uint8_t*>(item.getBodyPointer());
+    for (int i = 0; i < 100; i++) {
+        EQ(*p, static_cast<uint8_t>(i));
+        p++;
+    }
+    EQ(reinterpret_cast<uint8_t*>(item.getBodyCursor()), p);
+
+}
+// replace existing:
+
+void v11ringtest::bodyhdr_2()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT,
+        0x1234567890, 2, 0, 1000
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(item.getBodyCursor());
+    for (int i =0; i < 100; i++) {
+        *p++ = i;
+    }
+    item.setBodyCursor(p);
+    item.updateSize();
+    
+    uint32_t originalTotalSize = item.size();
+    item.setBodyHeader(0x9876543210, 3, 1);
+    v11::pRingItem pItem = reinterpret_cast<v11::pRingItem>(item.getItemPointer());
+    EQ(originalTotalSize, item.size());             // size does not change.
+    EQ(uint32_t(sizeof(v11::BodyHeader)),
+       pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size
+    );
+    EQ(uint64_t(0x9876543210),
+       pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp
+    );
+    EQ(uint32_t(3),
+       pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_sourceId
+    );
+    EQ(uint32_t(1),
+       pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_barrier
+    );
+    
+    // Body pointer is still good as is cursor:
+    
+    EQ(size_t(100), item.getBodySize());
+    p = reinterpret_cast<uint8_t*>(item.getBodyPointer());
+    for (int i =0; i < 100; i++) {
+        EQ(*p, static_cast<uint8_t>(i));
+        p++;
+    }
+    EQ(p, reinterpret_cast<uint8_t*>(item.getBodyCursor()));
 }
