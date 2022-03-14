@@ -47,6 +47,9 @@ class v11ringtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(gettimestamp_1);
     CPPUNIT_TEST(gettimestamp_2);
+    
+    CPPUNIT_TEST(getsrcid_1);
+    CPPUNIT_TEST(getsrcid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -78,6 +81,9 @@ protected:
     
     void gettimestamp_1();
     void gettimestamp_2();
+    
+    void getsrcid_1();
+    void getsrcid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11ringtest);
@@ -260,4 +266,25 @@ void v11ringtest::gettimestamp_2()
         ts = item.getEventTimestamp()
     );
     EQ(uint64_t(0x1234567890), ts);
+}
+// Get sourceid tests:
+void v11ringtest::getsrcid_1()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT, 1000);
+    CPPUNIT_ASSERT_THROW(
+        item.getSourceId(),
+        std::logic_error
+    );
+}
+void v11ringtest::getsrcid_2()
+{
+    v11::CRingItem item(
+        v11::PHYSICS_EVENT,
+        0x1234567890, 2, 0, 1000
+    );
+    uint32_t sid;
+    CPPUNIT_ASSERT_NO_THROW(
+        sid = item.getSourceId()
+    );
+    EQ(uint32_t(2), sid);
 }
