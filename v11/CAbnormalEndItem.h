@@ -15,17 +15,17 @@
 #            East Lansing, MI 48824-1321
 
 ##
-# @file   CAbnormalEndItem.h (abstract)
+# @file   CAbnormalEndItem.h
 # @brief  Define the wrapper class for the abnormal end run ring item.
 # @author <fox@nscl.msu.edu>
 */
-#ifndef CABNORMALENDITEM_H
-#define CABNORMALENDITEM_H
-
-#include "CRingItem.h"
+#ifndef V11__CABNORMALENDITEM_H
+#define V11__CABNORMALENDITEM_H
 
 
-class CAbnormalEndItem : public CRingItem
+#include <CAbnormalEndItem.h>
+namespace v11 {
+class CAbnormalEndItem : public ::CAbnormalEndItem
 {
 public:
     CAbnormalEndItem();
@@ -33,27 +33,25 @@ public:
 private:    
     CAbnormalEndItem(const CAbnormalEndItem& rhs);
     CAbnormalEndItem(const CRingItem& rhs);
-public:
-    // pure virtual iplementations.
     
-    virtual void* getBodyHeader() const;
-    virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-    
-private:
     CAbnormalEndItem& operator=(const CAbnormalEndItem& rhs);
     int operator==(const CAbnormalEndItem& rhs) const;
     int operator==(const CRingItem& rhs) const;
     
     int operator!=(const CAbnormalEndItem& rhs) const;
     int operator!=(const CRingItem& rhs) const;
-
+private:    
     // Formatting:
     
 public:
+    virtual void* getBodyHeader() const;
+    virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+    
+    
     virtual std::string typeName() const;
     virtual std::string toString() const;
 };
 
-
+}
 #endif
