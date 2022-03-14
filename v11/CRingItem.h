@@ -40,9 +40,9 @@ class CRingItem : public ::CRingItem
 {
   
 public:
-  CRingItem(uint16_t type, size_t maxBody = CRingItemStaticBufferSize - 10);
+  CRingItem(uint16_t type, size_t maxBody);
   CRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
-            uint32_t barrierType = 0, size_t maxBody = CRingItemStaticBufferSize - 10);
+            uint32_t barrierType, size_t maxBody );
   virtual ~CRingItem();
 private:  
   CRingItem(const CRingItem& rhs);
@@ -71,7 +71,7 @@ public:
 public:
   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                      uint32_t barrierType = 0);
-  virtual void* getBodyHeader();
+  virtual void* getBodyHeader() const;
 
   virtual std::string typeName() const;	// Textual type of item.
   virtual std::string toString() const; // Provide string dump of the item.

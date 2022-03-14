@@ -277,11 +277,11 @@ CRingItem::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
  *    @retval nullptr - the item has no body header.
  */
 void*
-CRingItem::getBodyHeader()
+CRingItem::getBodyHeader() const
 {
      if(hasBodyHeader()) {
-          pRingItem pItem = reinterpret_cast<pRingItem>(getItemPointer());
-          return &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
+          const RingItem* pItem = reinterpret_cast<const RingItem*>(getItemPointer());
+          return const_cast<BodyHeader*>(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader));
      } else {
           return nullptr;
      }
