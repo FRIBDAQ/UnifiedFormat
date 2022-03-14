@@ -22,6 +22,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <stdexcept>
 namespace v11 {
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -395,7 +396,7 @@ void
 CRingItem::throwIfNoBodyHeader(std::string msg) const
 {
     if (!hasBodyHeader()) {
-        throw msg;
+        throw std::logic_error(msg);
     }
 }
 
