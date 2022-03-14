@@ -1,5 +1,4 @@
-add_compile_options(-g)
-add_link_options(-g)
+
 
 add_library(
     V10Format SHARED CRingItem.cpp CPhysicsEventItem.cpp CRingFragmentItem.cpp
@@ -12,7 +11,9 @@ target_sources(
     CRingStateChangeItem.h CRingTextItem.h RingItemFactory.h
 )
 
-target_include_directories(V10Format PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC})
+target_include_directories(V10Format PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
+  )
 target_link_libraries(V10Format
   ${NSCLDAQ_LIB}/libdaqshm.so
   ${NSCLDAQ_LIB}/libDataFlow.so
