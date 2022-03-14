@@ -56,6 +56,8 @@ class v11ringtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(bodyhdr_1);
     CPPUNIT_TEST(bodyhdr_2);
+    CPPUNIT_TEST(bodyhdr_3);
+    CPPUNIT_TEST(bodyhdr_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -96,6 +98,8 @@ protected:
     
     void bodyhdr_1();
     void bodyhdr_2();
+    void bodyhdr_3();
+    void bodyhdr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11ringtest);
@@ -404,4 +408,24 @@ void v11ringtest::bodyhdr_2()
         p++;
     }
     EQ(p, reinterpret_cast<uint8_t*>(item.getBodyCursor()));
+}
+// no body header -> nullptr.
+
+void v11ringtest::bodyhdr_3()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT, 100);
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+void v11ringtest::bodyhdr_4()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT,
+        0x1234567890, 2, 0, 1000
+    );
+    v11::pBodyHeader pHeader(0);
+    ASSERT(pHeader = reinterpret_cast<v11::pBodyHeader>(item.getBodyHeader()));
+    
+    EQ(uint32_t(sizeof(v11::BodyHeader)), pHeader->s_size);
+    EQ(item.getEventTimestamp(), pHeader->s_timestamp);
+    EQ(item.getSourceId(), pHeader->s_sourceId);
+    EQ(item.getBarrierType(), pHeader->s_barrier);
 }
