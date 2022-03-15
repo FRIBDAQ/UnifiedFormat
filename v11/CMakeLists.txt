@@ -28,6 +28,7 @@ install(FILES
 )
 
 add_executable(v11unittests TestRunner.cpp v11ringtests.cpp v11abendtests.cpp
+v11dfmttests.cpp
 )
 
 target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
