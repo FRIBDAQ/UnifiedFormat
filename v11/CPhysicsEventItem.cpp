@@ -43,7 +43,7 @@ CPhysicsEventItem::CPhysicsEventItem(size_t maxBody) : ::CPhysicsEventItem(maxBo
      pItem->s_header.s_type = v11::PHYSICS_EVENT;
      
      uint32_t* p = reinterpret_cast<uint32_t*>(getBodyCursor());
-     *p = 0;                                     // No body header. (v11 style).
+     *p++ = 0;                                   // No body header. (v11 style).
      setBodyCursor(p);
      updateSize();
 }
