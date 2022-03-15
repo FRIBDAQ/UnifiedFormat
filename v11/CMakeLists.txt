@@ -31,8 +31,12 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v11
 )
 
-add_executable(v11unittests TestRunner.cpp v11ringtests.cpp v11abendtests.cpp
+add_executable(v11unittests
+TestRunner.cpp
+v11ringtests.cpp
+v11abendtests.cpp 
 v11dfmttests.cpp
+v11glomtests.cpp
 )
 
 target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
