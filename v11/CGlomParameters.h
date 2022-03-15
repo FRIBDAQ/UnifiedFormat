@@ -1,5 +1,5 @@
-#ifndef __CGLOMPARAMETERS_H
-#define __CGLOMPARAMETERS_H
+#ifndef V11_CGLOMPARAMETERS_H
+#define V11_CGLOMPARAMETERS_H
 /*
     This software is Copyright by the Board of Trustees of Michigan
     State University (c) Copyright 2005.
@@ -11,22 +11,14 @@
 */
 
 /**
- * @file CGlomParameters.h
+ * @file CGlomParameters.h (v11)
  * @brief  Encapsulates a ring item that contains glom parametrs.
  * @author  Ron Fox <fox@nscl.msu.edu>
  */
 
-#ifndef __CRINGITEM_H
-#include "CRingItem.h"
-#endif
+#include <CGlomParameters.h>
 
-#ifndef __CPPRTL_TYPEINFO
-#include <typeinfo>
-#ifndef __CPPRTL_TYPEINFO
-#define __CPPRTL_TYPEINFO
-#endif
-#endif
-
+namespace v11 {
 /**
  * @class CGlomParameters
  *
@@ -37,20 +29,14 @@
  * parameters at different levels and knowing that by assigning each glom an
  * event source id may be needed).
  */
-class CGlomParameters : public CRingItem
+class CGlomParameters : public ::CGlomParameters
 {
-public:
-    // Note the enum values below _must_ match those in DataFormat.h:
-    
-    typedef enum _TimestampPolicy {
-        first = 0, last = 1, average = 2
-    } TimestampPolicy;
-    
-    // Canonicals:
+
     
 public:
     CGlomParameters(uint64_t interval, bool isBuilding, TimestampPolicy policy);
     virtual ~CGlomParameters();
+private:
     CGlomParameters(const CGlomParameters& rhs);
     CGlomParameters(const CRingItem& rhs) ;
     
@@ -68,8 +54,15 @@ public:
 public:
     virtual std::string typeName() const;
     virtual std::string toString() const;
+    
+   // Implementation of pure virtual methods from the base class:
+      
+   virtual void* getBodyHeader() const;
+   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+   
 
 };
 
-
+}                                // v11 namespace
 #endif

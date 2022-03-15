@@ -15,10 +15,11 @@
  */
 #include "CGlomParameters.h"
 #include "DataFormat.h"
+#include "CRingItem.h"
 #include <sstream>
+#include <stdexcept>
 
 
-#include <sstream>
 
 
 /**
@@ -30,7 +31,7 @@ static const char* policyNames[4] = {
     "first", "last" , "average", "Error - undefined"
 };
 
-
+namespace v11 {
 /*-------------------------------------------------------------------------
  * Canonical methods
  *-----------------------------------------------------------------------*/
@@ -47,13 +48,15 @@ static const char* policyNames[4] = {
  * @param policy     - The timestamp policy used by glom.
  */
 CGlomParameters::CGlomParameters(
-    uint64_t interval, bool isBuilding, CGlomParameters::TimestampPolicy policy
+    uint64_t interval, bool isBuilding, ::CGlomParameters::TimestampPolicy policy
 ) :
-    CRingItem(EVB_GLOM_INFO, sizeof(GlomParameters))
+    ::CGlomParameters(interval, isBuilding, policy)
 {
     // Fill in the body of the item:
     
-    pGlomParameters pItem = reinterpret_cast<pGlomParameters>(getItemPointer());
+    v11::pGlomParameters pItem = reinterpret_cast<v11::pGlomParameters>(getItemPointer());
+    pItem->s_header.s_type    = v11::EVB_GLOM_INFO;
+    pItem->s_mbz              = 0;
     pItem->s_coincidenceTicks = interval;
     pItem->s_isBuilding       = (isBuilding ? 0xffff : 0);
     pItem->s_timestampPolicy  = policy;
@@ -70,65 +73,7 @@ CGlomParameters::~CGlomParameters()
 {
     
 }
-/**
- * copy constructor - specific
- *
- * @param rhs - The item used as a 'template' for our copy
- */
-CGlomParameters::CGlomParameters(const CGlomParameters& rhs) :
-    CRingItem(rhs)
-{
-        
-}
-/**
- * copy constructor - generic
- *
- * If the rhs is not an EVB_GLOM_INFO item, we'll throw a bad_cast.
- *
- * @param rhs - CRingItem reference from which we will construct.
- */
-CGlomParameters::CGlomParameters(const CRingItem& rhs) :
-    CRingItem(rhs)
-{
-    if (type() != EVB_GLOM_INFO) throw std::bad_cast();        
-}
-/**
- * operator=
- *
- * @param rhs - The item being assighned to us.
- *
- * @return CGlomParameters& (*this)
- */
-CGlomParameters&
-CGlomParameters::operator=(const CGlomParameters& rhs)
-{
-    CRingItem::operator=(rhs);
-    return *this;
-}
-/**
- * operator==
- *
- * @param rhs the item being compared to *this
- *
- * @return int - nonzero if equality.
- */
-int
-CGlomParameters::operator==(const CGlomParameters& rhs) const
-{
-    return CRingItem::operator==(rhs);
-}
-/**
- * operator!=
- *
- * @param rhs the item being compared to *this.
- *
- * @return int  non zero if not equal.
- */
-int
-CGlomParameters::operator!=(const CGlomParameters& rhs) const
-{
-    return CRingItem::operator!=(rhs);
-}
+
 
 /*----------------------------------------------------------------------------
  * Selectors
@@ -144,9 +89,9 @@ CGlomParameters::operator!=(const CGlomParameters& rhs) const
 uint64_t
 CGlomParameters::coincidenceTicks() const
 {
-    CGlomParameters* This = const_cast<CGlomParameters*>(this);
-    pGlomParameters pItem =
-        reinterpret_cast<pGlomParameters>(This->getItemPointer());
+    
+    const v11::GlomParameters* pItem =
+        reinterpret_cast<const v11::GlomParameters*>(getItemPointer());
     
     return pItem->s_coincidenceTicks;
 
@@ -160,11 +105,11 @@ CGlomParameters::coincidenceTicks() const
 bool
 CGlomParameters::isBuilding() const
 {
-    CGlomParameters* This = const_cast<CGlomParameters*>(this);
-    pGlomParameters pItem =
-        reinterpret_cast<pGlomParameters>(This->getItemPointer());
     
-    return pItem->s_isBuilding;
+    const v11::GlomParameters* pItem =
+        reinterpret_cast<const v11::GlomParameters*>(getItemPointer());
+    
+    return pItem->s_isBuilding != 0;                   // True bool.
 }
 /**
  * timestampPolicy
@@ -175,9 +120,9 @@ CGlomParameters::isBuilding() const
 CGlomParameters::TimestampPolicy
 CGlomParameters::timestampPolicy() const
 {
-    CGlomParameters* This = const_cast<CGlomParameters*>(this);
-    pGlomParameters pItem =
-        reinterpret_cast<pGlomParameters>(This->getItemPointer());
+    
+    const v11::GlomParameters* pItem =
+        reinterpret_cast<const v11::GlomParameters*>(getItemPointer());
         
     return static_cast<TimestampPolicy>(pItem->s_timestampPolicy);
 }
@@ -221,4 +166,24 @@ CGlomParameters::toString() const
     
     
     return out.str();
+}
+//  Delegate these to v11::CRingItem...
+
+void*
+CGlomParameters::getBodyHeader() const
+{
+    // We know it's only an act of needing inheritance from the abstracts
+    // that makes us not a v11::CRingItem, but in fact our data structure is identical.
+    
+    const v11::CRingItem* pV11base = reinterpret_cast<const v11::CRingItem*>(this);
+    return pV11base->getBodyHeader(); 
+}
+void
+CGlomParameters::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType)
+{
+    v11::CRingItem* pV11base = reinterpret_cast<v11::CRingItem*>(this);
+    pV11base->setBodyHeader(timestamp, sourceId, barrierType);
+}
+
 }

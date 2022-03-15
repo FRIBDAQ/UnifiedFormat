@@ -21,7 +21,7 @@
 #include <typeinfo>
 
 /**
- * @class CGlomParameters
+ * @class CGlomParameters (abstract)
  *
  * Encapsulates a ring item of type EVB_GLOM_INFO.  The structure of this ring
  * item is given by the GlomParameters struct.  No body header is required for
@@ -53,9 +53,9 @@ private:
     
     // Selectors:
 public:
-   uint64_t coincidenceTicks() const;
-   bool     isBuilding() const;
-   TimestampPolicy timestampPolicy() const;
+   virtual uint64_t coincidenceTicks() const;
+   virtual bool     isBuilding() const;
+   virtual TimestampPolicy timestampPolicy() const;
    
    // Object methods:
 public:
