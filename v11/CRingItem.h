@@ -78,7 +78,7 @@ public:
 
   // Utilities derived classes might want:
 
-protected:
+public:
   std::string bodyHeaderToString() const;
 
 

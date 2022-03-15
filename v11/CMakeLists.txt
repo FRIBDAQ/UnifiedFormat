@@ -1,5 +1,5 @@
 set(v11sources CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp
-CGlomParameters.cpp
+CGlomParameters.cpp CPhysicsEventItem.cpp
 )
 set(v11headers
   CRingItem.h
@@ -7,6 +7,7 @@ set(v11headers
     CAbnormalEndItem.h
     CDataFormatItem.h
     CGlomParameters.h
+    CPhysicsEventItem.h
     )
 add_library(
     V11Format SHARED ${v11sources}
