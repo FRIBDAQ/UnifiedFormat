@@ -11,7 +11,7 @@
 */
 
 /**
- * @file CDataFormatItem.h
+ * @file CDataFormatItem.h (abstract)
  * @brief Define the CDataFormatItem a class for producing data format ring items.
  * @author Ron Fox<fox@nscl.msu.edu>
  */
@@ -52,8 +52,8 @@ private:
 public:
     // Getters (these are useful when the item was created from a RingItem)
     
-    uint16_t getMajor() const;
-    uint16_t getMinor() const;
+    virtual uint16_t getMajor() const;
+    virtual uint16_t getMinor() const;
 
     
     // object methods:

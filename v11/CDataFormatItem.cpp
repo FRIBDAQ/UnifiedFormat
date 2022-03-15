@@ -16,9 +16,9 @@
 
 #include "CDataFormatItem.h"
 #include "DataFormat.h"
-
+#include <stdexcept>
 #include <sstream>
-
+namespace v11 {
 /*-----------------------------------------------------------------------------
  * Canonicals
  *---------------------------------------------------------------------------*/
@@ -30,93 +30,19 @@
  *   data format major and minor versions encoded in DataFormat.h
  */
 CDataFormatItem::CDataFormatItem() :
-    CRingItem(RING_FORMAT, sizeof(DataFormat))
+    ::CDataFormatItem()
 {
-    init();        
+    v11::pDataFormat pItem = reinterpret_cast<v11::pDataFormat>(getItemPointer());
+    pItem->s_header.s_type = v11::RING_FORMAT;
+    pItem->s_header.s_size = sizeof(v11::DataFormat);
+    pItem->s_mbz           = 0;
+    pItem->s_majorVersion  = v11::FORMAT_MAJOR;
+    pItem->s_minorVersion  = v11::FORMAT_MINOR;
+    
 }
 
 CDataFormatItem::~CDataFormatItem() {}
-/**
- * copy constructor
- *
- * @param rhs - The item that will serve as a template for us.
- */
-CDataFormatItem::CDataFormatItem(const CDataFormatItem& rhs) :
-    CRingItem(rhs)
-{}
-/**
- * construct from generic
- * 
- *
- * Constructs from a CRingItem. If the CRingItem type is not RING_FORMAT,
- * a bad_cast is thrown.
- *
- * @param rhs Reference to the ring item that will be used to construct us.
- */
-CDataFormatItem::CDataFormatItem(const CRingItem& rhs) :
-    CRingItem(rhs)
-{
-    if (type() != RING_FORMAT) {
-        throw std::bad_cast();
-    }
-}
-/**
- * Assignment
- *
- * @param rhs - Item we are assigning to us.
- *
- * @return CDataFormatItem& (refers to this).
- */
-CDataFormatItem&
-CDataFormatItem::operator=(const CDataFormatItem& rhs) 
-{
-    CRingItem::operator=(rhs);
-    return *this;
-}
-/**
- * generic Assignment
- *
- * Assigns from a CRingItem throws a bad_cast if the rhs is not a
- * RING_FORMAT item.
- *
- * @param rhs - Right hand side of the assigment.
- * @return CDataFormatItem& (*this)
- */
-CDataFormatItem&
-CDataFormatItem::operator=(const CRingItem& rhs) 
-{
-    if (rhs.type() != RING_FORMAT) {
-        throw std::bad_cast();
-    }
-    CRingItem::operator=(rhs);
-    return *this;
-}
-/**
- * operator==
- *
- *   Compares for equality.
- *
- *   @param rhs - Item to compare to *this.
- *
- *   @return int - nonzero if equal.
- */
-int
-CDataFormatItem::operator==(const CDataFormatItem& rhs) const
-{
-    return CRingItem::operator==(rhs);
-}
-/**
- * operator!=
- *
- * @param rhs - Item to compare to *this.l
- *
- * @return int  non zero if unequal.
- */
-int
-CDataFormatItem::operator!=(const CDataFormatItem& rhs) const
-{
-    return CRingItem::operator!=(rhs);
-}
+
 /*----------------------------------------------------------------------------
  * Getters.
  */
@@ -131,9 +57,7 @@ CDataFormatItem::operator!=(const CDataFormatItem& rhs) const
 uint16_t
 CDataFormatItem::getMajor() const
 {
-    CDataFormatItem* This = const_cast<CDataFormatItem*>(this);
-    
-    pDataFormat pItem = reinterpret_cast<pDataFormat>(This->getItemPointer());
+    const v11::DataFormat* pItem = reinterpret_cast<const v11::DataFormat*>(getItemPointer());
     return pItem->s_majorVersion;
 }
 /**
@@ -146,11 +70,8 @@ CDataFormatItem::getMajor() const
 uint16_t
 CDataFormatItem::getMinor() const
 {
-    CDataFormatItem* This = const_cast<CDataFormatItem*>(this);
-    
-    pDataFormat pItem = reinterpret_cast<pDataFormat>(This->getItemPointer());
-
-    return pItem->s_minorVersion;    
+    const v11::DataFormat* pItem = reinterpret_cast<const v11::DataFormat*>(getItemPointer());
+    return pItem->s_minorVersion;
 }
 /*----------------------------------------------------------------------------
  * object methods:
@@ -182,23 +103,19 @@ CDataFormatItem::toString() const
         
     return out.str();
 }
+// There is no body header so:
 
-/*----------------------------------------------------------------------------
- * Private utilities.
- *--------------------------------------------------------------------------*/
-
-/**
- * init
- *   Fill in the ring item once the base class has been constructed.
- */
-void
-CDataFormatItem::init()
+void*
+CDataFormatItem::getBodyHeader() const
 {
-    pDataFormat pBody = reinterpret_cast<pDataFormat>(getItemPointer());
-    pBody->s_majorVersion = FORMAT_MAJOR;
-    pBody->s_minorVersion = FORMAT_MINOR;
-    
-    setBodyCursor(&(pBody[1]));
-    updateSize();
-    
+    return nullptr;
 }
+void
+CDataFormatItem::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType
+)
+{
+    throw std::logic_error("v11::CDataFormatItem has no body header");
+}
+
+}                                       // v11
