@@ -22,10 +22,13 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "CAbnormalEndItem.h"
+#include "DataFormat.h"
 
 class v11abendtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11abendtest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct);
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -38,11 +41,37 @@ public:
         
     }
 protected:
-    void test_1();
+    void construct();
+    void bodyhdr_1();
+    void bodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11abendtest);
-
-void v11abendtest::test_1()
+// constructor makes correctly shaped item.
+void v11abendtest::construct()
 {
+    v11::CAbnormalEndItem item;
+    EQ(v11::ABNORMAL_ENDRUN, item.type());
+    EQ(sizeof(v11::AbnormalEndItem), size_t(item.size()));
+    
+    v11::pAbnormalEndItem pItem =
+        reinterpret_cast<v11::pAbnormalEndItem>(item.getItemPointer());
+    EQ(uint32_t(0), pItem->s_mbz);
+}
+// getBodyHeader returns nullptr.
+
+void v11abendtest::bodyhdr_1()
+{
+    v11::CAbnormalEndItem item;
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+//  setBodyHeader throws;
+
+void v11abendtest::bodyhdr_2()
+{
+    v11::CAbnormalEndItem item;
+    CPPUNIT_ASSERT_THROW(
+        item.setBodyHeader(0, 0, 0),
+        std::logic_error
+    );
 }
