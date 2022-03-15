@@ -39,6 +39,9 @@ CDataFormatItem::CDataFormatItem() :
     pItem->s_majorVersion  = v11::FORMAT_MAJOR;
     pItem->s_minorVersion  = v11::FORMAT_MINOR;
     
+    setBodyCursor(pItem+1);
+    updateSize();
+    
 }
 
 CDataFormatItem::~CDataFormatItem() {}
