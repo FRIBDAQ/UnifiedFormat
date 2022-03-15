@@ -1,10 +1,16 @@
+set(v11sources CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp)
+set(v11headers
+  CRingItem.h
+    DataFormat.h
+    CAbnormalEndItem.h
+    CDataFormatItem.h)
 add_library(
-    V11Format SHARED CRingItem.cpp CAbnormalEndItem.cpp
+    V11Format SHARED ${v11sources}
 )
 
 target_sources(
      V11Format PRIVATE
-     CRingItem.h DataFormat.h CAbnormalEndItem.h
+     ${v11headers}
 )
 target_include_directories(V11Format PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
@@ -17,9 +23,7 @@ target_link_libraries(V11Format
 )
 
 install(FILES
-    CRingItem.h
-    DataFormat.h
-    CAbnormalEndItem.h
+    ${v11headers}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v11
 )
 
