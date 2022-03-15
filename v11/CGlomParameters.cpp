@@ -176,14 +176,13 @@ CGlomParameters::getBodyHeader() const
     // that makes us not a v11::CRingItem, but in fact our data structure is identical.
     
     const v11::CRingItem* pV11base = reinterpret_cast<const v11::CRingItem*>(this);
-    return pV11base->getBodyHeader(); 
+    return pV11base->CRingItem::getBodyHeader(); 
 }
 void
 CGlomParameters::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType)
 {
-    v11::CRingItem* pV11base = reinterpret_cast<v11::CRingItem*>(this);
-    pV11base->setBodyHeader(timestamp, sourceId, barrierType);
+    throw std::logic_error("v11::CGlomParameters cannot have body headers");
 }
 
 }
