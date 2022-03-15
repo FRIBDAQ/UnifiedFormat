@@ -1,9 +1,13 @@
-set(v11sources CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp)
+set(v11sources CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp
+CGlomParameters.cpp
+)
 set(v11headers
   CRingItem.h
     DataFormat.h
     CAbnormalEndItem.h
-    CDataFormatItem.h)
+    CDataFormatItem.h
+    CGlomParameters.h
+    )
 add_library(
     V11Format SHARED ${v11sources}
 )
