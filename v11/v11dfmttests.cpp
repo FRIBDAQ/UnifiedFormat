@@ -27,7 +27,14 @@
 
 class v11dfmttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11dfmttest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct);
+    CPPUNIT_TEST(major);
+    CPPUNIT_TEST(minor);
+    
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
+    
+
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -40,11 +47,51 @@ public:
         
     }
 protected:
-    void test_1();
+    void construct();
+    void major();
+    void minor();
+    void bodyhdr_1();
+    void bodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11dfmttest);
-
-void v11dfmttest::test_1()
+// Construction results in the item we expect.
+void v11dfmttest::construct()
 {
+    v11::CDataFormatItem item;
+    EQ(v11::RING_FORMAT, item.type());
+    EQ(sizeof(v11::DataFormat), size_t(item.size()));
+    
+    const v11::DataFormat* pItem =
+        reinterpret_cast<const v11::DataFormat*>(item.getItemPointer());
+    EQ(uint32_t(0), pItem->s_mbz);
+    EQ(v11::FORMAT_MAJOR, pItem->s_majorVersion);
+    EQ(v11::FORMAT_MINOR, pItem->s_minorVersion);
+}
+// get major and minor versions:
+
+void v11dfmttest::major()
+{
+    v11::CDataFormatItem item;
+    EQ(v11::FORMAT_MAJOR, item.getMajor());
+}
+void v11dfmttest::minor()
+{
+    v11::CDataFormatItem item;
+    EQ(v11::FORMAT_MINOR, item.getMinor());
+}
+// format items don't have a body header:
+
+void v11dfmttest::bodyhdr_1()
+{
+    v11::CDataFormatItem item;
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+void v11dfmttest::bodyhdr_2()
+{
+    v11::CDataFormatItem item;
+    CPPUNIT_ASSERT_THROW(
+        item.setBodyHeader(0, 0),
+        std::logic_error
+    );
 }
