@@ -57,7 +57,7 @@ private:
 public:
   virtual uint64_t     timestamp() const;
   virtual uint32_t     source() const;
-  virtual size_t       payloadSize();
+  virtual size_t       payloadSize() const;
   virtual void*        payloadPointer();
   virtual uint32_t     barrierType() const;
   

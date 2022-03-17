@@ -105,7 +105,7 @@ CRingFragmentItem::source() const
  * @return size_t
  */
 size_t
-CRingFragmentItem::payloadSize() 
+CRingFragmentItem::payloadSize()  const
 {
 	
 	size_t result =  size() - sizeof(RingItemHeader) - sizeof(AbstractBodyHeader);
