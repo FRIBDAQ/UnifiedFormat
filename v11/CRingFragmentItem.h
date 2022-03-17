@@ -57,6 +57,9 @@ public:
   virtual size_t       payloadSize() const;
   virtual void*        payloadPointer();
   virtual uint32_t     barrierType() const;
+  virtual const void*  getBodyPointer() const;
+  virtual void* getBodyPointer();
+
   
   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0) ;

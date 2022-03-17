@@ -138,6 +138,23 @@ CRingFragmentItem::barrierType() const
   return pH->s_barrier;
 }
 /**
+ *  getBody Pointer - return pointers to the body of the item.
+ * @return (const) void*
+ */
+const void*
+CRingFragmentItem::getBodyPointer() const
+{
+	  auto p = reinterpret_cast<const v11::EventBuilderFragment*>(getItemPointer());
+		return p->s_body;
+}
+void*
+CRingFragmentItem::getBodyPointer()
+{
+	  auto p = reinterpret_cast<v11::EventBuilderFragment*>(getItemPointer());
+		return p->s_body;
+	
+}
+/**
  * typeName 
  *   Provide the type of the ringitem as a string.
  *
