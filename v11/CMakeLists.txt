@@ -40,6 +40,7 @@ v11abendtests.cpp
 v11dfmttests.cpp
 v11glomtests.cpp
 v11eventtests.cpp
+v11fragtests.cpp
 )
 
 target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
