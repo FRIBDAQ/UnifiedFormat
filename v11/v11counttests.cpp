@@ -45,6 +45,15 @@ class v11counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(originalsid_1);
     CPPUNIT_TEST(originalsid_2);
+    
+    CPPUNIT_TEST(body_1);
+    CPPUNIT_TEST(body_2);
+    CPPUNIT_TEST(body_3);
+    CPPUNIT_TEST(body_4);
+    CPPUNIT_TEST(body_5);
+    CPPUNIT_TEST(body_6);
+    
+    
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -75,6 +84,13 @@ protected:
     
     void originalsid_1();
     void originalsid_2();
+    
+    void body_1();
+    void body_2();
+    void body_3();
+    void body_4();
+    void body_5();
+    void body_6();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11counttest);
@@ -245,4 +261,74 @@ void v11counttest::originalsid_2()
 {
     v11::CRingPhysicsEventCountItem item(12345, 10, 2);
     EQ(uint32_t(0xffffffff), item.getOriginalSourceId());
+}
+
+// no body header get body pointer (not const).
+void v11counttest::body_1()
+{
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    v11::pPhysicsEventCountItemBody pItem =
+        reinterpret_cast<v11::pPhysicsEventCountItemBody>(item.getBodyPointer());
+    EQ(uint64_t(12345), pItem->s_eventCount);
+    EQ(uint32_t(10), pItem->s_timeOffset);
+    EQ(uint32_t(2), pItem->s_offsetDivisor);
+        
+}
+// No body header get body pointer (const).
+
+void v11counttest::body_2()
+{
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    
+    const v11::CRingPhysicsEventCountItem* p = &item;
+    const v11::PhysicsEventCountItemBody* pItem =
+        reinterpret_cast<const v11::PhysicsEventCountItemBody*>(p->getBodyPointer());
+        
+    EQ(uint64_t(12345), pItem->s_eventCount);
+    EQ(uint32_t(10), pItem->s_timeOffset);
+    EQ(uint32_t(2), pItem->s_offsetDivisor);
+}
+// Nobody header - get body size
+
+void v11counttest::body_3()
+{
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(sizeof(v11::PhysicsEventCountItemBody), item.getBodySize());
+}
+// Body header get body pointer (non const)
+
+void v11counttest::body_4()
+{
+    time_t now = time(nullptr);
+    
+    v11::CRingPhysicsEventCountItem item(12345, 10, now, 0x1234567890, 2);
+    v11::pPhysicsEventCountItemBody pItem =
+        reinterpret_cast<v11::pPhysicsEventCountItemBody>(item.getBodyPointer());
+    EQ(uint64_t(12345), pItem->s_eventCount);
+    EQ(uint32_t(10), pItem->s_timeOffset);
+    EQ(uint32_t(1), pItem->s_offsetDivisor);
+}
+// Body header get body pointer (const)
+
+void v11counttest::body_5()
+{
+    time_t now = time(nullptr);
+    
+    v11::CRingPhysicsEventCountItem item(12345, 10, now, 0x1234567890, 2);
+    const v11::CRingPhysicsEventCountItem* p = &item;
+    const v11::PhysicsEventCountItemBody* pItem =
+        reinterpret_cast<const v11::PhysicsEventCountItemBody*>(p->getBodyPointer());
+        
+    EQ(uint64_t(12345), pItem->s_eventCount);
+    EQ(uint32_t(10), pItem->s_timeOffset);
+    EQ(uint32_t(1), pItem->s_offsetDivisor);
+}
+//Body header body size:
+
+void v11counttest::body_6()
+{
+    time_t now = time(nullptr);
+    
+    v11::CRingPhysicsEventCountItem item(12345, 10, now, 0x1234567890, 2);
+    EQ(sizeof(v11::PhysicsEventCountItemBody), item.getBodySize());
 }
