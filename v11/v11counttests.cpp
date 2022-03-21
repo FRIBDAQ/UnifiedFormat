@@ -43,7 +43,8 @@ class v11counttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(evtcount_1);
     CPPUNIT_TEST(evtcount_2);
     
-    CPPUNIT_TEST(originalsid);
+    CPPUNIT_TEST(originalsid_1);
+    CPPUNIT_TEST(originalsid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -72,7 +73,8 @@ protected:
     void evtcount_1();
     void evtcount_2();
     
-    void originalsid();
+    void originalsid_1();
+    void originalsid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11counttest);
@@ -230,10 +232,17 @@ void v11counttest::evtcount_2()
 // V11 does not keep track of the original source id. Therefore we'll
 // get the current source id.
 
-void v11counttest::originalsid()
+void v11counttest::originalsid_1()
 {
     time_t now = time(nullptr);
     
     v11::CRingPhysicsEventCountItem item(12345, 10, now, 0x1234567890, 2);
     EQ(uint32_t(2), item.getOriginalSourceId());
+}
+// ..and if there wasn't a source id to begin with?
+
+void v11counttest::originalsid_2()
+{
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(uint32_t(0xffffffff), item.getOriginalSourceId());
 }
