@@ -36,6 +36,9 @@ class v11counttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(offset_2);
     CPPUNIT_TEST(offset_3);
     CPPUNIT_TEST(offset_4);
+    
+    CPPUNIT_TEST(abstime_1);
+    CPPUNIT_TEST(abstime_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -57,6 +60,9 @@ protected:
     void offset_2();
     void offset_3();
     void offset_4();
+    
+    void abstime_1();
+    void abstime_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11counttest);
@@ -172,4 +178,27 @@ void v11counttest::offset_4()
 {
     v11::CRingPhysicsEventCountItem item(12345, 10, 2);
     EQ(float(5.0), item.computeElapsedTime());
+}
+
+// Can get the absolute timestamp:
+
+void v11counttest::abstime_1()
+{
+    time_t now = time(nullptr);
+    now -= 20;
+    
+    v11::CRingPhysicsEventCountItem item(12345, 10, now, 2);
+    EQ(now, item.getTimestamp());
+    
+}
+// can set absolute timestamp:
+
+void v11counttest::abstime_2()
+{
+    time_t now = time(nullptr);
+    now -= 20;
+    
+    v11::CRingPhysicsEventCountItem item(12345, 10, now, 2);
+    item.setTimestamp(now+20);
+    EQ(now+20, item.getTimestamp());
 }
