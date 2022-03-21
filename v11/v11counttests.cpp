@@ -39,6 +39,9 @@ class v11counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(abstime_1);
     CPPUNIT_TEST(abstime_2);
+    
+    CPPUNIT_TEST(evtcount_1);
+    CPPUNIT_TEST(evtcount_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -63,6 +66,9 @@ protected:
     
     void abstime_1();
     void abstime_2();
+    
+    void evtcount_1();
+    void evtcount_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11counttest);
@@ -201,4 +207,19 @@ void v11counttest::abstime_2()
     v11::CRingPhysicsEventCountItem item(12345, 10, now, 2);
     item.setTimestamp(now+20);
     EQ(now+20, item.getTimestamp());
+}
+// can get the event count:
+
+void v11counttest::evtcount_1()
+{
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(uint64_t(12345), item.getEventCount());
+}
+// can set the event count.
+
+void v11counttest::evtcount_2()
+{
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    item.setEventCount(42);
+    EQ(uint64_t(42), item.getEventCount());
 }
