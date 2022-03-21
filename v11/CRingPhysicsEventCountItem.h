@@ -38,9 +38,9 @@ class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
 public:
   CRingPhysicsEventCountItem();
   CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset, unsigned divisor = 1);
+			     uint32_t timeOffset, unsigned divisor);
   CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset, time_t stamp, unsigned divisor = 1);
+			     uint32_t timeOffset, time_t stamp, unsigned divisor);
   CRingPhysicsEventCountItem(uint64_t count, 
 			     uint32_t timeoffset, 
 			     time_t stamp, uint64_t timestamp, uint32_t sid, unsigned divisor = 1,

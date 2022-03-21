@@ -43,6 +43,7 @@ v11dfmttests.cpp
 v11glomtests.cpp
 v11eventtests.cpp
 v11fragtests.cpp
+v11counttests.cpp
 )
 
 target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
@@ -51,5 +52,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC}
 )
 
-
+target_compile_options(v11unittests PRIVATE -g)
+target_link_options(v11unittests PRIVATE -g)
 add_test(NAME v11unittests COMMAND v11unittests)
