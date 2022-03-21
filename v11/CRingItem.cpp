@@ -166,7 +166,7 @@ CRingItem::getBodyPointer()
 bool
 CRingItem::hasBodyHeader() const
 {
-    const RingItem* pItem = reinterpret_cast<const RingItem*>(getItemPointer());
+    const v11::RingItem* pItem = reinterpret_cast<const RingItem*>(getItemPointer());
     return (pItem->s_body.u_noBodyHeader.s_mbz > sizeof(uint32_t));  // Thinking ahead to v12.
 }
 /**
@@ -249,7 +249,7 @@ CRingItem::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
     uint32_t barrierType)
 {
     pRingItem pItem = reinterpret_cast<pRingItem>(getItemPointer());
-    if (!hasBodyHeader()) {
+    if (!v11::CRingItem::hasBodyHeader()) {
         // Make space for the body header.
         
         uint8_t* pBody = (pItem->s_body.u_noBodyHeader.s_body);
@@ -284,7 +284,7 @@ CRingItem::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
 void*
 CRingItem::getBodyHeader() const
 {
-     if(hasBodyHeader()) {
+     if(v11::CRingItem::hasBodyHeader()) {
           const RingItem* pItem = reinterpret_cast<const RingItem*>(getItemPointer());
           return const_cast<BodyHeader*>(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader));
      } else {
