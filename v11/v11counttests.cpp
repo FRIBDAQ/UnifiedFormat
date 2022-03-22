@@ -53,7 +53,8 @@ class v11counttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(body_5);
     CPPUNIT_TEST(body_6);
     
-    
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -91,6 +92,9 @@ protected:
     void body_4();
     void body_5();
     void body_6();
+    
+    void bodyhdr_1();
+    void bodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11counttest);
@@ -331,4 +335,57 @@ void v11counttest::body_6()
     
     v11::CRingPhysicsEventCountItem item(12345, 10, now, 0x1234567890, 2);
     EQ(sizeof(v11::PhysicsEventCountItemBody), item.getBodySize());
+}
+// body header increases the size of the item if there isn't initially one.
+
+void v11counttest::bodyhdr_1()
+{
+    time_t now = time(nullptr);
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    size_t initialSize = item.size();
+    item.setBodyHeader(0x1234567890, 1, 2);
+    EQ(initialSize + sizeof(BodyHeader) - sizeof(uint32_t), size_t(item.size()));
+    
+    // We should have a body header and payload should still be good:
+    
+    v11::pPhysicsEventCountItem pItem =
+        reinterpret_cast<v11::pPhysicsEventCountItem>(item.getItemPointer());
+    EQ(sizeof(v11::BodyHeader), size_t(pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size));
+    v11::pBodyHeader pH = &pItem->s_body.u_hasBodyHeader.s_bodyHeader;
+    EQ(uint64_t(0x1234567890), pH->s_timestamp);
+    EQ(uint32_t(1), pH->s_sourceId);
+    EQ(uint32_t(2), pH->s_barrier);
+    
+    v11::pPhysicsEventCountItemBody pBody = &pItem->s_body.u_hasBodyHeader.s_body;
+    EQ(uint32_t(10), pBody->s_timeOffset);
+    EQ(uint32_t(2), pBody->s_offsetDivisor);
+    ASSERT(pBody->s_timestamp - now <= 1);
+    EQ(uint64_t(12345), pBody->s_eventCount);
+    
+}
+// If there's already a body header it's values will just get overwritten
+
+void v11counttest::bodyhdr_2()
+{
+    time_t now = time(nullptr);
+    
+    v11::CRingPhysicsEventCountItem item(12345, 10, now, 0x1234567890, 2,3);
+    size_t sizeBefore = item.size();
+    item.setBodyHeader(0x987654321, 3,  1);
+    size_t sizeAfter = item.size();
+    EQ(sizeBefore, sizeAfter);
+    
+    v11::pPhysicsEventCountItem pItem =
+        reinterpret_cast<v11::pPhysicsEventCountItem>(item.getItemPointer());
+    EQ(sizeof(v11::BodyHeader), size_t(pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size));
+    v11::pBodyHeader pH = &pItem->s_body.u_hasBodyHeader.s_bodyHeader;
+    EQ(uint64_t(0x987654321), pH->s_timestamp);
+    EQ(uint32_t(3), pH->s_sourceId);
+    EQ(uint32_t(1), pH->s_barrier);
+    
+    v11::pPhysicsEventCountItemBody pBody = &pItem->s_body.u_hasBodyHeader.s_body;
+    EQ(uint32_t(10), pBody->s_timeOffset);
+    EQ(uint32_t(3), pBody->s_offsetDivisor);
+    EQ(now, time_t(pBody->s_timestamp));
+    EQ(uint64_t(12345), pBody->s_eventCount);
 }
