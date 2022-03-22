@@ -55,6 +55,8 @@ class v11counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(bodyhdr_1);
     CPPUNIT_TEST(bodyhdr_2);
+    CPPUNIT_TEST(bodyhdr_3);
+    CPPUNIT_TEST(bodyhdr_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -95,6 +97,8 @@ protected:
     
     void bodyhdr_1();
     void bodyhdr_2();
+    void bodyhdr_3();
+    void bodyhdr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11counttest);
@@ -388,4 +392,26 @@ void v11counttest::bodyhdr_2()
     EQ(uint32_t(3), pBody->s_offsetDivisor);
     EQ(now, time_t(pBody->s_timestamp));
     EQ(uint64_t(12345), pBody->s_eventCount);
+}
+// If no body header, get body header gives a null:
+
+void v11counttest::bodyhdr_3()
+{
+    v11::CRingPhysicsEventCountItem item(12345, 10, 2);
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+// If body header we have an on null and it points to the right stuff:
+
+void v11counttest::bodyhdr_4()
+{
+    time_t now = time(nullptr);
+    
+    v11::CRingPhysicsEventCountItem item(12345, 10, now, 0x1234567890, 2,3, 3);
+    const v11::BodyHeader* pB =
+        reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+    ASSERT(pB);
+    EQ(sizeof(v11::BodyHeader), size_t(pB->s_size));
+    EQ(uint64_t(0x1234567890), pB->s_timestamp);
+    EQ(uint32_t(2), pB->s_sourceId);
+    EQ(uint32_t(3), pB->s_barrier);
 }
