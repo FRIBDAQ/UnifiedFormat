@@ -22,6 +22,7 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "CRingScalerItem.h"
+#include "DataFormat.h"
 #include <time.h>
 #include <stdexcept>
 

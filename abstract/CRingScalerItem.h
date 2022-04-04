@@ -15,9 +15,11 @@
 	     Michigan State University
 	     East Lansing, MI 48824-1321
 */
+/**
+ * @file CRingScalerItem.h (abstract)
+ */
 
 #include "CRingItem.h"
-#include "DataFormat.h"
 #include <vector>
 #include <typeinfo>
 #include <string>
