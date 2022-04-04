@@ -28,7 +28,8 @@
 
 class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11sctest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -41,11 +42,71 @@ public:
         
     }
 protected:
-    void test_1();
+    void construct_1();
+    void construct_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
 
-void v11sctest::test_1()
+// only have the number of scalers present - no body header.
+void v11sctest::construct_1()
 {
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(32);
+    const v11::ScalerItem* pItem =
+        reinterpret_cast<const v11::ScalerItem*>(item.getItemPointer());
+    EQ(sizeof(v11::RingItemHeader) + 33*sizeof(uint32_t) + sizeof(v11::ScalerItemBody),
+       size_t(pItem->s_header.s_size));
+    EQ(v11::PERIODIC_SCALERS, pItem->s_header.s_type);
+    EQ(uint32_t(0), pItem->s_body.u_noBodyHeader.s_mbz);
+    
+    const v11::ScalerItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
+    EQ(uint32_t(0), pBody->s_intervalStartOffset);
+    EQ(uint32_t(0), pBody->s_intervalEndOffset);
+    ASSERT(pBody->s_timestamp - now <= 1);
+    EQ(uint32_t(1), pBody->s_intervalDivisor);
+    EQ(uint32_t(32), pBody->s_scalerCount);
+    EQ(uint32_t(1), pBody->s_isIncremental);
+    for (int i = 0; i < pBody->s_scalerCount; i++) {
+        EQ(uint32_t(0), pBody->s_scalers[i]);
+    }
+    
+}
+void v11sctest::construct_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i =0;i < 32; i++) {
+        scalers.push_back(i*200);
+    }
+    v11::CRingScalerItem item(10, 20, now, scalers);
+    const v11::ScalerItem* pItem =
+        reinterpret_cast<const v11::ScalerItem*>(item.getItemPointer());
+    EQ(v11::PERIODIC_SCALERS, pItem->s_header.s_type);
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(v11::ScalerItemBody) + scalers.size()*sizeof(uint32_t),
+        size_t(pItem->s_header.s_size)
+    );
+    
+    const v11::BodyHeader* pH =
+        reinterpret_cast<const v11::BodyHeader*>(&pItem->s_body.u_hasBodyHeader.s_bodyHeader);
+    EQ(sizeof(v11::BodyHeader), size_t(pH->s_size));
+    EQ(uint64_t(0xffffffffffffffff), pH->s_timestamp);
+    EQ(uint32_t(0), pH->s_sourceId);
+    EQ(uint32_t(0), pH->s_barrier);
+    
+    const v11::ScalerItemBody* pBody =
+        reinterpret_cast<const v11::ScalerItemBody*>(
+            &pItem->s_body.u_hasBodyHeader.s_body
+        );
+    EQ(uint32_t(10), pBody->s_intervalStartOffset);
+    EQ(uint32_t(20), pBody->s_intervalEndOffset);
+    EQ(uint32_t(now), pBody->s_timestamp);
+    EQ(uint32_t(1), pBody->s_intervalDivisor);
+    EQ(uint32_t(scalers.size()), pBody->s_scalerCount);
+    EQ(uint32_t(1), pBody->s_isIncremental);
+    for (int i = 0; i < scalers.size(); i++) {
+        EQ(scalers[i], pBody->s_scalers[i]);
+    }
 }

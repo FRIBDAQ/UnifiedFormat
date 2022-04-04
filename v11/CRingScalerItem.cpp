@@ -56,7 +56,7 @@ CRingScalerItem::CRingScalerItem(size_t numScalers) :
   memset(pScalers->s_scalers, 0, numScalers*sizeof(uint32_t));
   
   uint32_t* pCursor = reinterpret_cast<uint32_t*>(pScalers+1); // -> past body.
-  pCursor += numScalers*sizeof(uint32_t);                      // -> past scalers.
+  pCursor += numScalers;                      // -> past scalers.
   setBodyCursor(pCursor);
   updateSize();                      // Sets pItem->s_header.s_size properl8y.               
   
@@ -87,7 +87,7 @@ CRingScalerItem::CRingScalerItem(uint32_t startTime,
   pItem->s_header.s_size = v11::PERIODIC_SCALERS;
   
   v11::pBodyHeader pB    = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
-  pB->s_size = sizeof(v11::pBodyHeader);
+  pB->s_size = sizeof(v11::BodyHeader);
   pB->s_timestamp = 0xffffffffffffffffL;
   pB->s_sourceId  = sid;
   pB->s_barrier   = 0;
@@ -136,7 +136,7 @@ CRingScalerItem::CRingScalerItem(
     pItem->s_header.s_type = v11::PERIODIC_SCALERS;
     
     v11::pBodyHeader pBh   = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
-    pBh->s_size = sizeof(v11::pBodyHeader);
+    pBh->s_size = sizeof(v11::BodyHeader);
     pBh->s_timestamp = eventTimestamp;
     pBh->s_sourceId  = source;
     pBh->s_barrier   = barrier;
@@ -154,7 +154,7 @@ CRingScalerItem::CRingScalerItem(
       pScalers->s_scalers[i] = scalers[i];
     }    
     uint32_t* pCursor = reinterpret_cast<uint32_t*>(pScalers + 1);
-    pCursor          += pScalers->s_scalerCount * sizeof(uint32_t);
+    pCursor          += pScalers->s_scalerCount ;
     setBodyCursor(pCursor);
     updateSize();
 }
