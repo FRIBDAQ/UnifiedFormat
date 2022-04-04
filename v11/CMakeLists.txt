@@ -1,6 +1,6 @@
 set(v11sources CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp
 CGlomParameters.cpp CPhysicsEventItem.cpp CRingFragmentItem.cpp
-CRingPhysicsEventCountItem.cpp
+CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp
 )
 set(v11headers
   CRingItem.h
@@ -11,6 +11,7 @@ set(v11headers
     CPhysicsEventItem.h
     CRingFragmentItem.h
     CRingPhysicsEventCountItem.h
+    CRingScalerItem.h
     )
 add_library(
     V11Format SHARED ${v11sources}
@@ -45,6 +46,7 @@ v11glomtests.cpp
 v11eventtests.cpp
 v11fragtests.cpp
 v11counttests.cpp
+v11sctests.cpp
 )
 
 target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
