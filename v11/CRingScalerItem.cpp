@@ -211,7 +211,7 @@ CRingScalerItem::computeStartTime() const
       reinterpret_cast<const v11::ScalerItemBody*>(getBodyPointer());
      float start   = pScalers->s_intervalStartOffset;
      float divisor = pScalers->s_intervalDivisor;
-     return start/divisor;
+     return float(start/divisor);
 }
 
 /*!
