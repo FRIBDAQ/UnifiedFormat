@@ -53,6 +53,11 @@ class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST(stamp_2);
     CPPUNIT_TEST(stamp_3);
     CPPUNIT_TEST(stamp_4);
+    
+    CPPUNIT_TEST(incremental_1);
+    CPPUNIT_TEST(incremental_2);
+    CPPUNIT_TEST(incremental_3);
+    CPPUNIT_TEST(incremental_4);
     CPPUNIT_TEST_SUITE_END();
     
     
@@ -92,6 +97,11 @@ protected:
     void stamp_2();
     void stamp_3();
     void stamp_4();
+    
+    void incremental_1();
+    void incremental_2();
+    void incremental_3();
+    void incremental_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
@@ -416,4 +426,51 @@ void v11sctest::stamp_4()
   );
   item.setTimestamp(now+10);
   EQ(now+10, item.getTimestamp());
+}
+// incremental nonbody heaer.
+
+void v11sctest::incremental_1()
+{
+    v11::CRingScalerItem item(32);
+    v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+    pItem->s_body.u_noBodyHeader.s_body.s_isIncremental =1;
+    
+    ASSERT(item.isIncremental());
+}
+// not incremental no body header
+
+void v11sctest::incremental_2()
+{
+    v11::CRingScalerItem item(32);
+    v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+    pItem->s_body.u_noBodyHeader.s_body.s_isIncremental = 0;
+    
+    ASSERT(!item.isIncremental());    
+}
+// incremental with body header.
+void v11sctest::incremental_3()
+{
+    time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2, true
+  );
+  ASSERT(item.isIncremental());
+}
+// not incremental with body header.
+
+void v11sctest::incremental_4()
+{
+    time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2, false
+  );
+  ASSERT(!item.isIncremental());
 }
