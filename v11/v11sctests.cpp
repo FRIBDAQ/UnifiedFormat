@@ -63,7 +63,15 @@ class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST(setscaler_2);
     CPPUNIT_TEST(setscaler_3);
     CPPUNIT_TEST(setscaler_4);
+    
+        
+    CPPUNIT_TEST(getscaler_1);
+    CPPUNIT_TEST(getscaler_2);
+    CPPUNIT_TEST(getscaler_3);
+    CPPUNIT_TEST(getscaler_4);
+
     CPPUNIT_TEST_SUITE_END();
+    
     
     
     
@@ -112,6 +120,11 @@ protected:
     void setscaler_2();
     void setscaler_3();
     void setscaler_4();
+    
+    void getscaler_1();
+    void getscaler_2();
+    void getscaler_3();
+    void getscaler_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
@@ -529,7 +542,7 @@ void v11sctest::setscaler_3()
 
 void v11sctest::setscaler_4()
 {
-    time_t now = time(nullptr);
+  time_t now = time(nullptr);
   std::vector<uint32_t> scalers;
   for (int i =0; i < 32; i++) {
       scalers.push_back(i*123);
@@ -539,6 +552,58 @@ void v11sctest::setscaler_4()
   );
   CPPUNIT_ASSERT_THROW(
     item.setScaler(32, 1234),
+    std::out_of_range
+  );
+}
+
+// getscaler in range nonbody header.
+
+void v11sctest::getscaler_1()
+{
+    v11::CRingScalerItem item(32);
+    v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+    pItem->s_body.u_noBodyHeader.s_body.s_scalers[5] = 12345;
+    EQ(uint32_t(12345), item.getScaler(5));
+}
+// get scaler out of range non body header.
+
+void v11sctest::getscaler_2()
+{
+    v11::CRingScalerItem item(32);
+    CPPUNIT_ASSERT_THROW(
+        item.getScaler(32),
+        std::out_of_range
+    );
+}
+// get scaler for body header:
+
+void v11sctest::getscaler_3()
+{
+  time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2, false
+  );
+  for (int i =0; i < scalers.size(); i++) {
+    EQ(scalers[i], item.getScaler(i));
+  }
+}
+// Get scaler for body header out of range.
+void v11sctest::getscaler_4()
+{
+  time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2, false
+  );
+  CPPUNIT_ASSERT_THROW(
+    item.getScaler(32),
     std::out_of_range
   );
 }
