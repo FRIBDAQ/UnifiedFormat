@@ -58,6 +58,11 @@ class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST(incremental_2);
     CPPUNIT_TEST(incremental_3);
     CPPUNIT_TEST(incremental_4);
+    
+    CPPUNIT_TEST(setscaler_1);
+    CPPUNIT_TEST(setscaler_2);
+    CPPUNIT_TEST(setscaler_3);
+    CPPUNIT_TEST(setscaler_4);
     CPPUNIT_TEST_SUITE_END();
     
     
@@ -102,6 +107,11 @@ protected:
     void incremental_2();
     void incremental_3();
     void incremental_4();
+    
+    void setscaler_1();
+    void setscaler_2();
+    void setscaler_3();
+    void setscaler_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
@@ -464,7 +474,7 @@ void v11sctest::incremental_3()
 
 void v11sctest::incremental_4()
 {
-    time_t now = time(nullptr);
+  time_t now = time(nullptr);
   std::vector<uint32_t> scalers;
   for (int i =0; i < 32; i++) {
       scalers.push_back(i*123);
@@ -473,4 +483,62 @@ void v11sctest::incremental_4()
       0x1234567890, 1, 0, 10, 20, now, scalers, 2, false
   );
   ASSERT(!item.isIncremental());
+}
+// set scaler valid index no body header.
+void v11sctest::setscaler_1()
+{
+    v11::CRingScalerItem item(32);
+    item.setScaler(3, 12345);
+    v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+    EQ(
+        uint32_t(12345),
+        pItem->s_body.u_noBodyHeader.s_body.s_scalers[3]
+    );
+    
+}
+// set scaler invalid index no body header.
+void v11sctest::setscaler_2()
+{
+    v11::CRingScalerItem item(32);
+    CPPUNIT_ASSERT_THROW(
+        item.setScaler(32, 1234),
+        std::out_of_range
+    );
+}
+
+// set scaler valid index - body header.
+
+void v11sctest::setscaler_3()
+{
+  time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2, false
+  );
+  item.setScaler(3, 12345);
+  v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+  EQ(
+    uint32_t(12345),
+    pItem->s_body.u_hasBodyHeader.s_body.s_scalers[3]
+  );
+}
+// setscaler invalid index body header.
+
+void v11sctest::setscaler_4()
+{
+    time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2, false
+  );
+  CPPUNIT_ASSERT_THROW(
+    item.setScaler(32, 1234),
+    std::out_of_range
+  );
 }
