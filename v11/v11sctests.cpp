@@ -45,6 +45,9 @@ class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST(endtime_4);
     CPPUNIT_TEST(endtime_5);   // Compute no body header.
     CPPUNIT_TEST(endtime_6);   // Compute with body header.
+    
+    CPPUNIT_TEST(div_1);
+    CPPUNIT_TEST(div_2);
 
     CPPUNIT_TEST_SUITE_END();
     
@@ -77,6 +80,9 @@ protected:
     void endtime_4();
     void endtime_5();
     void endtime_6();
+    
+    void div_1();
+    void div_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
@@ -331,3 +337,26 @@ void v11sctest::endtime_6()
     );
     EQ(float(10), item.computeEndTime());
 }
+
+// divisor from non body header item:
+
+void v11sctest::div_1()
+{
+    v11::CRingScalerItem item(32);
+    EQ(uint32_t(1), item.getTimeDivisor());
+    
+}
+  // get divisor from body header item
+  //
+  void v11sctest::div_2()
+  {
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i =0; i < 32; i++) {
+        scalers.push_back(i*123);
+    }
+    v11::CRingScalerItem item(
+        0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    EQ(uint32_t(2), item.getTimeDivisor());
+  }
