@@ -49,6 +49,10 @@ class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST(div_1);
     CPPUNIT_TEST(div_2);
 
+    CPPUNIT_TEST(stamp_1);
+    CPPUNIT_TEST(stamp_2);
+    CPPUNIT_TEST(stamp_3);
+    CPPUNIT_TEST(stamp_4);
     CPPUNIT_TEST_SUITE_END();
     
     
@@ -83,6 +87,11 @@ protected:
     
     void div_1();
     void div_2();
+    
+    void stamp_1();
+    void stamp_2();
+    void stamp_3();
+    void stamp_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
@@ -289,7 +298,7 @@ void v11sctest::endtime_3()
 {
     v11::CRingScalerItem item(32);
     item.setEndTime(20);
-        v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());    
+    v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());    
     pItem->s_body.u_noBodyHeader.s_body.s_intervalDivisor =2;
     EQ(float(10), item.computeEndTime());
 }
@@ -346,17 +355,65 @@ void v11sctest::div_1()
     EQ(uint32_t(1), item.getTimeDivisor());
     
 }
-  // get divisor from body header item
-  //
-  void v11sctest::div_2()
-  {
-    time_t now = time(nullptr);
-    std::vector<uint32_t> scalers;
-    for (int i =0; i < 32; i++) {
-        scalers.push_back(i*123);
-    }
-    v11::CRingScalerItem item(
-        0x1234567890, 1, 0, 10, 20, now, scalers, 2
-    );
-    EQ(uint32_t(2), item.getTimeDivisor());
+// get divisor from body header item
+//
+void v11sctest::div_2()
+{
+  time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
   }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2
+  );
+  EQ(uint32_t(2), item.getTimeDivisor());
+}
+// get timestamp from a non body header.
+void v11sctest::stamp_1()
+{
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(32);
+    v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+    pItem->s_body.u_noBodyHeader.s_body.s_timestamp = now;
+    
+    EQ(now, item.getTimestamp());
+  
+}
+/// Set timestamp nono body header.
+
+void v11sctest::stamp_2()
+{
+    v11::CRingScalerItem item(32);
+    time_t t = time(nullptr) + 10;
+    item.setTimestamp(t);
+    EQ(t, item.getTimestamp());
+}
+
+// GET timestamp from body header item.
+void v11sctest::stamp_3()
+{
+    time_t now = time(nullptr) + 5;
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2
+  );
+  EQ(now, item.getTimestamp());
+}
+// set timestamp in body header item.
+void v11sctest::stamp_4()
+{
+  time_t now = time(nullptr);
+  std::vector<uint32_t> scalers;
+  for (int i =0; i < 32; i++) {
+      scalers.push_back(i*123);
+  }
+  v11::CRingScalerItem item(
+      0x1234567890, 1, 0, 10, 20, now, scalers, 2
+  );
+  item.setTimestamp(now+10);
+  EQ(now+10, item.getTimestamp());
+}
