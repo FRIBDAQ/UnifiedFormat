@@ -38,7 +38,17 @@ class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST(starttime_4);
     CPPUNIT_TEST(starttime_5);   // Compute no body header.
     CPPUNIT_TEST(starttime_6);   // Compute with body header.
+    
+    CPPUNIT_TEST(endtime_1);   // non body header.
+    CPPUNIT_TEST(endtime_2);
+    CPPUNIT_TEST(endtime_3);   // Body header
+    CPPUNIT_TEST(endtime_4);
+    CPPUNIT_TEST(endtime_5);   // Compute no body header.
+    CPPUNIT_TEST(endtime_6);   // Compute with body header.
+
     CPPUNIT_TEST_SUITE_END();
+    
+    
     
 private:
 
@@ -60,6 +70,13 @@ protected:
     void starttime_4();
     void starttime_5();
     void starttime_6();
+    
+    void endtime_1();
+    void endtime_2();
+    void endtime_3();
+    void endtime_4();
+    void endtime_5();
+    void endtime_6();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
@@ -242,4 +259,75 @@ void v11sctest::starttime_6()
         0x1234567890, 1, 0, 10, 20, now, scalers, 2
     );
     EQ(float(5.0), item.computeStartTime());
+}
+// get end time from non-body header:
+
+void v11sctest::endtime_1()
+{
+    v11::CRingScalerItem item(32);
+    v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());    
+    pItem->s_body.u_noBodyHeader.s_body.s_intervalEndOffset =20;
+    
+    EQ(uint32_t(20), item.getEndTime());
+}
+// set en time from non body header:
+
+void v11sctest::endtime_2()
+{
+    v11::CRingScalerItem item(32);
+    item.setEndTime(20);
+    EQ(uint32_t(20), item.getEndTime());
+}
+// compute end time - no body header.
+void v11sctest::endtime_3()
+{
+    v11::CRingScalerItem item(32);
+    item.setEndTime(20);
+        v11::pScalerItem pItem = reinterpret_cast<v11::pScalerItem>(item.getItemPointer());    
+    pItem->s_body.u_noBodyHeader.s_body.s_intervalDivisor =2;
+    EQ(float(10), item.computeEndTime());
+}
+// get end time for body header item:
+
+void v11sctest::endtime_4()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i =0; i < 32; i++) {
+        scalers.push_back(i*123);
+    }
+    v11::CRingScalerItem item(
+        0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    EQ(uint32_t(20), item.getEndTime());
+}
+// set tend time for body header item:
+
+void v11sctest::endtime_5()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i =0; i < 32; i++) {
+        scalers.push_back(i*123);
+    }
+    v11::CRingScalerItem item(
+        0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    
+    item.setEndTime(25);
+    EQ(uint32_t(25), item.getEndTime());
+}
+// Compute end time with body header:
+
+void v11sctest::endtime_6()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i =0; i < 32; i++) {
+        scalers.push_back(i*123);
+    }
+    v11::CRingScalerItem item(
+        0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    EQ(float(10), item.computeEndTime());
 }
