@@ -471,7 +471,6 @@ CRingScalerItem::getBodyHeader() const
   return p->v11::CRingItem::getBodyHeader();
 }
 
-
 void
 CRingScalerItem::setBodyHeader(
       uint64_t timestamp, uint32_t sourceId,

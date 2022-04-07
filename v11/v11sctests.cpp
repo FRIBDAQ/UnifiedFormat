@@ -69,7 +69,23 @@ class v11sctest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getscaler_2);
     CPPUNIT_TEST(getscaler_3);
     CPPUNIT_TEST(getscaler_4);
+    
+    CPPUNIT_TEST(getscalers_1);
+    CPPUNIT_TEST(getscalers_2);
+    
+    CPPUNIT_TEST(numscalers_1);
+    CPPUNIT_TEST(numscalers_2);
+    
+    CPPUNIT_TEST(originalsid_1);
+    CPPUNIT_TEST(originalsid_2);
 
+    CPPUNIT_TEST(bodyptr_1);
+    CPPUNIT_TEST(bodyptr_2);
+    
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
+    CPPUNIT_TEST(bodyhdr_3);
+    CPPUNIT_TEST(bodyhdr_4);
     CPPUNIT_TEST_SUITE_END();
     
     
@@ -125,6 +141,23 @@ protected:
     void getscaler_2();
     void getscaler_3();
     void getscaler_4();
+    
+    void getscalers_1();
+    void getscalers_2();
+    
+    void numscalers_1();
+    void numscalers_2();
+    
+    void originalsid_1();
+    void originalsid_2();
+    
+    void bodyptr_1();
+    void bodyptr_2();
+    
+    void bodyhdr_1();
+    void bodyhdr_2();
+    void bodyhdr_3();
+    void bodyhdr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11sctest);
@@ -606,4 +639,191 @@ void v11sctest::getscaler_4()
     item.getScaler(32),
     std::out_of_range
   );
+}
+// Get scaler vector - no body header.
+
+void v11sctest::getscalers_1()
+{
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v11::CRingScalerItem item(scalers.size());
+    for (int i =0; i < 32; i++) {
+        item.setScaler(i, scalers[i]);
+    }
+    auto result = item.getScalers();
+    EQ(scalers.size(), result.size());
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i], result[i]);
+    }
+}
+// Get scaler vector body header:
+
+void v11sctest::getscalers_2()
+{
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(
+         0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    
+    auto result = item.getScalers();
+    EQ(scalers.size(), result.size());
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i], result[i]);
+    }
+}
+// Get number of scalers in non body header
+
+void v11sctest::numscalers_1()
+{
+    v11::CRingScalerItem item(32);
+    EQ(uint32_t(32), item.getScalerCount());
+}
+// get number of scalers in body header:
+
+void v11sctest::numscalers_2()
+{
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(
+         0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    EQ(uint32_t(scalers.size()), item.getScalerCount());
+}
+// original sid for non body header -> 0
+
+void v11sctest::originalsid_1()
+{
+    v11::CRingScalerItem item(32);
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// original sid for body header item is sid.
+
+void v11sctest::originalsid_2()
+{
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(
+         0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    EQ(uint32_t(1), item.getOriginalSourceId());
+}
+// body pointer for non body header item.
+
+void v11sctest::bodyptr_1()
+{
+    v11::CRingScalerItem item(32);
+    v11::pScalerItem  pItem =
+        reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+    v11::pScalerItemBody pBody =
+        reinterpret_cast<v11::pScalerItemBody>(item.getBodyPointer());
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), pBody);
+    
+    // now the const version:
+    
+    const v11::ScalerItem* pCItem = const_cast<const v11::ScalerItem*>(pItem);
+    const v11::ScalerItemBody* pCBody =
+        reinterpret_cast<const v11::ScalerItemBody*>(item.getBodyPointer());
+    EQ(&(pCItem->s_body.u_noBodyHeader.s_body), pCBody);
+    
+}
+// now for body pointer items:
+
+void v11sctest::bodyptr_2()
+{
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(
+         0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    v11::pScalerItem  pItem =
+        reinterpret_cast<v11::pScalerItem>(item.getItemPointer());
+    v11::pScalerItemBody pBody =
+        reinterpret_cast<v11::pScalerItemBody>(item.getBodyPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);
+    
+     // now the const version:
+    
+    const v11::ScalerItem* pCItem = const_cast<const v11::ScalerItem*>(pItem);
+    const v11::ScalerItemBody* pCBody =
+        reinterpret_cast<const v11::ScalerItemBody*>(item.getBodyPointer());
+    EQ(&(pCItem->s_body.u_hasBodyHeader.s_body), pCBody);
+      
+}
+// Get body header for non body header -> nullptr.
+
+void v11sctest::bodyhdr_1()
+{
+    v11::CRingScalerItem item(32);
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+// get body header for body headr item gives it.
+
+void v11sctest::bodyhdr_2()
+{
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(
+         0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    const v11::ScalerItem*  pItem =
+        reinterpret_cast<const v11::ScalerItem*>(item.getItemPointer());
+    
+    const v11::BodyHeader* pBheader =
+        reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), pBheader);
+    
+}
+// adding a body header with setBodyHeader to a non body header item.
+
+void v11sctest::bodyhdr_3()
+{
+    v11::CRingScalerItem item(32);
+    item.setBodyHeader(0x1234567890, 2, 1);
+    
+    const v11::BodyHeader* pBHeader =
+        reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+    ASSERT(pBHeader != nullptr);
+    EQ(uint32_t(sizeof(v11::BodyHeader)), pBHeader->s_size);
+    EQ(uint64_t(0x1234567890), pBHeader->s_timestamp);
+    EQ(uint32_t(2), pBHeader->s_sourceId);
+    EQ(uint32_t(1), pBHeader->s_barrier);
+    
+}
+// change existing body header.
+void v11sctest::bodyhdr_4()
+{
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    time_t now = time(nullptr);
+    v11::CRingScalerItem item(
+         0x1234567890, 1, 0, 10, 20, now, scalers, 2
+    );
+    item.setBodyHeader(0x9876543210, 2, 3);
+    const v11::BodyHeader* pBHeader =
+        reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+    ASSERT(pBHeader != nullptr);
+    EQ(uint32_t(sizeof(v11::BodyHeader)), pBHeader->s_size);
+    EQ(uint64_t(0x9876543210), pBHeader->s_timestamp);
+    EQ(uint32_t(2), pBHeader->s_sourceId);
+    EQ(uint32_t(3), pBHeader->s_barrier);
 }

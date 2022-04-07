@@ -88,6 +88,7 @@ public:
   virtual void* getBodyPointer();
   virtual const void* getBodyPointer() const;
   virtual void* getBodyHeader() const;
+  
   virtual void setBodyHeader(
       uint64_t timestamp, uint32_t sourceId,
       uint32_t barrierType = 0
