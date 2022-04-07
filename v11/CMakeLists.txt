@@ -49,6 +49,7 @@ v11eventtests.cpp
 v11fragtests.cpp
 v11counttests.cpp
 v11sctests.cpp
+v11statetest.cpp
 )
 
 target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
