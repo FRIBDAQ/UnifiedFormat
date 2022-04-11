@@ -108,6 +108,35 @@ void v11statetest::construct_2()
 
 void v11statetest::construct_3()
 {
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        "This is my title", 2
+    );
+    const v11::StateChangeItem* pItem =
+        reinterpret_cast<const v11::StateChangeItem*>(item.getItemPointer());
     
+    EQ(
+       sizeof(v11::RingItemHeader) +
+       sizeof(v11::BodyHeader) +
+       sizeof(v11::StateChangeItemBody),
+       size_t(pItem->s_header.s_size)
+    );
+    EQ(v11::END_RUN, pItem->s_header.s_type);
+    
+    
+    const v11::BodyHeader* pBh =
+        &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
+    EQ(sizeof(v11::BodyHeader), size_t(pBh->s_size));
+    EQ(uint64_t(0x1234567890), pBh->s_timestamp);
+    EQ(uint32_t(1), pBh->s_sourceId);
+    EQ(uint32_t(0), pBh->s_barrier);
+    
+    const v11::StateChangeItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+    EQ(uint32_t(12), pBody->s_runNumber);
+    EQ(uint32_t(100), pBody->s_timeOffset);
+    EQ(uint32_t(now), pBody->s_Timestamp);
+    EQ(uint32_t(2), pBody->s_offsetDivisor);
+    EQ(0, strcmp("This is my title", pBody->s_title));
 }
 
