@@ -33,6 +33,11 @@ class v11statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
+    
+    CPPUNIT_TEST(run_1);
+    CPPUNIT_TEST(run_2);
+    CPPUNIT_TEST(run_3);
+    CPPUNIT_TEST(run_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -48,6 +53,11 @@ protected:
     void construct_1();
     void construct_2();
     void construct_3();
+    
+    void run_1();
+    void run_2();
+    void run_3();
+    void run_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11statetest);
@@ -140,3 +150,46 @@ void v11statetest::construct_3()
     EQ(0, strcmp("This is my title", pBody->s_title));
 }
 
+// getRunNumber for non body header item
+void v11statetest::run_1()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    EQ(uint32_t(1234), item.getRunNumber());
+    
+}
+// set run number for non body header item.
+
+void v11statetest::run_2()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    item.setRunNumber(666);
+    EQ(uint32_t(666), item.getRunNumber());
+}
+// get run number for body header item.
+void v11statetest::run_3()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        "This is my title", 2
+    );
+    EQ(uint32_t(12), item.getRunNumber());
+}
+// set run number for body header item.
+
+void v11statetest::run_4()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        "This is my title", 2
+    );
+    item.setRunNumber(1111);
+    EQ(uint32_t(1111), item.getRunNumber());
+}
