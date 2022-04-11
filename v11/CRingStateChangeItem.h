@@ -84,6 +84,7 @@ public:
 
   virtual void setTimestamp(time_t stamp);
   virtual time_t getTimestamp() const;
+  
   virtual uint32_t getOriginalSourceId() const;
   
   // Body methods:
