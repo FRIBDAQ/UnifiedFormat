@@ -58,6 +58,14 @@ class v11statetest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(originalsid_1);
     CPPUNIT_TEST(originalsid_2);
+    
+    // Body pointer methods must work as the
+    // stuff we tested so far depends on it internally...
+    
+    CPPUNIT_TEST(bodyhdr_1);
+    CPPUNIT_TEST(bodyhdr_2);
+    CPPUNIT_TEST(bodyhdr_3);
+    CPPUNIT_TEST(bodyhdr_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -98,6 +106,11 @@ protected:
     
     void originalsid_1();
     void originalsid_2();
+    
+    void bodyhdr_1();
+    void bodyhdr_2();
+    void bodyhdr_3();
+    void bodyhdr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11statetest);
@@ -416,3 +429,65 @@ void v11statetest::originalsid_2()
     );
     EQ(uint32_t(1), item.getOriginalSourceId());
 }
+
+/**
+ * getBodyHeader from non body header -> nullptr.
+ */
+void v11statetest::bodyhdr_1()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+
+ // setbodyheader makes a new body header
+ void v11statetest::bodyhdr_2()
+ {
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    //Note this comes from v11::CRingItem so it should be ok.
+    item.setBodyHeader(0x1234567890, 1, 5);
+    const v11::BodyHeader* pH =
+        reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+    ASSERT(pH != nullptr);
+    EQ(sizeof(v11::BodyHeader), size_t(pH->s_size));
+    EQ(uint64_t(0x1234567890), pH->s_timestamp);
+ }
+ // getbodyheader from body header item.
+ 
+ void v11statetest::bodyhdr_3()
+ {
+    time_t now = time(nullptr);
+    std::string title("This is my title");
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        title, 2
+    );
+    const v11::BodyHeader* pH =
+        reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+    ASSERT(pH != nullptr);
+    EQ(sizeof(v11::BodyHeader), size_t(pH->s_size));
+    EQ(uint64_t(0x1234567890), pH->s_timestamp);
+ }
+ // setbodyheader
+ 
+ void v11statetest::bodyhdr_4()
+ {
+    time_t now = time(nullptr);
+    std::string title("This is my title");
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        title, 2
+    );
+    const v11::BodyHeader* pH =
+        reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+    item.setBodyHeader(0x111111111, 3, 4);
+    EQ(uint64_t(0x111111111), pH->s_timestamp);
+    EQ(uint32_t(3), pH->s_sourceId);
+    EQ(uint32_t(4), pH->s_barrier);
+ }
+ 
