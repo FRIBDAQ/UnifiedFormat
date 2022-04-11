@@ -45,6 +45,11 @@ class v11statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(elapsed_4);
     CPPUNIT_TEST(elapsed_5);
     CPPUNIT_TEST(elapsed_6);
+    
+    CPPUNIT_TEST(title_1);
+    CPPUNIT_TEST(title_2);
+    CPPUNIT_TEST(title_3);
+    CPPUNIT_TEST(title_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -72,6 +77,11 @@ protected:
     void elapsed_4();
     void elapsed_5();
     void elapsed_6();
+    
+    void title_1();
+    void title_2();
+    void title_3();
+    void title_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11statetest);
@@ -276,4 +286,50 @@ void v11statetest::elapsed_6()
         "This is my title", 2
     );
     EQ(float(50), item.computeElapsedTime());
+}
+// Get title with non body header,
+
+void v11statetest::title_1()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    EQ(std::string("This is a title"), item.getTitle());
+}
+// set title with non body header.
+void v11statetest::title_2()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    std::string newtitle("I Changed the title");
+    item.setTitle(newtitle);
+    EQ(newtitle, item.getTitle());
+}
+// get title from body header item.
+
+void v11statetest::title_3()
+{
+    time_t now = time(nullptr);
+    std::string title("This is my title");
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        title, 2
+    );
+    EQ(title, item.getTitle());
+}
+// set title from body header item.
+void v11statetest::title_4()
+{
+    time_t now = time(nullptr);
+    std::string title("This is my title");
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        title, 2
+    );
+    std::string newtitle("I Changed the title");
+    item.setTitle(newtitle);
+    EQ(newtitle, item.getTitle());
 }
