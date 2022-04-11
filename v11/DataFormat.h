@@ -157,7 +157,9 @@ static const uint16_t GLOM_TIMESTAMP_AVERAGE = 2;
 /* Longest allowed title: */
 
 #ifndef TITLE_MAXSIZE
+#ifndef DATAFORMAT_H     // Abstract data format.h defines title as well.
 #define TITLE_MAXSIZE 80
+#endif
 #endif
 
 

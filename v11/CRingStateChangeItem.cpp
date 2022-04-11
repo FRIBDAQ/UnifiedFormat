@@ -312,6 +312,27 @@ CRingStateChangeItem::getOriginalSourceId() const
       return 0;
     }
 }
+/**
+ * getBodyPointer
+ *   @return const void* - pointer to the item's body.
+ */
+const void*
+CRingStateChangeItem::getBodyPointer() const
+{
+  const v11::CRingItem* pThis =
+      reinterpret_cast<const v11::CRingItem*>(this);
+    return pThis->v11::CRingItem::getBodyPointer();
+}
+/**
+ * getBodyPointer
+ *   @return void* - pointer to the item's body.
+ */
+void*
+CRingStateChangeItem::getBodyPointer()
+{
+    v11::CRingItem* pThis = reinterpret_cast<v11::CRingItem*>(this);
+    return pThis->v11::CRingItem::getBodyPointer();
+}
 
 /**
  * getBodyHeader

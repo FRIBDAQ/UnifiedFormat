@@ -86,6 +86,11 @@ public:
   virtual time_t getTimestamp() const;
   virtual uint32_t getOriginalSourceId() const;
   
+  // Body methods:
+  
+  virtual const void*  getBodyPointer() const;
+  virtual void*        getBodyPointer();
+  
   // Body header methods:
   
   virtual void* getBodyHeader() const;
