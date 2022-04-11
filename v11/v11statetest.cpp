@@ -50,6 +50,14 @@ class v11statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(title_2);
     CPPUNIT_TEST(title_3);
     CPPUNIT_TEST(title_4);
+    
+    CPPUNIT_TEST(time_1);
+    CPPUNIT_TEST(time_2);
+    CPPUNIT_TEST(time_3);
+    CPPUNIT_TEST(time_4);
+    
+    CPPUNIT_TEST(originalsid_1);
+    CPPUNIT_TEST(originalsid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -82,6 +90,14 @@ protected:
     void title_2();
     void title_3();
     void title_4();
+    
+    void time_1();
+    void time_2();
+    void time_3();
+    void time_4();
+    
+    void originalsid_1();
+    void originalsid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11statetest);
@@ -332,4 +348,71 @@ void v11statetest::title_4()
     std::string newtitle("I Changed the title");
     item.setTitle(newtitle);
     EQ(newtitle, item.getTitle());
+}
+
+// Get time from non body header
+void v11statetest::time_1()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    EQ(now, item.getTimestamp());
+}
+// Set time from non body header:
+void v11statetest::time_2()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+}
+// get time from body header item.
+
+void v11statetest::time_3()
+{
+    time_t now = time(nullptr);
+    std::string title("This is my title");
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        title, 2
+    );
+    EQ(now, item.getTimestamp());
+}
+// set time from body header item
+
+void v11statetest::time_4()
+{
+    time_t now = time(nullptr);
+    std::string title("This is my title");
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        title, 2
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+    
+}
+// Original sid from non body header is 0.
+void v11statetest::originalsid_1()
+{
+    time_t now = time(nullptr);
+    v11::CRingStateChangeItem item(
+        v11::PAUSE_RUN, 1234, 10, now, "This is a title"
+    );
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// original sid from body header just gets the sid.
+
+void v11statetest::originalsid_2()
+{
+    time_t now = time(nullptr);
+    std::string title("This is my title");
+    v11::CRingStateChangeItem item(
+        0x1234567890, 1, 0, v11::END_RUN, 12, 100, now,
+        title, 2
+    );
+    EQ(uint32_t(1), item.getOriginalSourceId());
 }
