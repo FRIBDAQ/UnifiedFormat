@@ -1,5 +1,5 @@
-#ifndef __CRINGTEXTITEM_H
-#define __CRINGTEXTITEM_H
+#ifndef V11_CRINGTEXTITEM_H
+#define V11_CRINGTEXTITEM_H
 
 /*
     This software is Copyright by the Board of Trustees of Michigan
@@ -17,60 +17,18 @@
 	     East Lansing, MI 48824-1321
 */
 
-#ifndef __CRINGITEM_H
-#include "CRingItem.h"
-#endif
+#include <CRingTextItem.h>
 
-#ifndef __DATAFORMAT_H
-#include "DataFormat.h"
-#endif
-
-#ifndef __RANGEERROR_H
-#include <RangeError.h>
-#endif
-
-#ifndef __CRT_STDINT_H
-#include <stdint.h>
-#ifndef __CRT_STDINT_H
-#define __CRT_STDINT_H
-#endif
-#endif
-
-#ifndef __CRT_TIME_H
 #include <time.h>
-#ifndef __CRT_TIME_H
-#define __CRT_TIME_H
-#endif
-#endif
-
-#ifndef __STL_STRING
 #include <string>
-#ifndef __STL_STRING
-#define __STL_STRING
-#endif
-#endif
-
-#ifndef __STL_VECTOR
 #include <vector>
-#ifndef __STL_VECTOR
-#define __STL_VECTOR
-#endif
-#endif
 
-
-#ifndef __CPPRTL_TYPEINFO
-#include <typeinfo>
-#ifndef __CPPRTL_TYPEINFO
-#define __CPPRTL_TYPEINFO
-#endif
-#endif
-
-
+namespace v11 {
 /*!
   The text ring item provides a mechanism to put an item in/take an item out of 
   a ring buffer that consists of null terminated text strings.  
 */
-class CRingTextItem : public CRingItem
+class CRingTextItem : public ::CRingTextItem
 {
   // Private data:
 
@@ -83,16 +41,19 @@ public:
   CRingTextItem(uint16_t type,
 		std::vector<std::string> theStrings,
 		uint32_t                 offsetTime,
-		time_t                   timestamp) ;
+		time_t                   timestamp,
+    uint32_t                 divisor = 1) ;
   CRingTextItem(
     uint16_t type, uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
     std::vector<std::string> theStrings, uint32_t offsetTime, time_t timestamp,
     int offsetDivisor = 1
   );
+  virtual ~CRingTextItem();
+
+private:  
   CRingTextItem(const CRingItem& rhs) ;
   CRingTextItem(const CRingTextItem& rhs);
 
-  virtual ~CRingTextItem();
 
   CRingTextItem& operator=(const CRingTextItem& rhs);
   int operator==(const CRingTextItem& rhs) const;
@@ -107,21 +68,32 @@ public:
   float    computeElapsedTime() const;
   uint32_t getTimeDivisor() const;
 
-  void     setTimestamp(time_t stamp);
-  time_t   getTimestamp() const;
+  virtual void     setTimestamp(time_t stamp);
+  virtual time_t   getTimestamp() const;
+  virtual uint32_t getOriginalSourceId() const;
 
+  
+  
   // Virtual methods all ring overrides.
+  
+  virtual void* getBodyPointer();
+  virtual const void* getBodyPointer() const;
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(
+        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
+  );
+
 
   virtual std::string typeName() const;
   virtual std::string toString() const;
 
   //private utilities:
 private:
-  size_t bodySize(std::vector<std::string> strings) const;
+  size_t sizeStrings(const std::vector<std::string>& strings) const;
   bool   validType() const;
-  void   copyStrings(std::vector<std::string> strings);
-  void   init();
+  void   copyStrings(void* destination, const std::vector<std::string>& strings);
+  
 };
 
-
+}                                     // v11
 #endif
