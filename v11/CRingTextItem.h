@@ -36,8 +36,7 @@ class CRingTextItem : public ::CRingTextItem
 public:
   // Constructors and other canonicals:
 
-  CRingTextItem(uint16_t type,
-		std::vector<std::string> theStrings);
+  
   CRingTextItem(uint16_t type,
 		std::vector<std::string> theStrings,
 		uint32_t                 offsetTime,
