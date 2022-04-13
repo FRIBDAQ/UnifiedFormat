@@ -64,6 +64,11 @@ class v11texttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(sid_1);
     CPPUNIT_TEST(sid_2);
+    
+    CPPUNIT_TEST(bodyptr_1);
+    CPPUNIT_TEST(bodyptr_2);
+    CPPUNIT_TEST(bodyptr_3);
+    CPPUNIT_TEST(bodyptr_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -100,6 +105,11 @@ protected:
     
     void sid_1();
     void sid_2();
+    
+    void bodyptr_1();
+    void bodyptr_2();
+    void bodyptr_3();
+    void bodyptr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11texttest);
@@ -459,4 +469,77 @@ void v11texttest::sid_2()
         strings, 100, now, 2
     );
     EQ(uint32_t(2), item.getOriginalSourceId());
+}
+// body pointer for non body header.
+void v11texttest::bodyptr_1()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    v11::pTextItemBody pBody =
+        reinterpret_cast<v11::pTextItemBody>(item.getBodyPointer());
+    v11::pTextItem pItem =
+        reinterpret_cast<v11::pTextItem>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), pBody);
+}
+// const body pointer for non body header.
+void v11texttest::bodyptr_2()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    const v11::TextItemBody* pBody =
+        reinterpret_cast<const v11::TextItemBody*>(item.getBodyPointer());
+    const v11::TextItem* pItem =
+        reinterpret_cast<const v11::TextItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), pBody);
+}
+// bodypointer for body header item.
+void v11texttest::bodyptr_3()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    v11::pTextItemBody pBody =
+        reinterpret_cast<v11::pTextItemBody>(item.getBodyPointer());
+    v11::pTextItem pItem =
+        reinterpret_cast<v11::pTextItem>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);
+}
+
+// const body pointer for body header item.
+void v11texttest::bodyptr_4()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    const v11::TextItemBody* pBody =
+        reinterpret_cast<const v11::TextItemBody*>(item.getBodyPointer());
+    const v11::TextItem* pItem =
+        reinterpret_cast<const v11::TextItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);
 }
