@@ -56,6 +56,11 @@ class v11texttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(elapsed_6);
     CPPUNIT_TEST(elapsed_7);   // getTimeDivisor
     CPPUNIT_TEST(elapsed_8);
+    
+    CPPUNIT_TEST(time_1);
+    CPPUNIT_TEST(time_2);
+    CPPUNIT_TEST(time_3);
+    CPPUNIT_TEST(time_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -84,6 +89,11 @@ protected:
     void elapsed_6();
     void elapsed_7();
     void elapsed_8();
+    
+    void time_1();
+    void time_2();
+    void time_3();
+    void time_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11texttest);
@@ -353,4 +363,63 @@ void v11texttest::elapsed_8()
         strings, 100, now, 2
     );
     EQ(uint32_t(2), item.getTimeDivisor());
+}
+// get timestamp from non body header.
+
+void v11texttest::time_1()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    EQ(now, item.getTimestamp());
+}
+void v11texttest::time_2()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    EQ(now, item.getTimestamp());
+}
+// set timestamp for non body header.
+
+void v11texttest::time_3()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+}
+// set timestamp for body header.
+void v11texttest::time_4()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
 }
