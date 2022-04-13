@@ -47,6 +47,15 @@ class v11texttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getstrings_1);
     CPPUNIT_TEST(getstrings_2);
+    
+    CPPUNIT_TEST(elapsed_1);    // getTimeOffset
+    CPPUNIT_TEST(elapsed_2);
+    CPPUNIT_TEST(elapsed_3);    // setTimeOffset
+    CPPUNIT_TEST(elapsed_4);
+    CPPUNIT_TEST(elapsed_5);   // computeElapsedTime
+    CPPUNIT_TEST(elapsed_6);
+    CPPUNIT_TEST(elapsed_7);   // getTimeDivisor
+    CPPUNIT_TEST(elapsed_8);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -66,6 +75,15 @@ protected:
     
     void getstrings_1();
     void getstrings_2();
+    
+    void elapsed_1();
+    void elapsed_2();
+    void elapsed_3();
+    void elapsed_4();
+    void elapsed_5();
+    void elapsed_6();
+    void elapsed_7();
+    void elapsed_8();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11texttest);
@@ -218,4 +236,121 @@ void v11texttest::getstrings_2()
         EQ(strings[i], result[i]);
     }
 
+}
+// Get time offst non body header.
+
+void v11texttest::elapsed_1()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now
+    );
+    EQ(uint32_t(100), item.getTimeOffset());
+}
+// get time offset with body header.
+void v11texttest::elapsed_2()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now
+    );
+    EQ(uint32_t(100), item.getTimeOffset());
+}
+// Set elapsed time no body header.
+void v11texttest::elapsed_3()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now
+    );
+    item.setTimeOffset(12345);
+    EQ(uint32_t(12345), item.getTimeOffset());
+}
+// set elapsed time body header.
+
+void v11texttest::elapsed_4()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now
+    );
+    item.setTimeOffset(12345);
+    EQ(uint32_t(12345), item.getTimeOffset());
+}
+// compute elapsed time for non-body header.
+void v11texttest::elapsed_5()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    EQ(float(50), item.computeElapsedTime());
+}
+// compute elaposed time for body header.
+void v11texttest::elapsed_6()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    EQ(float(50), item.computeElapsedTime());
+}
+// Get time divisor from non body header:
+
+void v11texttest::elapsed_7()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    EQ(uint32_t(2), item.getTimeDivisor());
+}
+// divisor from body header
+void v11texttest::elapsed_8()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    EQ(uint32_t(2), item.getTimeDivisor());
 }
