@@ -59,6 +59,7 @@ public:
     
     // Required virtual methods: pure virtual in the base class.
     
+    virtual bool hasBodyHeader() const;
     virtual void* getBodyHeader() const;
     virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0);

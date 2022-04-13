@@ -265,6 +265,12 @@ CRingTextItem::getBodyPointer() const
   const v11::CRingItem* pThis = reinterpret_cast<const v11::CRingItem*>(this);
     return pThis->v11::CRingItem::getBodyPointer();
 }
+
+bool
+CRingTextItem::hasBodyHeader() const
+{
+	return getBodyHeader() != nullptr;
+}
 /**
  * getBodyHeader
  *    @return void* - pointer to the body header, nullptr if there isn't one.

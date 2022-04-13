@@ -87,6 +87,7 @@ public:
 
   virtual void* getBodyPointer();
   virtual const void* getBodyPointer() const;
+  virtual bool hasBodyHeader() const;
   virtual void* getBodyHeader() const;
   
   virtual void setBodyHeader(

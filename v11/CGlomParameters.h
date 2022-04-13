@@ -56,7 +56,8 @@ public:
     virtual std::string toString() const;
     
    // Implementation of pure virtual methods from the base class:
-      
+   
+   virtual bool  hasBodyHeader() const;
    virtual void* getBodyHeader() const;
    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0);

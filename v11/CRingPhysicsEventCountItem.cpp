@@ -323,6 +323,11 @@ CRingPhysicsEventCountItem::getBodySize() const
   return sizeof(PhysicsEventCountItemBody);
 }
 
+bool
+CRingPhysicsEventCountItem::hasBodyHeader() const
+{
+  return getBodyHeader() != nullptr;
+}
 /**
  * setBodyHeader
  *    delegates to v11::CRingItem::setBodyHeader

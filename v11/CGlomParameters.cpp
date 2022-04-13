@@ -168,7 +168,11 @@ CGlomParameters::toString() const
     return out.str();
 }
 //  Delegate these to v11::CRingItem...
-
+bool
+CGlomParameters::hasBodyHeader() const
+{
+    return getBodyHeader() != nullptr;
+}
 void*
 CGlomParameters::getBodyHeader() const
 {

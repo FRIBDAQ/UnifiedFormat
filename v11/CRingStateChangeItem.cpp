@@ -334,6 +334,11 @@ CRingStateChangeItem::getBodyPointer()
     return pThis->v11::CRingItem::getBodyPointer();
 }
 
+bool
+CRingStateChangeItem::hasBodyHeader() const
+{
+  return getBodyHeader() != nullptr;
+}
 /**
  * getBodyHeader
  *   Delegates to v11::CRingItem with a fancy bit of artifice.

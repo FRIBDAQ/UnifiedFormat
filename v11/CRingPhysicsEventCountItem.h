@@ -77,6 +77,7 @@ public:
   virtual size_t  getBodySize() const;
   
   // Virtual method overrides:
+  virtual bool hasBodyHeader() const;
   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0);
   virtual void* getBodyHeader() const; 

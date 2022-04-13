@@ -75,8 +75,10 @@ public:
   
   // Virtual methods all ring overrides.
   
+  
   virtual void* getBodyPointer();
   virtual const void* getBodyPointer() const;
+  virtual bool hasBodyHeader() const;
   virtual void* getBodyHeader() const;
   virtual void setBodyHeader(
         uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0

@@ -464,6 +464,12 @@ CRingScalerItem::getBodyPointer() const
   return p->v11::CRingItem::getBodyPointer();
 }
 
+bool
+CRingScalerItem::hasBodyHeader() const
+{
+  return getBodyHeader() != nullptr;
+}
+
 void*
 CRingScalerItem::getBodyHeader() const
 {

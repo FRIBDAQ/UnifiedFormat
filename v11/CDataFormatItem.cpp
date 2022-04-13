@@ -108,6 +108,11 @@ CDataFormatItem::toString() const
 }
 // There is no body header so:
 
+bool
+CDataFormatItem::hasBodyHeader() const
+{
+    return false;
+}
 void*
 CDataFormatItem::getBodyHeader() const
 {

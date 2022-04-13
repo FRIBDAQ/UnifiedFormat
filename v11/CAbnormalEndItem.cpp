@@ -49,6 +49,12 @@ CAbnormalEndItem::~CAbnormalEndItem() {}
 /**
  * There is no body header in a v11 Abnormal End item
 */
+bool
+CAbnormalEndItem::hasBodyHeader() const
+{
+    return false;
+}
+
 void*
 CAbnormalEndItem::getBodyHeader() const
 {
