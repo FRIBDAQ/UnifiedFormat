@@ -44,6 +44,9 @@ class v11texttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST(construct_4);
+    
+    CPPUNIT_TEST(getstrings_1);
+    CPPUNIT_TEST(getstrings_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -60,6 +63,9 @@ protected:
     void construct_2();
     void construct_3();
     void construct_4();
+    
+    void getstrings_1();
+    void getstrings_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11texttest);
@@ -173,4 +179,43 @@ void v11texttest::construct_4()
         ),
         std::invalid_argument
     );
+}
+// get strings from non body header item.
+
+void v11texttest::getstrings_1()
+{
+     std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now
+    );
+    auto result = item.getStrings();
+    EQ(strings.size(), result.size());
+    for (int i = 0; i < strings.size(); i++) {
+        EQ(strings[i], result[i]);
+    }
+}
+// get strings from body header item.
+void v11texttest::getstrings_2()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now
+    );
+    
+    auto result = item.getStrings();
+    EQ(strings.size(), result.size());
+    for (int i = 0; i < strings.size(); i++) {
+        EQ(strings[i], result[i]);
+    }
+
 }
