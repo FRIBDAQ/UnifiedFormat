@@ -29,6 +29,9 @@ class v11unktest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11unktest);
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
+    
+    CPPUNIT_TEST(bodyptr_1);
+    CPPUNIT_TEST(bodyptr_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -43,6 +46,9 @@ public:
 protected:
     void construct_1();
     void construct_2();
+    
+    void bodyptr_1();
+    void bodyptr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11unktest);
@@ -82,4 +88,35 @@ void v11unktest::construct_2()
     for (int i =0; i < data.size(); i++) {
         EQ(data[i], p[i]);
     }
+}
+// get body pointer not const.
+void v11unktest::bodyptr_1()
+{
+     std::vector<std::uint16_t> data;
+    for (int i =0; i < 100; i++) {
+        data.push_back(i);
+    }
+    v11::CUnknownFragment item(
+        0x1234567890, 1, 0, data.size()*sizeof(uint16_t),  data.data()
+    );
+    v11::EventBuilderFragment* pItem =
+        reinterpret_cast<v11::EventBuilderFragment*>(item.getItemPointer());
+    uint8_t* pBody = reinterpret_cast<uint8_t*>(item.getBodyPointer());
+    EQ(&(pItem->s_body[0]), pBody);
+}
+// get body pointer const.
+
+void v11unktest::bodyptr_2()
+{
+     std::vector<std::uint16_t> data;
+    for (int i =0; i < 100; i++) {
+        data.push_back(i);
+    }
+    v11::CUnknownFragment item(
+        0x1234567890, 1, 0, data.size()*sizeof(uint16_t),  data.data()
+    );
+    const v11::EventBuilderFragment* pItem =
+        reinterpret_cast<const v11::EventBuilderFragment*>(item.getItemPointer());
+    const uint8_t* pBody = reinterpret_cast<const uint8_t*>(item.getBodyPointer());
+    EQ(&(pItem->s_body[0]), pBody);
 }
