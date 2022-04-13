@@ -35,7 +35,7 @@ class RingItemFactory : public ::RingItemFactoryBase
     virtual ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
             size_t maxBody, uint32_t barrierType = 0 ) ;
     virtual ::CRingItem* makeRingItem(const ::CRingItem& rhs) ;
-    virtual ::CRingItem* makeRingItem(const RingItem* pRawRing) ;
+    virtual ::CRingItem* makeRingItem(const ::RingItem* pRawRing) ;
 
 
     virtual ::CRingItem* getRingItem(CRingBuffer& ringbuf) ;

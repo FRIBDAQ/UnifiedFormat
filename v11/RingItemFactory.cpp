@@ -24,6 +24,9 @@
 #include "CRingItem.h"
 
 #include <string.h>
+#include <CRingBuffer.h>
+#include <iostream>
+#include <unistd.h>
 
 namespace v11 {
 /**
@@ -84,6 +87,30 @@ RingItemFactory::makeRingItem(const ::RingItem* pRawRing)
         pRawRing->s_header.s_type, pRawRing->s_header.s_size
     );
     memcpy(pItem->getItemPointer(), pRawRing, pRawRing->s_header.s_size);
+    return pItem;
+}
+/**
+ * getRingItem
+ *     Get a ring item from a ringbuffer (we must be attached as
+ *     a consumer).
+ *  @param ringbuf - reference to the ring buffer.
+ *  @return ::CRingItem* newly allocated ring item.
+ *  @note we will block as long as needed.
+ */
+::CRingItem*
+RingItemFactory::getRingItem(CRingBuffer& ringbuf)
+{
+    v11::RingItemHeader hdr;
+    ringbuf.get(&hdr, sizeof(hdr));
+    v11::CRingItem* pItem = new v11::CRingItem(hdr.s_type, hdr.s_size);
+    size_t remaining = hdr.s_size = sizeof(v11::RingItemHeader);
+    v11::pRingItem pItemStorage =
+        reinterpret_cast<v11::pRingItem>(pItem->getItemPointer());
+    uint8_t* p = reinterpret_cast<uint8_t*>(&(pItemStorage->s_body));
+    ringbuf.get(p, remaining);
+    p += remaining;
+    pItem->setBodyCursor(p);
+    pItem->updateSize();
     return pItem;
 }
 
