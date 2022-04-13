@@ -61,6 +61,9 @@ class v11texttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(time_2);
     CPPUNIT_TEST(time_3);
     CPPUNIT_TEST(time_4);
+    
+    CPPUNIT_TEST(sid_1);
+    CPPUNIT_TEST(sid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -94,6 +97,9 @@ protected:
     void time_2();
     void time_3();
     void time_4();
+    
+    void sid_1();
+    void sid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11texttest);
@@ -422,4 +428,35 @@ void v11texttest::time_4()
     );
     item.setTimestamp(now+10);
     EQ(now+10, item.getTimestamp());
+}
+// original sid from no body header gives 0.
+
+void v11texttest::sid_1()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// since there's no original source id in v11, we get the sid
+// from the body header if there is one:
+
+void v11texttest::sid_2()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    EQ(uint32_t(2), item.getOriginalSourceId());
 }
