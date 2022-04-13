@@ -69,6 +69,11 @@ class v11texttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(bodyptr_2);
     CPPUNIT_TEST(bodyptr_3);
     CPPUNIT_TEST(bodyptr_4);
+    
+    CPPUNIT_TEST(bodyhdr_1); // get
+    CPPUNIT_TEST(bodyhdr_2); // set
+    CPPUNIT_TEST(bodyhdr_3); // get
+    CPPUNIT_TEST(bodyhdr_4); // set.
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -110,6 +115,11 @@ protected:
     void bodyptr_2();
     void bodyptr_3();
     void bodyptr_4();
+    
+    void bodyhdr_1();
+    void bodyhdr_2();
+    void bodyhdr_3();
+    void bodyhdr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11texttest);
@@ -542,4 +552,81 @@ void v11texttest::bodyptr_4()
     const v11::TextItem* pItem =
         reinterpret_cast<const v11::TextItem*>(item.getItemPointer());
     EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);
+}
+// Get body header from non body header item is nullptr.
+
+void v11texttest::bodyhdr_1()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    ASSERT(item.getBodyHeader() == nullptr);   // nullptr is weird - does not work in EQ
+}
+// With body header this gives a pointer to it:
+void v11texttest::bodyhdr_2()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    v11::pTextItem pBody =
+        reinterpret_cast<v11::pTextItem>(item.getItemPointer());
+    v11::pBodyHeader p  = reinterpret_cast<v11::pBodyHeader>(item.getBodyHeader());
+    EQ(&(pBody->s_body.u_hasBodyHeader.s_bodyHeader), p);
+}
+// Set body header creates one for the non body header item.
+
+void v11texttest::bodyhdr_3()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES,  strings, 100, now, 2
+    );
+    size_t originalSize = item.size();
+    item.setBodyHeader(0x1234567890, 1, 2);
+    size_t afterSize = item.size();
+    EQ(
+       originalSize + sizeof(v11::BodyHeader) - sizeof(uint32_t),
+       afterSize
+    );
+    v11::pTextItem pBody = reinterpret_cast<v11::pTextItem>(item.getItemPointer());
+    v11::pBodyHeader p  = reinterpret_cast<v11::pBodyHeader>(item.getBodyHeader());
+    EQ(&(pBody->s_body.u_hasBodyHeader.s_bodyHeader), p);
+}
+// just replaces contents of any existing boydy header.
+void v11texttest::bodyhdr_4()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three strings",
+        "more"
+    };
+    time_t now = time(nullptr);
+    
+    v11::CRingTextItem item(
+        v11::MONITORED_VARIABLES, 0x1234567890, 2, 3,
+        strings, 100, now, 2
+    );
+    size_t originalSize = item.size();
+    item.setBodyHeader(0x555555555, 3, 2);
+    size_t afterSize = item.size();
+    EQ(originalSize, afterSize);
+    
+    v11::pTextItem pBody = reinterpret_cast<v11::pTextItem>(item.getItemPointer());
+    v11::pBodyHeader p  = reinterpret_cast<v11::pBodyHeader>(item.getBodyHeader());
+    EQ(&(pBody->s_body.u_hasBodyHeader.s_bodyHeader), p);
 }
