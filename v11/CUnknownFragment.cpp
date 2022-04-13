@@ -15,11 +15,14 @@
  */
 
 #include "CUnknownFragment.h"
+#include "CRingFragmentItem.h"
+#include "CRingItem.h"
+
 #include "DataFormat.h"
 #include <string.h>
 #include <sstream>
 
-
+namespace v11 {
 /*-----------------------------------------------------------------------------
  * Canonical methods.
  *---------------------------------------------------------------------------*/
@@ -39,12 +42,18 @@
 CUnknownFragment::CUnknownFragment(
     uint64_t timestamp, uint32_t sourceId, uint32_t barrier, uint32_t size,
     void* pPayload) :
-       CRingFragmentItem(timestamp, sourceId, size, pPayload, barrier)
+       ::CUnknownFragment(timestamp, sourceId, barrier, size, pPayload)
 {
-    // The only thing left to do is fill in the correct type
+    v11::pEventBuilderFragment pItem = reinterpret_cast<v11::pEventBuilderFragment>(getItemPointer());
+    pItem->s_header.s_type = v11::EVB_UNKNOWN_PAYLOAD;
+    pItem->s_header.s_size = sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + size;
+        
+    setBodyHeader(timestamp, sourceId, barrier);
     
-    pRingItem pItem  = reinterpret_cast<pRingItem>(getItemPointer());
-    pItem->s_header.s_type = EVB_UNKNOWN_PAYLOAD;
+    memcpy(pItem->s_body, pPayload, size);
+    setBodyCursor(pItem->s_body + size);
+    updateSize();
         
 }
 /**
@@ -53,58 +62,63 @@ CUnknownFragment::CUnknownFragment(
 CUnknownFragment::~CUnknownFragment()  {}
 
 /**
- * copy constructor (specific)
- *
- * @param rhs - The object item we are copying in construction.
+ * getBodyPointer
+ *   @return (const) void* - pointer to s_body.
  */
-CUnknownFragment::CUnknownFragment(const CUnknownFragment& rhs) :
-    CRingFragmentItem(rhs)
+const void*
+CUnknownFragment::getBodyPointer() const
 {
-    
+    const v11::EventBuilderFragment* pItem =
+        reinterpret_cast<const v11::EventBuilderFragment*>(getItemPointer());
+    return pItem->s_body;
+}
+void*
+CUnknownFragment::getBodyPointer()
+{
+    v11::pEventBuilderFragment pItem =
+        reinterpret_cast<v11::pEventBuilderFragment>(getItemPointer());
+    return pItem->s_body;
 }
 /**
- * copy constuctor (generic)
- *
- * @param rhs - The object item we are copying in construction.
- * @throw std::bad_cast if the rhs object is ot a EVB_UNKNOWN_PAYLOAD type.
+ * hasBodyHeader
+ *   @return bool -true - there's always a body header.
  */
-CUnknownFragment::CUnknownFragment(const CRingItem& rhs) :
-    CRingFragmentItem(rhs)
+bool
+CUnknownFragment::hasBodyHeader() const
 {
-    if (type() != EVB_UNKNOWN_PAYLOAD) throw std::bad_cast();        
+    return true;
+}
+
+/**
+ * getBodyHeder
+ *   @return void* -- there's always a body header.
+ */
+void*
+CUnknownFragment::getBodyHeader() const
+{
+    const v11::EventBuilderFragment* pItem =
+        reinterpret_cast<const v11::EventBuilderFragment*>(getItemPointer());
+    return const_cast<v11::BodyHeader*>(&(pItem->s_bodyHeader));
 }
 /**
- * operator=
- *
- * @param rhs - The object that we are being assigned from.
- * @return CUnknownFragment& reference to *this.
+ * setBodyHeader
+ *   @param timestamp -event fragment timestamp
+ *   @param sourceId - fragment source id
+ *   @param barrier - barrier type.
  */
-CUnknownFragment&
-CUnknownFragment::operator=(const CUnknownFragment& rhs)
+void
+CUnknownFragment::setBodyHeader(
+    uint64_t timestamp, uint32_t sourceId, uint32_t barrier
+)
 {
-    CRingItem::operator=(rhs);
-    return *this;
+    v11::EventBuilderFragment* pItem =
+        reinterpret_cast<v11::EventBuilderFragment*>(getItemPointer());
+    pItem->s_bodyHeader.s_size = sizeof(v11::BodyHeader);
+    pItem->s_bodyHeader.s_timestamp = timestamp;
+    pItem->s_bodyHeader.s_sourceId = sourceId;
+    pItem->s_bodyHeader.s_barrier = barrier;
 }
-/**
- * operator==
- *    @param rhs - object of comparison.
- *    @return int - nonzero if equality.
- */
-int
-CUnknownFragment::operator==(const CUnknownFragment& rhs) const
-{
-    return CRingItem::operator==(rhs);
-}
-/**
- * operator!=
- * @param rhs - Object of comparison.
- * @return int - nonzero if items don't compare for equality.
- */
-int
-CUnknownFragment::operator!=(const CUnknownFragment& rhs) const
-{
-    return CRingItem::operator!=(rhs);
-}
+
 /*----------------------------------------------------------------------------
  * Virtual method overrides;
  *--------------------------------------------------------------------------*/
@@ -118,4 +132,19 @@ std::string
 CUnknownFragment::typeName() const
 {
     return "Fragment with unknown payload";
+}
+/**
+ * toString
+ *    Return a string rendering of this item...we defer this to
+ *    CRingFragmentItem via our usual dirty cast:
+ * @return std::string
+ */
+std::string
+CUnknownFragment::toString() const
+{
+    const v11::CRingFragmentItem* pThis =
+        reinterpret_cast<const v11::CRingFragmentItem*>(this);
+    return pThis->v11::CRingFragmentItem::toString();
+}
+
 }
