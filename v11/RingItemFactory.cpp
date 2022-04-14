@@ -27,6 +27,8 @@
 #include "CGlomParameters.h"
 #include "CPhysicsEventItem.h"
 #include "CRingFragmentItem.h"
+#include "CRingPhysicsEventCountItem.h"
+
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -448,5 +450,46 @@ RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
         throw std::bad_cast();
     }
 }
-
+/**
+ * makePhysicsEventCountItem
+ *    @param count - number of trigger.
+ *    @param timeoffset - when in the run this occured.
+ *    @param stamp   - absolute time.
+ *    @param divisor - timeoffset/divisor (float) is seconds.
+ *    @return ::CRingPhysicsEventCountItem*
+ *                  - actually points to a v11::CRingPhysicsEventCount item.
+ */
+::CRingPhysicsEventCountItem*
+RingItemFactory::makePhysicsEventCountItem(
+    uint64_t count, uint32_t timeoffset, time_t stamp, int divisor
+)
+{
+    return new v11::CRingPhysicsEventCountItem(
+        count, timeoffset, stamp, divisor
+    );
 }
+/**
+ * makePhysicsEventCountItem
+ *   @param rhs - ::CRingItem& from which we make this item.
+ *   @return ::CRingPhysicsEventCountItem*
+ *              - actually points to a v11::CRingPhysicsEventCount item.
+ *   @throws std::bad_cast if the rhs is not an event count item.
+*/
+::CRingPhysicsEventCountItem*
+RingItemFactory::makePhysicsEventCountItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() == v11::PHYSICS_EVENT_COUNT) {
+        const ::CRingPhysicsEventCountItem& item =
+            dynamic_cast<const ::CRingPhysicsEventCountItem&>(rhs);
+        return new v11::CRingPhysicsEventCountItem(
+            item.getEventCount(), item.getTimeOffset(),
+            item.getTimestamp(), item.getTimeDivisor()
+            
+        );
+    } else {
+        throw std::bad_cast();
+    }
+}
+
+
+}                             // v11
