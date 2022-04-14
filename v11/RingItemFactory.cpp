@@ -24,6 +24,7 @@
 #include "CRingItem.h"
 #include "CAbnormalEndItem.h"
 #include "CDataFormatItem.h"
+#include "CGlomParameters.h"
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -284,6 +285,45 @@ RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
         throw std::bad_cast();
     }
     
+}
+/**
+ * makeGlomParameters
+ *    @param  interval - the build interval
+ *    @param  isBuliding - true if building was enabled.
+ *    @param  policy     - Event building timestap policy
+ *                         determines how the timstamp of the final
+ *                         built events are computed.
+ *    @return ::CGlomParameters* - actually a pointer to v11::GlomParameters
+ */
+::CGlomParameters*
+RingItemFactory::makeGlomParameters(
+    uint64_t interval, bool isBuilding, uint16_t policy
+)
+{
+    ::CGlomParameters::TimestampPolicy ePolicy =
+        static_cast<::CGlomParameters::TimestampPolicy>(policy);
+    return new CGlomParameters(interval, isBuilding, ePolicy);
+}
+/**
+ * makeGlomParameters
+ *    Given a ring item that is alleged to be a glom parameters
+ *    produces a new ring item that's a v11::CGlomPolicies item
+ *    and hands back a pointer to it:
+ * @param rhs - the policy item.
+ * @return ::CGlomParameters*
+ */
+::CGlomParameters*
+RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
+{
+    if (rhs.type() == v11::EVB_GLOM_INFO) {
+        const ::CGlomParameters& glom =
+            dynamic_cast<const ::CGlomParameters&>(rhs);
+        return new v11::CGlomParameters(
+            glom.coincidenceTicks(), glom.isBuilding(), glom.timestampPolicy()
+        );
+    } else {
+        throw std::bad_cast();
+    }
 }
 
 }

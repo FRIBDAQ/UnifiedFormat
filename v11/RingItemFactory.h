@@ -47,7 +47,7 @@ class RingItemFactory : public ::RingItemFactoryBase
     virtual void putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf) ;
 
     virtual ::CAbnormalEndItem* makeAbnormalEndItem() ;
-    virtual ::CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) ;
+    virtual ::CAbnormalEndItem* makeAbnormalEndItem(const ::CRingItem& rhs) ;
 
     virtual ::CDataFormatItem* makeDataFormatItem() ;
     virtual ::CDataFormatItem* makeDataFormatItem(const ::CRingItem& rhs) ;
