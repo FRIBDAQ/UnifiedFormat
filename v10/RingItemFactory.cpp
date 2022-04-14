@@ -146,13 +146,18 @@ namespace v10 {
     // Read the header then the body:
     
     v10::RingItemHeader hdr;
-    io::readData(fd, &hdr, sizeof(hdr));
+    if (io::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
+     return nullptr;               // EOF.
+    }
     
     auto result = makeRingItem(hdr.s_type, hdr.s_size);
     
     uint8_t* p  = reinterpret_cast<uint8_t*>(result->getBodyCursor());
     size_t bodySize = hdr.s_size - sizeof(v10::RingItemHeader);
-    io::readData(fd, p, bodySize);
+    if (io::readData(fd, p, bodySize) < bodySize) {
+     delete result;
+     return nullptr;                  // EOF.
+    }
     p += bodySize;
     result->setBodyCursor(p);
     result->updateSize();
