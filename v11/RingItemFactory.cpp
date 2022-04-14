@@ -22,12 +22,15 @@
 #include <DataFormat.h>
 #include "DataFormat.h"
 #include "CRingItem.h"
+#include "CAbnormalEndItem.h"
 
 #include <string.h>
 #include <CRingBuffer.h>
 #include <iostream>
 #include <unistd.h>
 #include <io.h>
+#include <stdexcept>
+#include <typeinfo>
 
 namespace v11 {
 /**
@@ -170,6 +173,83 @@ RingItemFactory::getRingItem(std::istream& in)
     pResult->setBodyCursor(pCursor + remaining);
     pResult->updateSize();
     
+    return pResult;
+    
+}
+/**
+ * putRingItem
+ *     Put a ring item into a stream.  This blocks, if necessary
+ *     until space is available.
+ *  @param pItem - pointer to CRingItem.
+ *  @param out   - References the std::ostream into which we put.
+ *  @return std::ostream&  stream that was passed in to support chaining.
+ *  @note output failures are reflected in the usual manner for
+ *        std::ostream objects.
+ */
+std::ostream&
+RingItemFactory::putRingItem(const ::CRingItem* pItem, std::ostream& out)
+{
+    const void* pData = pItem->getItemPointer();
+    size_t bytes      = pItem->size();
+    
+    return out.write(reinterpret_cast<const char*>(pData), bytes);
+    
+}
+/**
+ * putRingItem
+ *    Put  a ring item in to a file
+ * @param pItem - Item to put.
+ * @param fd - file descriptor;
+ */
+void
+RingItemFactory::putRingItem(const ::CRingItem* pItem, int fd)
+{
+    const void* pData = pItem->getItemPointer();
+    size_t bytes      = pItem->size();
+    io::writeData(fd, pData, bytes);
+}
+/**
+ * putRingItem
+ *    Put a ring item to a ringbuffer.  BLocks until the item is fully
+ *    put.
+ * @param pItem - Item to put.
+ * @param rbuf  - Ring buffer reference.
+ */
+void
+RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& rbuf)
+{
+    rbuf.put(pItem->getItemPointer(), pItem->size());
+}
+/**
+ * makeAbnormalEndItem.
+ *   Creates a v11::CAbnormalEndItem and returns it as a base class
+ *   pointer
+ *  @return ::CAbnormalEndItem*
+ */
+::CAbnormalEndItem*
+RingItemFactory::makeAbnormalEndItem()
+{
+    return new v11::CAbnormalEndItem;
+}
+/**
+ * makeAbnormalEndITem
+ *    Given an arbitrary ring item reference, if the type is
+ *    that of an abnormal end item, return an abnormal end item
+ *    generated from it.
+ *  @param rhs - input ring item.
+ *  @return CAbnormalEndItem*
+ *  @throws std::bad_cast -if rhs is not an abnormal end item.
+ */
+::CAbnormalEndItem*
+RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() == v11::ABNORMAL_ENDRUN) {
+        // there are no contents to speak of so:
+        
+        return new v11::CAbnormalEndItem;
+    } else {
+        throw std::bad_cast();
+    }
 }
 
 }
