@@ -26,6 +26,7 @@
 #include "CDataFormatItem.h"
 #include "CGlomParameters.h"
 #include "CPhysicsEventItem.h"
+#include "CRingFragmentItem.h"
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -398,6 +399,51 @@ RingItemFactory::makePhysicsEventItem(const ::CRingItem& rhs)
         
         return pResult;
         
+    } else {
+        throw std::bad_cast();
+    }
+}
+/**
+ * makeRingFragmentItem
+ *    Create an item that contains an event fragment with arbitrary
+ *    payload.
+ *  @param timestamp - body header timestamp (fragment items always have
+ *                     a body header).
+ *  @param source    - body header source id.
+ *  @param payloadSize - size of the payload.
+ *  @param payload   - Pointer to the payload.
+ *  @param barrier   - body header barrier id.
+ *  @return ::CRingFramentItem*  - pointer to an v11::CRingFragmentItem.
+ */
+::CRingFragmentItem*
+RingItemFactory::makeRingFragmentItem(
+    uint64_t timestamp, uint32_t source,
+    uint32_t payloadSize, const void* payload, uint32_t barrier
+)
+{
+    return new v11::CRingFragmentItem(
+        timestamp, source, payloadSize, payload, barrier
+    );
+}
+/**
+ * makeRingFragmentItem
+ *    Create a ring fragment item from an existing ring item.
+ * @param rhs - the ring item we make the fragment from.
+ */
+::CRingFragmentItem*
+RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() == v11::EVB_FRAGMENT) {
+        const ::CRingFragmentItem& src =
+            dynamic_cast<const ::CRingFragmentItem&>(rhs);
+        return new v11::CRingFragmentItem(
+            src.timestamp(), src.source(),
+            src.payloadSize(),
+            const_cast<::CRingFragmentItem&>(src).payloadPointer(),
+            src.barrierType()
+        );
+    } else if (rhs.type() == v11::EVB_UNKNOWN_PAYLOAD) {
+        return reinterpret_cast<::CRingFragmentItem*>(makeUnknownFragment(rhs));
     } else {
         throw std::bad_cast();
     }
