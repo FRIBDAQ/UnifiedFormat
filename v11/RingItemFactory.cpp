@@ -27,6 +27,7 @@
 #include <CRingBuffer.h>
 #include <iostream>
 #include <unistd.h>
+#include <io.h>
 
 namespace v11 {
 /**
@@ -112,6 +113,63 @@ RingItemFactory::getRingItem(CRingBuffer& ringbuf)
     pItem->setBodyCursor(p);
     pItem->updateSize();
     return pItem;
+}
+/**
+ * getRingItem
+ *   @param fd - file descriptor open on the source of ring items.
+ *   @return ::CRingItem* points to a dynamically allocated v11 ring item.
+ *   @retval nullptr - eof.
+ */
+::CRingItem*
+RingItemFactory::getRingItem(int fd)
+{
+    v11::RingItemHeader hdr;
+    if (io::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
+        return nullptr;
+    }
+    v11::CRingItem* pResult = new v11::CRingItem(hdr.s_type, hdr.s_size);
+    
+    v11::pRingItem pRawItem =
+        reinterpret_cast<v11::pRingItem>(pResult->getItemPointer());
+    size_t remainingSize = hdr.s_size - sizeof(v11::RingItemHeader);
+    uint8_t* p = reinterpret_cast<uint8_t*>(&(pRawItem->s_body));
+    if (io::readData(fd, p, remainingSize) != remainingSize) {
+        delete p;
+        return nullptr;                 // EOF.
+    }
+    p += remainingSize;
+    pResult->setBodyCursor(p);
+    pResult->updateSize();
+    
+    return pResult;
+}
+/**
+ * getRingItem
+ *   @param in  - std::istream& open on the ring item data source.
+ *   @return ::CRingITem* points to a dynamically allocated v11::CRingItem.
+ *   @retval 
+ */
+::CRingItem*
+RingItemFactory::getRingItem(std::istream& in)
+{
+    v11::RingItemHeader hdr;
+    in.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
+    if (!in) {
+        return nullptr;            
+    }
+    v11::CRingItem* pResult = new v11::CRingItem(hdr.s_type, hdr.s_size);
+    size_t remaining = hdr.s_size - sizeof(v11::RingItemHeader);
+    v11::pRingItem pRawItem =
+        reinterpret_cast<v11::pRingItem>(pResult->getItemPointer());
+    uint8_t* pCursor = reinterpret_cast<uint8_t*>(&(pRawItem->s_body));
+    in.read(reinterpret_cast<char*>(pCursor), remaining);
+    if (!in) {
+        delete pResult;
+        return nullptr;
+    }
+    pResult->setBodyCursor(pCursor + remaining);
+    pResult->updateSize();
+    
 }
 
 }
