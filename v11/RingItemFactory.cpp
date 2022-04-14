@@ -25,6 +25,7 @@
 #include "CAbnormalEndItem.h"
 #include "CDataFormatItem.h"
 #include "CGlomParameters.h"
+#include "CPhysicsEventItem.h"
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -321,6 +322,82 @@ RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
         return new v11::CGlomParameters(
             glom.coincidenceTicks(), glom.isBuilding(), glom.timestampPolicy()
         );
+    } else {
+        throw std::bad_cast();
+    }
+}
+/**
+ * makePhysicsEventItem
+ *    Make an empty v11 physics event item.    The caller can then
+ *    use e.g. setBodyHeader, getBodyCursor and so on to fill in
+ *    its contents.
+ * @param maxBody - maximum size of the item.
+ * @return ::CPhysicsEventItem* - actually pointing at a v11::CPhysicsEventItem.
+ */
+::CPhysicsEventItem*
+RingItemFactory::makePhysicsEventItem(size_t maxbody)
+{
+    return new v11::CPhysicsEventItem(maxbody);
+}
+/**
+ * makePhysicsEventItem
+ *    Create an empty v11 physics event item with pre-filled body
+ *    header.
+ *  @param timestamp - event fragment timestamp to put in body header.
+ *  @param source    - source id of fragment to put in body header.
+ *  @param barrier   - barrier type id to put in body header.
+ *  @param maxsize   - largest ring item size.
+ *  @return ::CPhysicsEventItem* - actuall points to a v11::CPhysicsEventItem.
+ */
+::CPhysicsEventItem*
+RingItemFactory::makePhysicsEventItem(
+    uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxsize
+)
+{
+    return new v11::CPhysicsEventItem(
+        timestamp, source, barrier, maxsize
+    );
+}
+/**
+ * makePhysicsEventItem
+ *    creates a v11::CPhysicsEventItem from a raw ring item.
+ *    we assume:
+ *    - The body header, if it exists in the raw item, at least
+ *      begins with the structure of the v11 body header.
+ *    - The Body of the event will be passed unmodified to the new
+ *       item.
+ *    We require that the type be v11::PHYSICS_EVENT
+ *    Note that at this time all versions share common item types.
+ * @param rhs - reference to ring item to use as data source.
+ * @return ::CPhysicsEventItem* actuall pointing to a v11 item.
+ */
+::CPhysicsEventItem*
+RingItemFactory::makePhysicsEventItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() == v11::PHYSICS_EVENT) {
+        v11::CPhysicsEventItem* pResult = new v11::CPhysicsEventItem(rhs.size());
+        
+        if (rhs.hasBodyHeader()) {
+            const v11::BodyHeader* pBh =
+                reinterpret_cast<const v11::BodyHeader*>(rhs.getBodyHeader());
+            pResult->setBodyHeader(
+                pBh->s_timestamp, pBh->s_sourceId, pBh->s_barrier
+            );
+        }
+        // How big is the body so we can memcpy:
+        
+        
+        const uint8_t* pBegin =
+            reinterpret_cast<const uint8_t*>(rhs.getBodyPointer());
+        size_t bodySize = rhs.getBodySize();
+        uint8_t* p = reinterpret_cast<uint8_t*>(pResult->getBodyPointer());
+        memcpy(p, pBegin, bodySize);
+        p += bodySize;
+        pResult->setBodyCursor(p);
+        pResult->updateSize();
+        
+        return pResult;
+        
     } else {
         throw std::bad_cast();
     }
