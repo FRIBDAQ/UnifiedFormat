@@ -23,6 +23,7 @@
 #include "DataFormat.h"
 #include "CRingItem.h"
 #include "CAbnormalEndItem.h"
+#include "CDataFormatItem.h"
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -250,6 +251,39 @@ RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
     } else {
         throw std::bad_cast();
     }
+}
+/**
+ *  makeDataFormatItem.
+ *    @return ::CDataFormatItem*  - actually points to a V11::CDataFormatItem.
+ */
+::CDataFormatItem*
+RingItemFactory::makeDataFormatItem()
+{
+    return new CDataFormatItem;           // Has right versions.
+}
+/**
+ * makeDataFormatItem.
+ *    @param rhs - item to turn into a v11 data format item.
+ *    @throws std::bad_cast if rhs is not a data format item.
+ *    @return ::CDataFormatItem*
+ */
+::CDataFormatItem*
+RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
+{
+    // Require it be a data format item and of our format:
+    
+    if (rhs.type() == v11::RING_FORMAT) {
+        const ::CDataFormatItem& fmt =
+            dynamic_cast<const::CDataFormatItem&>(rhs);
+        if (fmt.getMajor() != v11::FORMAT_MAJOR) {
+            throw std::bad_cast();
+        } else {
+            return new v11::CDataFormatItem;
+        }
+    } else {
+        throw std::bad_cast();
+    }
+    
 }
 
 }
