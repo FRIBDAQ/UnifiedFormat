@@ -30,6 +30,7 @@
 #include "CRingFragmentItem.h"
 #include "CRingPhysicsEventCountItem.h"
 #include "CRingScalerItem.h"
+#include "CRingTextItem.h"
 
 
 #include <string.h>
@@ -39,6 +40,7 @@
 #include <io.h>
 #include <stdexcept>
 #include <typeinfo>
+#include <time.h>
 
 namespace v11 {
 /**
@@ -590,6 +592,100 @@ RingItemFactory::makeScalerItem(const ::CRingItem&  item)
         throw std::bad_cast();
     }
 }
-
+/**
+ * makeTextItem.
+ *    Create a v11::CRingTextItem and return it to the caller
+ *    as a pointer to a generic text item.
+ * @param type - the text item type must be one of:
+ *           -  v11::PACKET_TYPES
+ *           -  v11::MONITORED_VARIABLES
+ * @param theStrings - Vector of the strings to encapsulate in the
+ *                item
+ * @return ::CRingTextItem* - actually points to a v11::CRingTextItem
+ *                this item was created with new.
+ * @throws std::invalid_argument if type is not valid.
+ * @note The returned pointer was created using new and
+ *       when the caller is done with it, delete must be used to
+ *       destroy it.
+ * @ note unspecified fields are set as follows:
+ *     -   Run offset is 0.
+ *     -   clock time is set to the current time.
+ * @note the resulting item has no body header.
+ */
+::CRingTextItem*
+RingItemFactory::makeTextItem(
+    uint16_t type, std::vector<std::string> theStrings
+)
+{
+    return new v11::CRingTextItem(type, theStrings, 0, time(nullptr));
+}
+/**
+ * makeTextItem
+ *   @param type - text item type.
+ *   @param theStrings - strings to embed into the item.
+ *   @param offsetTime - Time offset into the run.
+ *   @param timestamp  - clock time at which the item will say it was created.
+ *   @param divisor    - Optional time divisor to convert offsetTime
+ *                       into seconds
+ *   @return ::CRingTextItem* - actually points to a v11::CRingTextItem
+ *                this item was created with new.
+ * @throws std::invalid_argument if type is not valid.
+ * @note The returned pointer was created using new and
+ *       when the caller is done with it, delete must be used to
+ *       destroy it.
+ * @note the resulting item has no body header however one can be
+ *       added with the setBodyHeader method post creation.
+ */
+::CRingTextItem*
+RingItemFactory::makeTextItem(
+    uint16_t type,
+    std::vector<std::string> theStrings,
+    uint32_t                 offsetTime,
+    time_t                   timestamp, uint32_t divisor
+) 
+{
+    return new v11::CRingTextItem(
+        type, theStrings, offsetTime, timestamp, divisor
+    );
+}
+/**
+ * makeTextItem
+ *    Make a ring text item from a generic ring item that must be
+ *    a text item.  Once cast to a ::CRingTextItem the virtual
+ *    methods are used to pull out all the stuff needed.
+ *    Note that if the original item has a body header it's
+ *    inserted into the final item post construction as that's easiest.
+ * @param rhs - the item we're going to turn into a v11 ring text item.
+ * @return ::CRingTextItem* - actually pointing to a dynamically created
+ *        v11::CRingTextItem.
+ * @note - the item type must be a legitimate v11 text item type.
+ * @note - The rhs must be dynamically castable to a ::CRingTextItem
+ * @throws - std::invalid_argument - the type was bad.
+ * @throws - std::bad_cast rhs was not castable to ::CRingTextItem.
+ */
+::CRingTextItem*
+RingItemFactory(const ::CRingItem& rhs)
+{
+    const ::CRingTextItem& item =
+        dynamic_cast<const ::CRingTextItem&>(rhs);
+    uint16_t type  =item.type();
+    std::vector<std::string> strings = item.getStrings();
+    uint32_t offset = item.getTimeOffset();
+    uint32_t div    = item.getTimeDivisor();
+    time_t   clock  = item.getTimestamp();
+    
+    v11::CRingTextItem* pResult = new v11::CRingTextItem(
+        type, strings, offset,  clock, div
+    );
+    if (item.hasBodyHeader()) {
+        const v11::BodyHeader* p =
+            reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+        pResult->setBodyHeader(
+            p->s_timestamp, p->s_sourceId, p->s_barrier
+        );
+    }
+    return pResult;
+    
+}
 
 }                             // v11
