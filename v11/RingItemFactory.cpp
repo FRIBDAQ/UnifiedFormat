@@ -32,6 +32,7 @@
 #include "CRingScalerItem.h"
 #include "CRingTextItem.h"
 #include "CUnknownFragment.h"
+#include "CRingStateChangeItem.h"
 
 
 #include <string.h>
@@ -665,7 +666,7 @@ RingItemFactory::makeTextItem(
  * @throws - std::bad_cast rhs was not castable to ::CRingTextItem.
  */
 ::CRingTextItem*
-RingItemFactory(const ::CRingItem& rhs)
+RingItemFactory::makeTextItem(const ::CRingItem& rhs)
 {
     const ::CRingTextItem& item =
         dynamic_cast<const ::CRingTextItem&>(rhs);
@@ -732,4 +733,71 @@ RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
     );
     
 }
+/**
+ * makeStateChangeItem
+ *    Create a new state change item.  The resulting item has no
+ *    body header, however one can be added with setBodyHeader.
+ * @param itemType  - Type of the item being created.
+ * @param runNumber - Run number involved in the state transition.
+ * @param timeOffset - Offset into the run.
+ * @param timestamp -clock time of the transition.
+ * @param title    - Title of the run.
+ * @note - the time divisor is 1 however there are some tricks
+ *         one can play to set it to another value.
+ * @return ::CRingSTateChangeItem* Acutally a V11::CRingStateChangeItem pointer.
+ */
+::CRingStateChangeItem*
+RingItemFactory::makeStateChangeItem(
+    uint32_t itemType, uint32_t runNumber,
+    uint32_t timeOffset,
+    time_t   timestamp,
+    std::string title
+)
+{
+    return new v11::CRingStateChangeItem(
+        itemType, runNumber, timeOffset, timestamp, title
+    );
+}
+/**
+ * makeStateChangeItem
+ *  Sort of a copy constructor but with the base class as the
+ *  source:
+ * @param rhs - a ::CRingItem& which will be used as the source
+ *              of data .
+ * @return ::CRingStateChangeItem* actually poinging to a v11::CRingStateChangeItem.
+ * @throw std::invalid_argument  If any of the following:
+ *     * The underlying type is not a valid v11 state change item type.
+ *     * The title in the rhs won't fit in the item being created.
+ *        this is possible if the rhs in a newer version than v11.
+ * @throw std::bad_cast, rhs can't be dynamic cast to a
+ *      ::CRingStateChangeItem.
+ */
+::CRingStateChangeItem*
+RingItemFactory::makeStateChangeItem(const ::CRingItem& rhs)
+{
+    const ::CRingStateChangeItem& item =
+        dynamic_cast<const ::CRingStateChangeItem&>(rhs);
+    uint16_t type = item.type();
+    uint32_t run  = item.getRunNumber();
+    uint32_t offset = item.getElapsedTime();
+    time_t clock    = item.getTimestamp();
+    std::string title = item.getTitle();
+    
+    ::CRingStateChangeItem* pResult =
+        makeStateChangeItem(type, run, offset, clock, title);
+    // If there is one, insert a body header:
+    
+    if (item.hasBodyHeader()) {
+        const v11::BodyHeader* pHdr =
+            reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
+        pResult->setBodyHeader(
+            pHdr->s_timestamp, pHdr->s_sourceId, pHdr->s_barrier
+        );
+    }
+    return pResult;
+    
+}
+
+
+
 }                             // v11
