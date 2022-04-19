@@ -21,6 +21,7 @@
 #include "RingItemFactory.h"
 #include <DataFormat.h>
 #include "DataFormat.h"
+#include "DataFormat.h"
 #include "CRingItem.h"
 #include "CAbnormalEndItem.h"
 #include "CDataFormatItem.h"
@@ -28,6 +29,7 @@
 #include "CPhysicsEventItem.h"
 #include "CRingFragmentItem.h"
 #include "CRingPhysicsEventCountItem.h"
+#include "CRingScalerItem.h"
 
 
 #include <string.h>
@@ -486,6 +488,104 @@ RingItemFactory::makePhysicsEventCountItem(const ::CRingItem& rhs)
             item.getTimestamp(), item.getTimeDivisor()
             
         );
+    } else {
+        throw std::bad_cast();
+    }
+}
+/**
+ * makeScalerItem
+ *     Make an empty body header-less scaler item.
+ *     A body header can be added with setBodyHeader
+ *   @param numScalers - number of scalers the item will need to hold.
+ *   @return ::CRingScalerItem* - actually points to a v11::CRingScalerItem.
+ */
+::CRingScalerItem*
+RingItemFactory::makeScalerItem(size_t numScalers)
+{
+    return new v11::CRingScalerItem(numScalers);
+}
+/**
+ * makeScaleritem
+ *    Make body header scaler item. Note that the remainder
+ *    of the body header must be filled in with setBodyHeader.
+ * @param startTime   - Counting interval start run time offset.
+ * @param stopTime    - Counting interval stop run time offset.
+ * @param timestamp   - Wall time when the scaler was generated.
+ * @param scalers     - The scaler counters.
+ * @param isIncremental - IF true the counters were zeroed as they were read.
+ * @param sid        - source id
+ * @param timeOffsetDivisor - divisor that turns start/stopTime into seconds.
+ * @return ::CRingScalerItem* - actually points to a v11::CRingScalerItem.
+ * 
+ */
+::CRingScalerItem*
+RingItemFactory::makeScalerItem(
+    uint32_t startTime, uint32_t stopTime, time_t timestamp,
+    std::vector<uint32_t> scalers, bool isIncremental,
+    uint32_t sid, uint32_t timeOffsetDivisor
+)
+{
+    return new v11::CRingScalerItem(
+        startTime, stopTime, timestamp, scalers, isIncremental,
+        sid, timeOffsetDivisor
+    );
+}
+/**
+ * makeScaleritem
+ *   - in this case from another ring item that must be a scaler.
+ *   - Note that this version does not support converting
+ *     v10::TIMESTAMPED_NONINCR_SCALERS, though v10::INCREMENTAL_SCALERS
+ *     should properly convert.
+ *  @param rhs - references the ring item to use to create the new
+ *               scaler item.
+ *  @return ::CRingScalerItem* - actually points to a v11::CRingScalerItem.
+ *  @note - We assume that if there's a body header, the front end of
+ *          it looks like the v11 body header (that is additional stoff
+ *          get appended in e.g. v12, v13...).
+ */
+::CRingScalerItem*
+RingItemFactory::makeScalerItem(const ::CRingItem&  item)
+{
+    if (item.type() == v11::PERIODIC_SCALERS) {
+        const ::CRingScalerItem& scalerItem =
+            dynamic_cast<const ::CRingScalerItem&>(item);
+        auto scalers = scalerItem.getScalers();
+        uint32_t start = scalerItem.getStartTime();
+        uint32_t end   = scalerItem.getEndTime();
+        uint32_t div   = scalerItem.getTimeDivisor();
+        time_t clock   = scalerItem.getTimestamp();
+        bool incr      = scalerItem.isIncremental();
+        
+        if (scalerItem.hasBodyHeader()) {
+            const v11::BodyHeader* pBodyHeader =
+                reinterpret_cast<const v11::BodyHeader*>(scalerItem.getBodyHeader());
+            return new v11::CRingScalerItem(
+                pBodyHeader->s_timestamp,
+                pBodyHeader->s_sourceId,
+                pBodyHeader->s_barrier,
+                start, end, clock, scalers, div, incr
+            );
+        } else {
+            // Making a body header-less item is more work:
+            // Since this is the only constructor that does not make a body
+            // header:
+            
+            v11::CRingScalerItem* result = new v11::CRingScalerItem(scalers.size());
+            result->setStartTime(start);
+            result->setEndTime(end);
+            result->setTimestamp(clock);
+            for(int i =0; i < scalers.size(); i++) {
+                result->setScaler(i, scalers[i]);
+            }
+            // Now we have to tweak in is incremntal and the divisor:
+            
+            v11::pScalerItemBody pBody =
+                reinterpret_cast<v11::pScalerItemBody>(result->getBodyPointer());
+            pBody->s_isIncremental = incr ? 1 : 0;
+            pBody->s_intervalDivisor = div;
+            
+            return result;
+        }
     } else {
         throw std::bad_cast();
     }
