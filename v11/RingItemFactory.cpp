@@ -31,6 +31,7 @@
 #include "CRingPhysicsEventCountItem.h"
 #include "CRingScalerItem.h"
 #include "CRingTextItem.h"
+#include "CUnknownFragment.h"
 
 
 #include <string.h>
@@ -687,5 +688,48 @@ RingItemFactory(const ::CRingItem& rhs)
     return pResult;
     
 }
-
+/**
+ * makeUnknownFragment
+ *     Create an event builder fragment with a non-ring item
+ *     payload.
+ *  @param timestamp -event timestamp of the item (not wall clock).
+ *  @param sourceid  - Data Source Id.
+ *  @param barrier   - Barrier type.
+ *  @param size      - Size of the payload.
+ *  @param pPayload  - Pointer to the payload.
+ *  @return ::CUnknownFragment* - pointer to a v11::CUnknownFragment
+ */
+::CUnknownFragment*
+RingItemFactory::makeUnknownFragment(
+    uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+    uint32_t size, void* pPayload
+)
+{
+    return new v11::CUnknownFragment(
+        timestamp, sourceid, barrier, size, pPayload
+    );
+}
+/**
+ * makeUnknownFragment
+ *    Same as above but sort of like a copy constructor.
+ * @param rhs - the item being copied.
+ * @return ::CUnknownFragment* - pointer to a v11 unknown fragment
+ */
+::CUnknownFragment*
+RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
+{
+    if( rhs.type() != v11::EVB_UNKNOWN_PAYLOAD ) {
+        throw std::bad_cast();
+    }
+    const ::CUnknownFragment& item =
+        dynamic_cast<const ::CUnknownFragment&>(rhs);
+    ::CUnknownFragment& ncItem =
+        const_cast<::CUnknownFragment&>(item);
+    return makeUnknownFragment(
+        item.timestamp(), item.source(), item.barrierType(),
+        item.payloadSize(),
+        ncItem.payloadPointer()
+    );
+    
+}
 }                             // v11

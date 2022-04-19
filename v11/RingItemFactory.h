@@ -94,9 +94,9 @@ class RingItemFactory : public ::RingItemFactoryBase
     ) ;
     virtual ::CRingTextItem* makeTextItem(
         uint16_t type,
-                std::vector<std::string> theStrings,
-                uint32_t                 offsetTime,
-                time_t                   timestamp, uint32_t divisor=1
+        std::vector<std::string> theStrings,
+        uint32_t                 offsetTime,
+        time_t                   timestamp, uint32_t divisor=1
     ) ;
     virtual ::CRingTextItem* makeTextItem(const ::CRingItem& rhs) ;
 
