@@ -126,7 +126,7 @@ RingItemFactory::getRingItem(CRingBuffer& ringbuf)
     v11::RingItemHeader hdr;
     ringbuf.get(&hdr, sizeof(hdr));
     v11::CRingItem* pItem = new v11::CRingItem(hdr.s_type, hdr.s_size);
-    size_t remaining = hdr.s_size = sizeof(v11::RingItemHeader);
+    size_t remaining = hdr.s_size - sizeof(v11::RingItemHeader);
     v11::pRingItem pItemStorage =
         reinterpret_cast<v11::pRingItem>(pItem->getItemPointer());
     uint8_t* p = reinterpret_cast<uint8_t*>(&(pItemStorage->s_body));

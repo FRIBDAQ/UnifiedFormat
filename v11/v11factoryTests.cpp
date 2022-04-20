@@ -25,7 +25,11 @@
 #include "DataFormat.h"
 
 #include <CRingItem.h>
+#include "CRingItem.h"  // v11
 #include <string.h>
+#include <CRingBuffer.h>
+
+const char* ringbuffer="v11factoryring";
 
 /*
  * Note in the implementation
@@ -41,6 +45,7 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(base_2);
     CPPUNIT_TEST(base_3);
     CPPUNIT_TEST(base_4);
+    CPPUNIT_TEST(get_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -57,6 +62,8 @@ protected:
     void base_2();
     void base_3();
     void base_4();
+    
+    void get_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -205,4 +212,46 @@ void v11facttest::base_4()
     }
     
     delete pItem;
+}
+// Get an item from a ring buffer
+// This test requires the DAQ be running.
+void v11facttest::get_1()
+{
+    CRingBuffer* pProducer(0);
+    CRingBuffer* pConsumer(0);
+    ::CRingItem* pGotten(0);
+    try {
+        pProducer = CRingBuffer::createAndProduce(ringbuffer);
+        pConsumer = new CRingBuffer(ringbuffer, CRingBuffer::consumer);
+        v11::CRingItem  item(v11::PHYSICS_EVENT, 200);
+        uint16_t* p = reinterpret_cast<uint16_t*>(item.getBodyCursor());
+        for (int i =0; i < 20; i++) {
+            *p++ = i;            
+        }
+        item.setBodyCursor(p);
+        item.updateSize();
+        pProducer->put(item.getItemPointer(), item.size());
+        
+        pGotten = m_pFactory->getRingItem(*pConsumer);
+        ASSERT(!(pGotten == nullptr));
+        EQ(item.size(), pGotten->size());
+        EQ(0, memcmp(item.getItemPointer(), pGotten->getItemPointer(), item.size()));
+        
+        // Check pGotten's cursor.
+        
+        const uint8_t* pBeg = reinterpret_cast<const uint8_t*>(pGotten->getItemPointer());
+        const uint8_t* pEnd = reinterpret_cast<const uint8_t*>(pGotten->getBodyCursor());
+        EQ(ptrdiff_t(pGotten->size()), pEnd - pBeg);
+    }
+    catch (...) {
+        delete pGotten;
+        delete pProducer;
+        delete pConsumer;
+        CRingBuffer::remove(ringbuffer);
+        throw;
+    }
+    delete pGotten;
+    delete pProducer;
+    delete pConsumer;
+    CRingBuffer::remove(ringbuffer);
 }
