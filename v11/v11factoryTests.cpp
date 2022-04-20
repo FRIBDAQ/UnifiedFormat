@@ -168,4 +168,41 @@ void v11facttest::base_3()
 // DUplicate from raw
 
 void v11facttest::base_4()
-{}
+{
+    // Make a raw ring item. might as well put a body header in it:
+    
+    uint8_t buffer[200];
+    v11::pRingItem pRaw = reinterpret_cast<v11::pRingItem>(buffer);
+    pRaw->s_header.s_type = v11::PHYSICS_EVENT;
+    pRaw->s_header.s_size =
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        +  sizeof(uint16_t)*10;   // 10 16 bit payload words.
+    pRaw->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp = 0x1234567890;
+    pRaw->s_body.u_hasBodyHeader.s_bodyHeader.s_sourceId  = 3;
+    pRaw->s_body.u_hasBodyHeader.s_bodyHeader.s_barrier   = 3;
+    pRaw->s_body.u_hasBodyHeader.s_bodyHeader.s_size = sizeof(v11::BodyHeader);
+    
+    uint16_t*  pContents =
+        reinterpret_cast<uint16_t*>(pRaw->s_body.u_hasBodyHeader.s_body);
+    for (int i =0; i < 10; i++) {
+        *pContents++ = i;
+    }
+    ::CRingItem* pItem = m_pFactory->makeRingItem(
+        reinterpret_cast<::pRingItem>(pRaw)
+    );
+    try {
+        EQ(pItem->size(), (pRaw->s_header.s_size));
+        const v11::pRingItem p =
+            reinterpret_cast<const v11::pRingItem>(pItem->getItemPointer());
+        EQ(0, memcmp(p, pRaw, pRaw->s_header.s_size));
+        const uint8_t* beg = reinterpret_cast<const uint8_t*>(p);
+        const uint8_t* end = reinterpret_cast<const uint8_t*>(pItem->getBodyCursor());
+        EQ(ptrdiff_t(pItem->size()), end - beg);
+    }
+    catch(...) {
+        delete pItem;
+        throw;
+    }
+    
+    delete pItem;
+}
