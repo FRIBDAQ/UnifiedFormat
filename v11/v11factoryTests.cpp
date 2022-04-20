@@ -53,6 +53,8 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(get_1);
     CPPUNIT_TEST(get_2);
     CPPUNIT_TEST(get_3);
+    
+    CPPUNIT_TEST(put_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -73,6 +75,8 @@ protected:
     void get_1();
     void get_2();
     void get_3();
+    
+    void put_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -333,6 +337,40 @@ void v11facttest::get_3()
         EQ(ptrdiff_t(pGotten->size()), pEnd - pBeg);
     }
     catch (...) {
+        delete pGotten;
+        throw;
+    }
+    delete pGotten;
+}
+// put to std::ostream:
+
+void v11facttest::put_1()
+{
+    std::stringstream s;
+    ::CRingItem* pGotten(0);
+    try {
+        v11::CRingItem  item(v11::PHYSICS_EVENT, 200);
+        uint16_t* p = reinterpret_cast<uint16_t*>(item.getBodyCursor());
+        for (int i =0; i < 20; i++) {
+            *p++ = i;            
+        }
+        item.setBodyCursor(p);
+        item.updateSize();
+        m_pFactory->putRingItem(&item, s);
+        s.seekg(0);
+        
+        pGotten = m_pFactory->getRingItem(s);
+        ASSERT(pGotten != nullptr);
+        EQ(item.size(), pGotten->size());
+        EQ(0, memcmp(item.getItemPointer(), pGotten->getItemPointer(), item.size()));
+        
+        // Check pGotten's cursor.
+        
+        const uint8_t* pBeg = reinterpret_cast<const uint8_t*>(pGotten->getItemPointer());
+        const uint8_t* pEnd = reinterpret_cast<const uint8_t*>(pGotten->getBodyCursor());
+        EQ(ptrdiff_t(pGotten->size()), pEnd - pBeg);
+    }
+    catch(...) {
         delete pGotten;
         throw;
     }
