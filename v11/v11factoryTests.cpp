@@ -55,6 +55,8 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(get_3);
     
     CPPUNIT_TEST(put_1);
+    CPPUNIT_TEST(put_2);
+    CPPUNIT_TEST(put_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -77,6 +79,8 @@ protected:
     void get_3();
     
     void put_1();
+    void put_2();
+    void put_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -375,4 +379,83 @@ void v11facttest::put_1()
         throw;
     }
     delete pGotten;
+}
+void v11facttest::put_2()
+{
+    int fd = memfd_create("factory-test", 0);
+    ::CRingItem* pGotten(0);
+    try {
+        v11::CRingItem  item(v11::PHYSICS_EVENT, 200);
+        uint16_t* p = reinterpret_cast<uint16_t*>(item.getBodyCursor());
+        for (int i =0; i < 20; i++) {
+            *p++ = i;            
+        }
+        item.setBodyCursor(p);
+        item.updateSize();
+        
+        m_pFactory->putRingItem(&item, fd);
+        lseek(fd, 0, SEEK_SET);
+        pGotten = m_pFactory->getRingItem(fd);
+        ASSERT(pGotten != nullptr);
+        EQ(item.size(), pGotten->size());
+        EQ(0, memcmp(item.getItemPointer(), pGotten->getItemPointer(), item.size()));
+        
+        // Check pGotten's cursor.
+        
+        const uint8_t* pBeg = reinterpret_cast<const uint8_t*>(pGotten->getItemPointer());
+        const uint8_t* pEnd = reinterpret_cast<const uint8_t*>(pGotten->getBodyCursor());
+        EQ(ptrdiff_t(pGotten->size()), pEnd - pBeg);
+    }
+    catch (...) {
+        close(fd);
+        delete pGotten;
+        throw;
+    }
+    close(fd);
+    delete pGotten;
+}
+// put into ringbuffer.
+
+void v11facttest::put_3()
+{
+    CRingBuffer* pProducer(0);
+    CRingBuffer* pConsumer(0);
+    ::CRingItem* pGotten(0);
+    try {
+        pProducer = CRingBuffer::createAndProduce(ringbuffer);
+        pConsumer = new CRingBuffer(ringbuffer, CRingBuffer::consumer);
+        
+        v11::CRingItem  item(v11::PHYSICS_EVENT, 200);
+        uint16_t* p = reinterpret_cast<uint16_t*>(item.getBodyCursor());
+        for (int i =0; i < 20; i++) {
+            *p++ = i;            
+        }
+        item.setBodyCursor(p);
+        item.updateSize();
+        
+        m_pFactory->putRingItem(&item, *pProducer);
+        
+        pGotten = m_pFactory->getRingItem(*pConsumer);
+        ASSERT(pGotten != nullptr);
+        EQ(item.size(), pGotten->size());
+        EQ(0, memcmp(item.getItemPointer(), pGotten->getItemPointer(), item.size()));
+        
+        // Check pGotten's cursor.
+        
+        const uint8_t* pBeg = reinterpret_cast<const uint8_t*>(pGotten->getItemPointer());
+        const uint8_t* pEnd = reinterpret_cast<const uint8_t*>(pGotten->getBodyCursor());
+        EQ(ptrdiff_t(pGotten->size()), pEnd - pBeg);
+    }
+    catch (...) {
+        delete pGotten;
+        delete pProducer;
+        delete pConsumer;
+        CRingBuffer::remove(ringbuffer);
+        throw;
+    }
+    delete pGotten;
+    delete pProducer;
+    delete pConsumer;
+    CRingBuffer::remove(ringbuffer);
+    
 }
