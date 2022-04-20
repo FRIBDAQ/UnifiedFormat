@@ -26,6 +26,9 @@
 
 #include <CRingItem.h>
 #include "CRingItem.h"  // v11
+#include <CAbnormalEndItem.h>
+
+
 #include <string.h>
 #include <CRingBuffer.h>
 #include <sys/mman.h>
@@ -57,6 +60,10 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(put_1);
     CPPUNIT_TEST(put_2);
     CPPUNIT_TEST(put_3);
+    
+    CPPUNIT_TEST(abnormal_1);
+    CPPUNIT_TEST(abnormal_2);
+    CPPUNIT_TEST(abnormal_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -81,6 +88,10 @@ protected:
     void put_1();
     void put_2();
     void put_3();
+    
+    void abnormal_1();
+    void abnormal_2();
+    void abnormal_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -458,4 +469,56 @@ void v11facttest::put_3()
     delete pConsumer;
     CRingBuffer::remove(ringbuffer);
     
+}
+// Create from nothing.
+void v11facttest::abnormal_1()
+{
+    ::CAbnormalEndItem* pItem = m_pFactory->makeAbnormalEndItem();
+    try
+    {
+        EQ(sizeof(v11::AbnormalEndItem), size_t(pItem->size()));
+        EQ(v11::ABNORMAL_ENDRUN, pItem->type());
+        const v11::AbnormalEndItem* p =
+            reinterpret_cast<const v11::AbnormalEndItem*>(pItem->getItemPointer());
+        EQ(sizeof(v11::AbnormalEndItem), size_t(p->s_header.s_size));
+        EQ(v11::ABNORMAL_ENDRUN, p->s_header.s_type);
+        EQ(uint32_t(0), p->s_mbz);
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+    
+}
+// Create from appropriate ring item (copy construction).
+void v11facttest::abnormal_2()
+{
+    ::CAbnormalEndItem* pSrc = m_pFactory->makeAbnormalEndItem();
+    ::CAbnormalEndItem* pCopy(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(pCopy = m_pFactory->makeAbnormalEndItem(*pSrc));
+        EQ(sizeof(v11::AbnormalEndItem), size_t(pCopy->size()));
+        EQ(v11::ABNORMAL_ENDRUN, pCopy->type());
+        const void* p1  = pSrc->getItemPointer();
+        const void* p2  = pCopy->getItemPointer();
+        EQ(0, memcmp(p1,p2, pSrc->size()));
+    }
+    catch (...) {
+        delete pSrc;
+        delete pCopy;
+        throw;
+    }
+    delete pSrc;
+    delete pCopy;
+}
+
+// Create from inappropriate item throws.
+void v11facttest::abnormal_3()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT, 40);
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeAbnormalEndItem(item),
+        std::bad_cast
+    );
 }
