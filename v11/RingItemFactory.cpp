@@ -88,7 +88,10 @@ RingItemFactory::makeRingItem(const ::CRingItem& rhs)
 {
     v11::CRingItem* pItem =  new v11::CRingItem(rhs.type(), rhs.size());
     memcpy(pItem->getItemPointer(), rhs.getItemPointer(), rhs.size());
-    
+    uint8_t* pCursor = reinterpret_cast<uint8_t*>(pItem->getItemPointer());
+    pCursor += rhs.size();
+    pItem->setBodyCursor(pCursor);
+    pItem->updateSize();
     return pItem;
 }
 /**
@@ -103,6 +106,10 @@ RingItemFactory::makeRingItem(const ::RingItem* pRawRing)
         pRawRing->s_header.s_type, pRawRing->s_header.s_size
     );
     memcpy(pItem->getItemPointer(), pRawRing, pRawRing->s_header.s_size);
+    uint8_t* pCursor = reinterpret_cast<uint8_t*>(pItem->getItemPointer());
+    pCursor += pRawRing->s_header.s_size;
+    pItem->setBodyCursor(pCursor);
+    pItem->updateSize();
     return pItem;
 }
 /**
