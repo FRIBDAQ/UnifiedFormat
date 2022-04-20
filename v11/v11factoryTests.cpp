@@ -22,12 +22,13 @@
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
 #include "RingItemFactory.h"
+
 #include "DataFormat.h"
 
 #include <CRingItem.h>
 #include "CRingItem.h"  // v11
 #include <CAbnormalEndItem.h>
-
+#include <CDataFormatItem.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -64,6 +65,11 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(abnormal_1);
     CPPUNIT_TEST(abnormal_2);
     CPPUNIT_TEST(abnormal_3);
+    
+    CPPUNIT_TEST(format_1);
+    CPPUNIT_TEST(format_2);
+    CPPUNIT_TEST(format_3);
+    
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -92,6 +98,10 @@ protected:
     void abnormal_1();
     void abnormal_2();
     void abnormal_3();
+    
+    void format_1();
+    void format_2();
+    void format_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -519,6 +529,77 @@ void v11facttest::abnormal_3()
     v11::CRingItem item(v11::PHYSICS_EVENT, 40);
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeAbnormalEndItem(item),
+        std::bad_cast
+    );
+}
+// Create format item from nothing.
+
+void v11facttest::format_1()
+{
+    ::CDataFormatItem* pItem = m_pFactory->makeDataFormatItem();
+    try {
+        EQ(uint16_t(11), pItem->getMajor());
+        EQ(uint16_t(0), pItem->getMinor());
+        EQ(v11::RING_FORMAT, pItem->type());
+        EQ(sizeof(v11::DataFormat), size_t(pItem->size()));
+        
+        const v11::DataFormat* p =
+            reinterpret_cast<v11::DataFormat*>(pItem->getItemPointer());
+        EQ(v11::RING_FORMAT, p->s_header.s_type);
+        EQ(
+           sizeof(RingItemHeader) + sizeof(uint32_t) + 2*sizeof(uint16_t),
+           size_t(p->s_header.s_size)
+        );
+        EQ(uint32_t(0), p->s_mbz);
+        EQ(uint16_t(11), p->s_majorVersion);
+        EQ(uint16_t(0), p->s_minorVersion);
+        
+    }
+    catch(...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+// create format item from an appropriate other item.
+void v11facttest::format_2()
+{
+    ::CDataFormatItem* pItem = m_pFactory->makeDataFormatItem();
+    ::CDataFormatItem* pCopy(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(pCopy = m_pFactory->makeDataFormatItem(*pItem));
+        EQ(uint16_t(11), pItem->getMajor());
+        EQ(uint16_t(0), pItem->getMinor());
+        EQ(v11::RING_FORMAT, pItem->type());
+        EQ(sizeof(v11::DataFormat), size_t(pItem->size()));
+        
+        const v11::DataFormat* p =
+            reinterpret_cast<v11::DataFormat*>(pItem->getItemPointer());
+        EQ(v11::RING_FORMAT, p->s_header.s_type);
+        EQ(
+           sizeof(RingItemHeader) + sizeof(uint32_t) + 2*sizeof(uint16_t),
+           size_t(p->s_header.s_size)
+        );
+        EQ(uint32_t(0), p->s_mbz);
+        EQ(uint16_t(11), p->s_majorVersion);
+        EQ(uint16_t(0), p->s_minorVersion);
+    }
+    catch(...) {
+        delete pItem;
+        delete pCopy;
+        throw;
+    }
+    delete pItem;
+    delete pCopy;
+
+    
+}
+// create format item from inappropriate item.
+void v11facttest::format_3()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT, 100);
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeDataFormatItem(item),
         std::bad_cast
     );
 }
