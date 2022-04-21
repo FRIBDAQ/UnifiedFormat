@@ -30,6 +30,7 @@
 #include <CAbnormalEndItem.h>
 #include <CDataFormatItem.h>
 #include <CGlomParameters.h>
+#include <CPhysicsEventItem.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -37,6 +38,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sstream>
+#include <memory>
 
 
 const char* ringbuffer="v11factoryring";
@@ -74,6 +76,11 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(glom_1);
     CPPUNIT_TEST(glom_2);
     CPPUNIT_TEST(glom_3);
+    
+    CPPUNIT_TEST(phys_1);
+    CPPUNIT_TEST(phys_2);
+    CPPUNIT_TEST(phys_3);
+    CPPUNIT_TEST(phys_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -110,6 +117,11 @@ protected:
     void glom_1();
     void glom_2();
     void glom_3();
+    
+    void phys_1();
+    void phys_2();
+    void phys_3();
+    void phys_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -679,6 +691,162 @@ void v11facttest::glom_3()
     v11::CRingItem item(v11::PHYSICS_EVENT, 100);
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeGlomParameters(item),
+        std::bad_cast
+    );
+}
+// physics item with no body header.
+
+void v11facttest::phys_1()
+{
+    // Create an item with stuff but no body header.
+    auto pItem = m_pFactory->makePhysicsEventItem(200);
+    uint16_t* pCursor = reinterpret_cast<uint16_t*>(pItem->getBodyCursor());
+    for (int  i =0; i < 20; i++) {
+        *pCursor++ = i;
+    }
+    pItem->setBodyCursor(pCursor);
+    pItem->updateSize();
+    
+    // Check out the item:
+    
+    try {
+        EQ(v11::PHYSICS_EVENT, pItem->type());
+        EQ(
+            sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+            + sizeof(uint16_t)*20,
+            size_t(pItem->size())
+        );
+        // nitty gritty:
+        
+        const v11::PhysicsEventItem* p =
+            reinterpret_cast<const v11::PhysicsEventItem*>(pItem->getItemPointer());
+        EQ(v11::PHYSICS_EVENT, p->s_header.s_type);
+        EQ(
+            sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+            + sizeof(uint16_t)*20,
+            size_t(p->s_header.s_size)
+        );
+        EQ(uint32_t(0), p->s_body.u_noBodyHeader.s_mbz);
+        const uint16_t* payload = reinterpret_cast<const uint16_t*>(pItem->getBodyPointer());
+        for (uint16_t i = 0; i < 20; i++) {
+            EQ(i, *payload);
+            payload++;
+        }
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+// Physics item with body header
+
+void v11facttest::phys_2()
+{
+    // Make the item:
+    
+    auto pItem = m_pFactory->makePhysicsEventItem(
+            0x1234567890, 2, 1, 200
+    );
+    uint16_t* pCursor = reinterpret_cast<uint16_t*>(pItem->getBodyCursor());
+    for (int  i =0; i < 20; i++) {
+        *pCursor++ = i;
+    }
+    pItem->setBodyCursor(pCursor);
+    pItem->updateSize();
+    
+    // test the item:
+    
+    try {
+        EQ(v11::PHYSICS_EVENT, pItem->type());
+        EQ(
+            sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+            + sizeof(uint16_t)*20,
+            size_t(pItem->size())
+        );
+        // nitty gritty:
+        
+        const v11::PhysicsEventItem* p =
+            reinterpret_cast<const v11::PhysicsEventItem*>(pItem->getItemPointer());
+        EQ(v11::PHYSICS_EVENT, p->s_header.s_type);
+        EQ(
+            sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+            + sizeof(uint16_t)*20,
+            size_t(p->s_header.s_size)
+        );
+        EQ(
+           uint32_t(sizeof(v11::BodyHeader)),
+           p->s_body.u_hasBodyHeader.s_bodyHeader.s_size
+        );
+        EQ(uint64_t(0x1234567890), p->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp);
+        EQ(uint32_t(2), p->s_body.u_hasBodyHeader.s_bodyHeader.s_sourceId);
+        EQ(uint32_t(1), p->s_body.u_hasBodyHeader.s_bodyHeader.s_barrier);
+        const uint16_t* payload = reinterpret_cast<const uint16_t*>(pItem->getBodyPointer());
+        for (uint16_t i = 0; i < 20; i++) {
+            EQ(i, *payload);
+            payload++;
+        }
+    } catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+    
+}
+// physics item from another physics item.
+void v11facttest::phys_3()
+{
+    std::unique_ptr<::CPhysicsEventItem> pSource(
+       m_pFactory->makePhysicsEventItem(
+            0x1234567890, 2, 1, 200
+    ));
+    uint16_t* pCursor = reinterpret_cast<uint16_t*>(pSource->getBodyCursor());
+    for (int  i =0; i < 20; i++) {
+        *pCursor++ = i;
+    }
+    pSource->setBodyCursor(pCursor);
+    pSource->updateSize();
+    
+    std::unique_ptr<::CPhysicsEventItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makePhysicsEventItem(*pSource))
+    );
+    EQ(v11::PHYSICS_EVENT, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(uint16_t)*20,
+        size_t(pItem->size())
+    );
+    // nitty gritty:
+    
+    const v11::PhysicsEventItem* p =
+        reinterpret_cast<const v11::PhysicsEventItem*>(pItem->getItemPointer());
+    EQ(v11::PHYSICS_EVENT, p->s_header.s_type);
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(uint16_t)*20,
+        size_t(p->s_header.s_size)
+    );
+    EQ(
+       uint32_t(sizeof(v11::BodyHeader)),
+       p->s_body.u_hasBodyHeader.s_bodyHeader.s_size
+    );
+    EQ(uint64_t(0x1234567890), p->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp);
+    EQ(uint32_t(2), p->s_body.u_hasBodyHeader.s_bodyHeader.s_sourceId);
+    EQ(uint32_t(1), p->s_body.u_hasBodyHeader.s_bodyHeader.s_barrier);
+    const uint16_t* payload = reinterpret_cast<const uint16_t*>(pItem->getBodyPointer());
+    for (uint16_t i = 0; i < 20; i++) {
+        EQ(i, *payload);
+        payload++;
+    }
+    
+}
+// physics item from non physics item throw bad_cast
+void v11facttest::phys_4()
+{
+    std::unique_ptr<::CDataFormatItem> pItem(m_pFactory->makeDataFormatItem());
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makePhysicsEventItem(*pItem),
         std::bad_cast
     );
 }
