@@ -29,6 +29,7 @@
 #include "CRingItem.h"  // v11
 #include <CAbnormalEndItem.h>
 #include <CDataFormatItem.h>
+#include <CGlomParameters.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -69,7 +70,10 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(format_1);
     CPPUNIT_TEST(format_2);
     CPPUNIT_TEST(format_3);
-    
+
+    CPPUNIT_TEST(glom_1);
+    CPPUNIT_TEST(glom_2);
+    CPPUNIT_TEST(glom_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -102,6 +106,10 @@ protected:
     void format_1();
     void format_2();
     void format_3();
+    
+    void glom_1();
+    void glom_2();
+    void glom_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -600,6 +608,77 @@ void v11facttest::format_3()
     v11::CRingItem item(v11::PHYSICS_EVENT, 100);
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeDataFormatItem(item),
+        std::bad_cast
+    );
+}
+//make glom from parameters.
+
+void v11facttest::glom_1()
+{
+    auto pItem = m_pFactory->makeGlomParameters(
+        100, true, v11::GLOM_TIMESTAMP_LAST
+    );
+    try {
+        EQ(v11::EVB_GLOM_INFO, pItem->type());
+        EQ(sizeof(v11::GlomParameters), size_t(pItem->size()));
+        EQ(uint64_t(100), pItem->coincidenceTicks());
+        ASSERT(pItem->isBuilding());
+        EQ(::CGlomParameters::last, pItem->timestampPolicy());
+        
+        const v11::GlomParameters* p =
+            reinterpret_cast<v11::GlomParameters*>(pItem->getItemPointer());
+        EQ(v11::EVB_GLOM_INFO, p->s_header.s_type);
+        EQ(sizeof(v11::GlomParameters), size_t(p->s_header.s_size));
+        EQ(uint32_t(0), p->s_mbz);
+        EQ(uint64_t(100), p->s_coincidenceTicks);
+        ASSERT(p->s_isBuilding);
+        EQ(uint16_t(v11::GLOM_TIMESTAMP_LAST), p->s_timestampPolicy); 
+    }
+    catch (...) {
+        delete pItem;
+        throw;
+    }
+    delete pItem;
+}
+// Make glom via copy construction
+
+void v11facttest::glom_2()
+{
+    auto pItem = m_pFactory->makeGlomParameters(
+        100, true, v11::GLOM_TIMESTAMP_LAST
+    );
+    ::CGlomParameters* pCopy(0);
+    try {
+        CPPUNIT_ASSERT_NO_THROW(pCopy = m_pFactory->makeGlomParameters(*pItem));
+        EQ(v11::EVB_GLOM_INFO, pCopy->type());
+        EQ(sizeof(v11::GlomParameters), size_t(pCopy->size()));
+        EQ(uint64_t(100), pCopy->coincidenceTicks());
+        ASSERT(pCopy->isBuilding());
+        EQ(::CGlomParameters::last, pCopy->timestampPolicy());
+        
+        const v11::GlomParameters* p =
+            reinterpret_cast<v11::GlomParameters*>(pCopy->getItemPointer());
+        EQ(v11::EVB_GLOM_INFO, p->s_header.s_type);
+        EQ(sizeof(v11::GlomParameters), size_t(p->s_header.s_size));
+        EQ(uint32_t(0), p->s_mbz);
+        EQ(uint64_t(100), p->s_coincidenceTicks);
+        ASSERT( p->s_isBuilding);
+        EQ(uint16_t(v11::GLOM_TIMESTAMP_LAST), p->s_timestampPolicy); 
+    }
+    catch (...) {
+        delete pItem;
+        delete pCopy;
+        throw;
+    }
+    delete pItem;
+    delete pCopy;
+}
+// Make glom via inappropriate source item -throws.
+void v11facttest::glom_3()
+{
+    v11::CRingItem item(v11::PHYSICS_EVENT, 100);
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeGlomParameters(item),
         std::bad_cast
     );
 }
