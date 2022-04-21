@@ -885,15 +885,67 @@ void v11facttest::frag_1()
 // construct parameterized fragment with non-empty payload
 void v11facttest::frag_2()
 {
-    
+    uint16_t payload[100];
+    for (int i =0;i < 100; i++) {
+        payload[i] = i;
+    }
+    std::unique_ptr<::CRingFragmentItem> pItem(
+        m_pFactory->makeRingFragmentItem(
+            0x1234567890, 2, sizeof(payload), payload, 1
+        )
+    );
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(payload),
+        size_t(pItem->size())
+    );
+    EQ(v11::EVB_FRAGMENT, pItem->type());
+    EQ(uint64_t(0x1234567890), pItem->timestamp());
+    EQ(uint32_t(2), pItem->source());
+    EQ(uint32_t(1), pItem->barrierType());
+    EQ(sizeof(payload), pItem->payloadSize());
+    const void* p = pItem->payloadPointer();
+    EQ(0, memcmp(payload, p, sizeof(payload)));
 }
 // construct copy of fragment
 void v11facttest::frag_3()
 {
-    
+    uint16_t payload[100];
+    for (int i =0;i < 100; i++) {
+        payload[i] = i;
+    }
+    std::unique_ptr<::CRingFragmentItem> pOriginal(
+        m_pFactory->makeRingFragmentItem(
+            0x1234567890, 2, sizeof(payload), payload, 1
+        )
+    );
+    std::unique_ptr<::CRingFragmentItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(
+            m_pFactory->makeRingFragmentItem(*pOriginal)
+        )
+    );
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(payload),
+        size_t(pItem->size())
+    );
+    EQ(v11::EVB_FRAGMENT, pItem->type());
+    EQ(uint64_t(0x1234567890), pItem->timestamp());
+    EQ(uint32_t(2), pItem->source());
+    EQ(uint32_t(1), pItem->barrierType());
+    EQ(sizeof(payload), pItem->payloadSize());
+    const void* p = pItem->payloadPointer();
+    EQ(0, memcmp(payload, p, sizeof(payload)));
 }
 // copy construction with illegal source
 void v11facttest::frag_4()
 {
-    
+    std::unique_ptr<::CAbnormalEndItem> pBad(
+        m_pFactory->makeAbnormalEndItem()
+    );
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeRingFragmentItem(*pBad),
+        std::bad_cast
+    );
 }
