@@ -39,7 +39,7 @@ namespace v11 {
  */
 CRingFragmentItem::CRingFragmentItem(uint64_t timestamp, uint32_t source, uint32_t payloadSize, 
 				     const void* pBody, uint32_t barrier) :
-  ::CRingFragmentItem(timestamp, source, barrier, pBody, bodySize(payloadSize)) 
+  ::CRingFragmentItem(timestamp, source, payloadSize, pBody, barrier) 
 
 {
   

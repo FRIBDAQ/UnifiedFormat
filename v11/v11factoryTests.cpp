@@ -31,6 +31,7 @@
 #include <CDataFormatItem.h>
 #include <CGlomParameters.h>
 #include <CPhysicsEventItem.h>
+#include <CRingFragmentItem.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -81,6 +82,11 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(phys_2);
     CPPUNIT_TEST(phys_3);
     CPPUNIT_TEST(phys_4);
+    
+    CPPUNIT_TEST(frag_1);
+    CPPUNIT_TEST(frag_2);
+    CPPUNIT_TEST(frag_3);
+    CPPUNIT_TEST(frag_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -122,6 +128,11 @@ protected:
     void phys_2();
     void phys_3();
     void phys_4();
+    
+    void frag_1();
+    void frag_2();
+    void frag_3();
+    void frag_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -849,4 +860,40 @@ void v11facttest::phys_4()
         m_pFactory->makePhysicsEventItem(*pItem),
         std::bad_cast
     );
+}
+
+// Construct parameterized fragment item with empty payload
+void v11facttest::frag_1()
+{
+    std::unique_ptr<::CRingFragmentItem> pItem(
+        m_pFactory->makeRingFragmentItem(
+            0x1234567890, 2, 0, nullptr, 1
+        )
+    );
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader),
+        size_t(pItem->size())
+    );
+    EQ(v11::EVB_FRAGMENT, pItem->type());
+    EQ(uint64_t(0x1234567890), pItem->timestamp());
+    EQ(uint32_t(2), pItem->source());
+    EQ(uint32_t(1), pItem->barrierType());
+    EQ(size_t(0), pItem->payloadSize());
+    
+    
+}
+// construct parameterized fragment with non-empty payload
+void v11facttest::frag_2()
+{
+    
+}
+// construct copy of fragment
+void v11facttest::frag_3()
+{
+    
+}
+// copy construction with illegal source
+void v11facttest::frag_4()
+{
+    
 }
