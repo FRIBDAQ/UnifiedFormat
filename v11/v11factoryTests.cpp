@@ -33,6 +33,7 @@
 #include <CPhysicsEventItem.h>
 #include <CRingFragmentItem.h>
 #include <CRingPhysicsEventCountItem.h>
+#include <CRingScalerItem.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -92,6 +93,11 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(physcount_1);
     CPPUNIT_TEST(physcount_2);
     CPPUNIT_TEST(physcount_3);
+    
+    CPPUNIT_TEST(scaler_1);
+    CPPUNIT_TEST(scaler_2);
+    CPPUNIT_TEST(scaler_3);
+    CPPUNIT_TEST(scaler_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -142,6 +148,13 @@ protected:
     void physcount_1();
     void physcount_2();
     void physcount_3();
+    
+    void scaler_1();
+    void scaler_2();
+    void scaler_3();
+    void scaler_4();
+    
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -1013,6 +1026,103 @@ void v11facttest::physcount_3()
     );
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makePhysicsEventCountItem(*pBad),
+        std::bad_cast
+    );
+}
+// Just construct with space for scalers.
+
+void v11facttest::scaler_1()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<::CRingScalerItem> pItem(m_pFactory->makeScalerItem(32));
+    EQ(v11::PERIODIC_SCALERS, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::ScalerItemBody) + 32*sizeof(uint32_t),
+        size_t(pItem->size())
+    );
+    EQ(uint32_t(0), pItem->getStartTime());
+    EQ(uint32_t(0), pItem->getEndTime());
+    EQ(uint32_t(1), pItem->getTimeDivisor());
+    ASSERT(pItem->getTimestamp() - now <= 1);
+    ASSERT(pItem->isIncremental());
+    EQ(uint32_t(32), pItem->getScalerCount());
+    
+}
+// Construct body header
+void v11facttest::scaler_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i =0; i< 32; i++) {
+        scalers.push_back(i*100);
+    }
+    std::unique_ptr<::CRingScalerItem> pItem(
+        m_pFactory->makeScalerItem(
+            100, 110, now, scalers, true, 10, 2
+        )
+    );
+    EQ(v11::PERIODIC_SCALERS, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(v11::ScalerItemBody) + 32*sizeof(uint32_t),
+        size_t(pItem->size())
+    );
+    EQ(uint32_t(100), pItem->getStartTime());
+    EQ(uint32_t(110), pItem->getEndTime());
+    EQ(uint32_t(2), pItem->getTimeDivisor());
+    EQ(now, pItem->getTimestamp());
+    ASSERT(pItem->isIncremental());
+    EQ(uint32_t(32), pItem->getScalerCount());
+    EQ(uint32_t(10), pItem->getOriginalSourceId());
+    auto got = pItem->getScalers();
+    EQ(0, memcmp(scalers.data(), got.data(), scalers.size()*sizeof(uint32_t)));
+    
+}
+// valid copy construction
+void v11facttest::scaler_3()
+{
+    
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i =0; i< 32; i++) {
+        scalers.push_back(i*100);
+    }
+    std::unique_ptr<::CRingScalerItem> pSrc(
+        m_pFactory->makeScalerItem(
+            100, 110, now, scalers, true, 10, 2
+        )
+    );
+    std::unique_ptr<::CRingScalerItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeScalerItem(*pSrc))
+    );
+    EQ(v11::PERIODIC_SCALERS, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(v11::ScalerItemBody) + 32*sizeof(uint32_t),
+        size_t(pItem->size())
+    );
+    EQ(uint32_t(100), pItem->getStartTime());
+    EQ(uint32_t(110), pItem->getEndTime());
+    EQ(uint32_t(2), pItem->getTimeDivisor());
+    EQ(now, pItem->getTimestamp());
+    ASSERT(pItem->isIncremental());
+    EQ(uint32_t(32), pItem->getScalerCount());
+    EQ(uint32_t(10), pItem->getOriginalSourceId());
+    auto got = pItem->getScalers();
+    EQ(0, memcmp(scalers.data(), got.data(), scalers.size()*sizeof(uint32_t)));
+    
+}
+// invalid copy construction
+
+void v11facttest::scaler_4()
+{
+    std::unique_ptr<::CAbnormalEndItem> pBad(
+        m_pFactory->makeAbnormalEndItem()
+    );
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeScalerItem(*pBad),
         std::bad_cast
     );
 }
