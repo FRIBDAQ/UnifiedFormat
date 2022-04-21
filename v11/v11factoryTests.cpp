@@ -32,6 +32,7 @@
 #include <CGlomParameters.h>
 #include <CPhysicsEventItem.h>
 #include <CRingFragmentItem.h>
+#include <CRingPhysicsEventCountItem.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -87,6 +88,10 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(frag_2);
     CPPUNIT_TEST(frag_3);
     CPPUNIT_TEST(frag_4);
+    
+    CPPUNIT_TEST(physcount_1);
+    CPPUNIT_TEST(physcount_2);
+    CPPUNIT_TEST(physcount_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -133,6 +138,10 @@ protected:
     void frag_2();
     void frag_3();
     void frag_4();
+    
+    void physcount_1();
+    void physcount_2();
+    void physcount_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -946,6 +955,64 @@ void v11facttest::frag_4()
     );
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeRingFragmentItem(*pBad),
+        std::bad_cast
+    );
+}
+// Make a physics trigger count item.
+void v11facttest::physcount_1()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<CRingPhysicsEventCountItem> pItem(
+        m_pFactory->makePhysicsEventCountItem(
+            0x1234567890, 1000, now, 2
+        )
+    );
+    EQ(uint32_t(1000), pItem->getTimeOffset());
+    EQ(uint32_t(2), pItem->getTimeDivisor());
+    EQ(now, pItem->getTimestamp());
+    EQ(uint64_t(0x1234567890), pItem->getEventCount());
+    EQ(v11::PHYSICS_EVENT_COUNT, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::PhysicsEventCountItemBody),
+        size_t(pItem->size())
+    );
+    
+}
+// Copy construct a physics trigger count item
+void v11facttest::physcount_2()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<CRingPhysicsEventCountItem> pOriginal(
+        m_pFactory->makePhysicsEventCountItem(
+            0x1234567890, 1000, now, 2
+        )
+    );
+    std::unique_ptr<CRingPhysicsEventCountItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(
+            m_pFactory->makePhysicsEventCountItem(*pOriginal)
+        )
+    );
+    EQ(uint32_t(1000), pItem->getTimeOffset());
+    EQ(uint32_t(2), pItem->getTimeDivisor());
+    EQ(now, pItem->getTimestamp());
+    EQ(uint64_t(0x1234567890), pItem->getEventCount());
+    EQ(v11::PHYSICS_EVENT_COUNT, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::PhysicsEventCountItemBody),
+        size_t(pItem->size())
+    );
+}
+// invalid copy construction of a physics trigger count item.
+void v11facttest::physcount_3()
+{
+    std::unique_ptr<::CAbnormalEndItem> pBad(
+        m_pFactory->makeAbnormalEndItem()
+    );
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makePhysicsEventCountItem(*pBad),
         std::bad_cast
     );
 }
