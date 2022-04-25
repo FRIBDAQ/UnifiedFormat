@@ -36,6 +36,7 @@
 #include <CRingScalerItem.h>
 #include <CRingTextItem.h>
 #include <CUnknownFragment.h>
+#include <CRingStateChangeItem.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -121,7 +122,12 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(unknown_2);
     CPPUNIT_TEST(unknown_3);
     CPPUNIT_TEST(unknown_4);
-    CPPUNIT_TEST(unknown_5);    
+    CPPUNIT_TEST(unknown_5);
+    
+    CPPUNIT_TEST(state_1);
+    CPPUNIT_TEST(state_2);
+    CPPUNIT_TEST(state_3);
+    CPPUNIT_TEST(state_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -189,6 +195,11 @@ protected:
     void unknown_3();
     void unknown_4();
     void unknown_5();
+    
+    void state_1();
+    void state_2();
+    void state_3();
+    void state_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -1447,4 +1458,123 @@ void v11facttest::unknown_5()
         m_pFactory->makeUnknownFragment(*pSrc),
         std::bad_cast
     );
+}
+// state change item construction
+void v11facttest::state_1()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<::CRingStateChangeItem> pItem(
+        m_pFactory->makeStateChangeItem(
+            v11::BEGIN_RUN, 123, 10, now, "This is a title"
+        )
+    );
+    EQ(v11::BEGIN_RUN, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::StateChangeItemBody),
+        size_t(pItem->size())
+    );
+    const v11::StateChangeItem* pI =
+        reinterpret_cast<const v11::StateChangeItem*>(pItem->getItemPointer());
+    EQ(uint32_t(0), pI->s_body.u_noBodyHeader.s_mbz);
+    const v11::StateChangeItemBody* p =
+        reinterpret_cast<const v11::StateChangeItemBody*>(
+            &(pI->s_body.u_noBodyHeader.s_body)
+        );
+    EQ(uint32_t(123), p->s_runNumber);
+    EQ(uint32_t(10), p->s_timeOffset);
+    EQ(uint32_t(now), p->s_Timestamp);
+    EQ(uint32_t(1), p->s_offsetDivisor);
+    std::string title(p->s_title);
+    EQ(std::string("This is a title"), title);
+    
+}
+// state change item from existing:
+void v11facttest::state_2()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<::CRingStateChangeItem> pSrc(
+        m_pFactory->makeStateChangeItem(
+            v11::BEGIN_RUN, 123, 10, now, "This is a title"
+        )
+    );
+    std::unique_ptr<::CRingStateChangeItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeStateChangeItem(*pSrc))
+    );
+    EQ(v11::BEGIN_RUN, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::StateChangeItemBody),
+        size_t(pItem->size())
+    );
+    const v11::StateChangeItem* pI =
+        reinterpret_cast<const v11::StateChangeItem*>(pItem->getItemPointer());
+    EQ(uint32_t(0), pI->s_body.u_noBodyHeader.s_mbz);
+    const v11::StateChangeItemBody* p =
+        reinterpret_cast<const v11::StateChangeItemBody*>(
+            &(pI->s_body.u_noBodyHeader.s_body)
+        );
+    EQ(uint32_t(123), p->s_runNumber);
+    EQ(uint32_t(10), p->s_timeOffset);
+    EQ(uint32_t(now), p->s_Timestamp);
+    EQ(uint32_t(1), p->s_offsetDivisor);
+    std::string title(p->s_title);
+    EQ(std::string("This is a title"), title);
+}
+// state change item from body header existing
+void v11facttest::state_3()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<::CRingStateChangeItem> pSrc(
+        m_pFactory->makeStateChangeItem(
+            v11::BEGIN_RUN, 123, 10, now, "This is a title"
+        )
+    );
+    pSrc->setBodyHeader(
+        0x1234567890, 2, 3
+    );
+    std::unique_ptr<::CRingStateChangeItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeStateChangeItem(*pSrc))
+    );
+    EQ(v11::BEGIN_RUN, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(v11::StateChangeItemBody),
+        size_t(pItem->size())
+    );
+    const v11::StateChangeItem* pI =
+        reinterpret_cast<const v11::StateChangeItem*>(pItem->getItemPointer());
+    EQ(uint32_t(sizeof(v11::BodyHeader)), pI->s_body.u_hasBodyHeader.s_bodyHeader.s_size);
+    
+    const v11::BodyHeader* pBh =
+        reinterpret_cast<const v11::BodyHeader*>(&(pI->s_body.u_hasBodyHeader.s_bodyHeader));
+    EQ(uint64_t(0x1234567890), pBh->s_timestamp);
+    EQ(uint32_t(2), pBh->s_sourceId);
+    EQ(uint32_t(3), pBh->s_barrier);
+       
+    const v11::StateChangeItemBody* p =
+        reinterpret_cast<const v11::StateChangeItemBody*>(
+            &(pI->s_body.u_hasBodyHeader.s_body)
+        );
+    EQ(uint32_t(123), p->s_runNumber);
+    EQ(uint32_t(10), p->s_timeOffset);
+    EQ(uint32_t(now), p->s_Timestamp);
+    EQ(uint32_t(1), p->s_offsetDivisor);
+    std::string title(p->s_title);
+    EQ(std::string("This is a title"), title);
+}
+// state change item from bad source.
+
+void v11facttest::state_4()
+{
+    std::unique_ptr<::CAbnormalEndItem> pItem(
+        m_pFactory->makeAbnormalEndItem()
+    );
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(*pItem),
+        std::bad_cast
+    );
+    
 }
