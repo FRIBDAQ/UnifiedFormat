@@ -34,6 +34,7 @@
 #include <CRingFragmentItem.h>
 #include <CRingPhysicsEventCountItem.h>
 #include <CRingScalerItem.h>
+#include <CRingTextItem.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -46,6 +47,16 @@
 
 const char* ringbuffer="v11factoryring";
 
+static const size_t
+strVecLen(const std::vector<std::string>& v) {
+    size_t result = 0;
+    
+    for (size_t i = 0; i < v.size(); i++) {
+        result += v[i].size() +1;
+    }
+    
+    return result;
+}
 /*
  * Note in the implementation
  * the try/catch blocks use that assertion failures are signaled
@@ -98,6 +109,12 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(scaler_2);
     CPPUNIT_TEST(scaler_3);
     CPPUNIT_TEST(scaler_4);
+    
+    CPPUNIT_TEST(txt_1);
+    CPPUNIT_TEST(txt_2);
+    CPPUNIT_TEST(txt_3);
+    CPPUNIT_TEST(txt_4);
+    CPPUNIT_TEST(txt_5);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -154,7 +171,11 @@ protected:
     void scaler_3();
     void scaler_4();
     
-    
+    void txt_1();
+    void txt_2();
+    void txt_3();
+    void txt_4();
+    void txt_5();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -1123,6 +1144,176 @@ void v11facttest::scaler_4()
     );
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeScalerItem(*pBad),
+        std::bad_cast
+    );
+}
+// TexT item from minimal parameters.
+void v11facttest::txt_1()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three string", "four",
+        "red string", "blue string", "green string", "more"
+    };
+    time_t now = time (nullptr);
+    std::unique_ptr<::CRingTextItem> pItem(
+        m_pFactory->makeTextItem(v11::MONITORED_VARIABLES, strings));
+    EQ(v11::MONITORED_VARIABLES, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::TextItemBody) + strVecLen(strings),
+        size_t(pItem->size())
+    );
+    
+    const v11::TextItem* p =
+        reinterpret_cast<const v11::TextItem*>(pItem->getItemPointer());
+    EQ(uint32_t(0), p->s_body.u_noBodyHeader.s_mbz);
+    const v11::TextItemBody* pBody =
+        &(p->s_body.u_noBodyHeader.s_body);
+    EQ(uint32_t(0), pBody->s_timeOffset);
+    ASSERT(pBody->s_timestamp - now <= 1);
+    EQ(strings.size(), size_t(pBody->s_stringCount));
+    EQ(uint32_t(1), pBody->s_offsetDivisor);
+    const char* ps = pBody->s_strings;
+    for(int i = 0; i < strings.size(); i++) {
+        std::string s(ps);
+        EQ(strings[i], s);
+        ps += s.size() +1;
+    }
+    
+}
+// text item from full parameterization (still no body header).
+void v11facttest::txt_2()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three string", "four",
+        "red string", "blue string", "green string", "more"
+    };
+    time_t now = time (nullptr);
+    std::unique_ptr<::CRingTextItem> pItem(
+        m_pFactory->makeTextItem(
+            v11::MONITORED_VARIABLES, strings, 10, now, 2
+        ));
+    
+    EQ(v11::MONITORED_VARIABLES, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::TextItemBody) + strVecLen(strings),
+        size_t(pItem->size())
+    );
+    
+    const v11::TextItem* p =
+        reinterpret_cast<const v11::TextItem*>(pItem->getItemPointer());
+    EQ(uint32_t(0), p->s_body.u_noBodyHeader.s_mbz);
+    const v11::TextItemBody* pBody =
+        &(p->s_body.u_noBodyHeader.s_body);
+    EQ(uint32_t(10), pBody->s_timeOffset);
+    EQ(now, time_t(pBody->s_timestamp));
+    EQ(strings.size(), size_t(pBody->s_stringCount));
+    EQ(uint32_t(2), pBody->s_offsetDivisor);
+    const char* ps = pBody->s_strings;
+    for(int i = 0; i < strings.size(); i++) {
+        std::string s(ps);
+        EQ(strings[i], s);
+        ps += s.size() +1;
+    }
+    
+}
+// Text item from non body header text item.
+void v11facttest::txt_3()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three string", "four",
+        "red string", "blue string", "green string", "more"
+    };
+    time_t now = time (nullptr);
+    std::unique_ptr<::CRingTextItem> pSrc(
+        m_pFactory->makeTextItem(
+            v11::MONITORED_VARIABLES, strings, 10, now, 2
+        ));
+    std::unique_ptr<::CRingTextItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeTextItem(*pSrc))
+    );
+    EQ(v11::MONITORED_VARIABLES, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(uint32_t)
+        + sizeof(v11::TextItemBody) + strVecLen(strings),
+        size_t(pItem->size())
+    );
+    
+    const v11::TextItem* p =
+        reinterpret_cast<const v11::TextItem*>(pItem->getItemPointer());
+    EQ(uint32_t(0), p->s_body.u_noBodyHeader.s_mbz);
+    const v11::TextItemBody* pBody =
+        &(p->s_body.u_noBodyHeader.s_body);
+    EQ(uint32_t(10), pBody->s_timeOffset);
+    EQ(now, time_t(pBody->s_timestamp));
+    EQ(strings.size(), size_t(pBody->s_stringCount));
+    EQ(uint32_t(2), pBody->s_offsetDivisor);
+    const char* ps = pBody->s_strings;
+    for(int i = 0; i < strings.size(); i++) {
+        std::string s(ps);
+        EQ(strings[i], s);
+        ps += s.size() +1;
+    }
+}
+// text item from body header text item:
+void v11facttest::txt_4()
+{
+    std::vector<std::string> strings = {
+        "one string", "two string", "three string", "four",
+        "red string", "blue string", "green string", "more"
+    };
+    time_t now = time (nullptr);
+    std::unique_ptr<::CRingTextItem> pSrc(
+        m_pFactory->makeTextItem(
+            v11::MONITORED_VARIABLES, strings, 10, now, 2
+        ));
+    // Add a body header:
+    
+    pSrc->setBodyHeader(uint64_t(0x1234567890), 2, 3);
+    
+    std::unique_ptr<::CRingTextItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeTextItem(*pSrc))
+    );
+    EQ(v11::MONITORED_VARIABLES, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader)
+        + sizeof(v11::TextItemBody) + strVecLen(strings),
+        size_t(pItem->size())
+    );
+    
+    const v11::TextItem* p =
+        reinterpret_cast<const v11::TextItem*>(pItem->getItemPointer());
+    
+    const v11::BodyHeader*  pBh =
+        &(p->s_body.u_hasBodyHeader.s_bodyHeader);
+    EQ(sizeof(v11::BodyHeader), size_t(pBh->s_size));
+    EQ(uint64_t(0x1234567890), pBh->s_timestamp);
+    EQ(uint32_t(2), pBh->s_sourceId);
+    EQ(uint32_t(3), pBh->s_barrier);
+    
+    const v11::TextItemBody* pBody =
+        &(p->s_body.u_hasBodyHeader.s_body);
+    EQ(uint32_t(10), pBody->s_timeOffset);
+    EQ(now, time_t(pBody->s_timestamp));
+    EQ(strings.size(), size_t(pBody->s_stringCount));
+    EQ(uint32_t(2), pBody->s_offsetDivisor);
+    const char* ps = pBody->s_strings;
+    for(int i = 0; i < strings.size(); i++) {
+        std::string s(ps);
+        EQ(strings[i], s);
+        ps += s.size() +1;
+    }
+}
+// Text item from bad rhs
+void v11facttest::txt_5()
+{
+    std::unique_ptr<::CAbnormalEndItem> pSource(
+        m_pFactory->makeAbnormalEndItem());
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeTextItem(*pSource),
         std::bad_cast
     );
 }
