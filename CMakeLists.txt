@@ -18,5 +18,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_subdirectory(abstract)
 add_subdirectory(v10)
 add_subdirectory(v11)
-
+add_subdirectory(v12)
 
