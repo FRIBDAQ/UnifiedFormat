@@ -1,5 +1,6 @@
 set (v12headers
-    CRingItem.h
+  DataFormat.h
+  CRingItem.h
 )
 set (v12sources
     CRingItem.cpp
