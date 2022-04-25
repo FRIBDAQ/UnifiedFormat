@@ -1,6 +1,8 @@
 set (v12headers
+    CRingItem.h
 )
 set (v12sources
+    CRingItem.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
