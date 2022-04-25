@@ -35,6 +35,7 @@
 #include <CRingPhysicsEventCountItem.h>
 #include <CRingScalerItem.h>
 #include <CRingTextItem.h>
+#include <CUnknownFragment.h>
 
 #include <string.h>
 #include <CRingBuffer.h>
@@ -115,6 +116,12 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(txt_3);
     CPPUNIT_TEST(txt_4);
     CPPUNIT_TEST(txt_5);
+    
+    CPPUNIT_TEST(unknown_1);
+    CPPUNIT_TEST(unknown_2);
+    CPPUNIT_TEST(unknown_3);
+    CPPUNIT_TEST(unknown_4);
+    CPPUNIT_TEST(unknown_5);    
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -176,6 +183,12 @@ protected:
     void txt_3();
     void txt_4();
     void txt_5();
+    
+    void unknown_1();
+    void unknown_2();
+    void unknown_3();
+    void unknown_4();
+    void unknown_5();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -1314,6 +1327,124 @@ void v11facttest::txt_5()
         m_pFactory->makeAbnormalEndItem());
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeTextItem(*pSource),
+        std::bad_cast
+    );
+}
+// Parameterized unknown fragment type.
+void v11facttest::unknown_1()
+{
+    uint8_t payload[100];
+    for (int i =0; i < 100; i++) payload[i] = i;
+    
+    std::unique_ptr<::CUnknownFragment> pItem(
+        m_pFactory->makeUnknownFragment(
+            0x1234567890, 2, 1, sizeof(payload), payload
+        )
+    );
+    EQ(v11::EVB_UNKNOWN_PAYLOAD, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader)  + sizeof(v11::BodyHeader)
+        + sizeof(payload),
+        size_t(pItem->size())
+    );
+    const v11::EventBuilderFragment* p =
+        reinterpret_cast<const v11::EventBuilderFragment*>(pItem->getItemPointer());
+    EQ(sizeof(v11::BodyHeader), size_t(p->s_bodyHeader.s_size));
+    EQ(uint64_t(0x1234567890), p->s_bodyHeader.s_timestamp);
+    EQ(uint32_t(2), p->s_bodyHeader.s_sourceId);
+    EQ(uint32_t(1), p->s_bodyHeader.s_barrier);
+    
+    EQ(0, memcmp(payload, p->s_body, sizeof(payload)));
+        
+}   
+// unknown fragment with null payload.
+void v11facttest::unknown_2()
+{
+    std::unique_ptr<::CUnknownFragment> pItem(
+        m_pFactory->makeUnknownFragment(
+            0x1234567890, 2, 1, 0, nullptr
+        )
+    );
+    EQ(v11::EVB_UNKNOWN_PAYLOAD, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader)  + sizeof(v11::BodyHeader),
+        size_t(pItem->size())
+    );
+    const v11::EventBuilderFragment* p =
+        reinterpret_cast<const v11::EventBuilderFragment*>(pItem->getItemPointer());
+    EQ(sizeof(v11::BodyHeader), size_t(p->s_bodyHeader.s_size));
+    EQ(uint64_t(0x1234567890), p->s_bodyHeader.s_timestamp);
+    EQ(uint32_t(2), p->s_bodyHeader.s_sourceId);
+    EQ(uint32_t(1), p->s_bodyHeader.s_barrier);
+
+}
+//Unknown fragment from ring item ok.
+void v11facttest::unknown_3()
+{
+    uint8_t payload[100];
+    for (int i =0; i < 100; i++) payload[i] = i;
+    
+    std::unique_ptr<::CUnknownFragment> pSrc(
+        m_pFactory->makeUnknownFragment(
+            0x1234567890, 2, 1, sizeof(payload), payload
+        )
+    );
+    std::unique_ptr<::CUnknownFragment> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(
+            m_pFactory->makeUnknownFragment(*pSrc)
+        )
+    );
+    EQ(v11::EVB_UNKNOWN_PAYLOAD, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader)  + sizeof(v11::BodyHeader)
+        + sizeof(payload),
+        size_t(pItem->size())
+    );
+    const v11::EventBuilderFragment* p =
+        reinterpret_cast<const v11::EventBuilderFragment*>(pItem->getItemPointer());
+    EQ(sizeof(v11::BodyHeader), size_t(p->s_bodyHeader.s_size));
+    EQ(uint64_t(0x1234567890), p->s_bodyHeader.s_timestamp);
+    EQ(uint32_t(2), p->s_bodyHeader.s_sourceId);
+    EQ(uint32_t(1), p->s_bodyHeader.s_barrier);
+    
+    EQ(0, memcmp(payload, p->s_body, sizeof(payload)));
+}
+// Unknown fragment from ring item  with null payload
+void v11facttest::unknown_4()
+{
+    std::unique_ptr<::CUnknownFragment> pSrc(
+        m_pFactory->makeUnknownFragment(
+            0x1234567890, 2, 1, 0, nullptr
+        )
+    );
+    std::unique_ptr<::CUnknownFragment> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(
+            m_pFactory->makeUnknownFragment(*pSrc)
+        )
+    );
+    EQ(v11::EVB_UNKNOWN_PAYLOAD, pItem->type());
+    EQ(
+        sizeof(v11::RingItemHeader)  + sizeof(v11::BodyHeader),
+        size_t(pItem->size())
+    );
+    const v11::EventBuilderFragment* p =
+        reinterpret_cast<const v11::EventBuilderFragment*>(pItem->getItemPointer());
+    EQ(sizeof(v11::BodyHeader), size_t(p->s_bodyHeader.s_size));
+    EQ(uint64_t(0x1234567890), p->s_bodyHeader.s_timestamp);
+    EQ(uint32_t(2), p->s_bodyHeader.s_sourceId);
+    EQ(uint32_t(1), p->s_bodyHeader.s_barrier);
+}
+// unknonw fragment from bad source type:
+
+void v11facttest::unknown_5()
+{
+    std::unique_ptr<::CAbnormalEndItem> pSrc(
+        m_pFactory->makeAbnormalEndItem()
+    );
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeUnknownFragment(*pSrc),
         std::bad_cast
     );
 }
