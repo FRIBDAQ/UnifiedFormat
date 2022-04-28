@@ -28,6 +28,11 @@ class v12ringtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12ringtest);
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
+    
+    CPPUNIT_TEST(bodysize_1);
+    CPPUNIT_TEST(bodysize_2);
+    CPPUNIT_TEST(bodysize_3);
+    CPPUNIT_TEST(bodysize_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -42,6 +47,11 @@ public:
 protected:
     void construct_1();
     void construct_2();
+    
+    void bodysize_1();
+    void bodysize_2();
+    void bodysize_3();
+    void bodysize_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12ringtest);
@@ -101,4 +111,45 @@ void v12ringtest::construct_2()
         reinterpret_cast<const uint8_t*>(item.getBodyCursor());
     EQ(reinterpret_cast<const uint8_t*>(pItem->s_body.u_hasBodyHeader.s_body), pbody);
 
+}
+// body size for zero length no body header:
+
+void v12ringtest::bodysize_1()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    EQ(size_t(0), item.getBodySize());
+}
+// non zero body length no body header.
+
+void v12ringtest::bodysize_2()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    uint8_t* p = reinterpret_cast<uint8_t*>(item.getBodyCursor());
+    p += 100;                // 100 bytes of body.
+    item.setBodyCursor(p);
+    item.updateSize();
+    EQ(size_t(100), item.getBodySize());
+}
+// body size zero length body header.
+void v12ringtest::bodysize_3()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT,
+        0x1234567890, 1, 2, 100
+    );
+    EQ(size_t(0), item.getBodySize());
+}
+// non zeor length body with body header.
+
+void v12ringtest::bodysize_4()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT,
+        0x1234567890, 1, 2, 100
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(item.getBodyCursor());
+    p += 100;                // 100 bytes of body.
+    item.setBodyCursor(p);
+    item.updateSize();
+    EQ(size_t(100), item.getBodySize());
 }
