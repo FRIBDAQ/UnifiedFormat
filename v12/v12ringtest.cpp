@@ -33,6 +33,11 @@ class v12ringtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(bodysize_2);
     CPPUNIT_TEST(bodysize_3);
     CPPUNIT_TEST(bodysize_4);
+    
+    CPPUNIT_TEST(bodyptr_1);
+    CPPUNIT_TEST(bodyptr_2);
+    CPPUNIT_TEST(bodyptr_3);
+    CPPUNIT_TEST(bodyptr_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -52,6 +57,11 @@ protected:
     void bodysize_2();
     void bodysize_3();
     void bodysize_4();
+    
+    void bodyptr_1();
+    void bodyptr_2();
+    void bodyptr_3();
+    void bodyptr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12ringtest);
@@ -152,4 +162,59 @@ void v12ringtest::bodysize_4()
     item.setBodyCursor(p);
     item.updateSize();
     EQ(size_t(100), item.getBodySize());
+}
+// body pointer with no body header non const
+
+void v12ringtest::bodyptr_1()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    void* pBody = item.getBodyPointer();
+    v12::pRingItem pItem = reinterpret_cast<v12::pRingItem>(item.getItemPointer());
+    EQ(
+        reinterpret_cast<uint8_t*>(pItem->s_body.u_noBodyHeader.s_body),
+        reinterpret_cast<uint8_t*>(pBody)
+    );
+        
+}
+// const body pointer with no body header.
+
+void v12ringtest::bodyptr_2()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    const void* pBody = item.getBodyPointer();
+    const v12::RingItem* pItem =
+        reinterpret_cast<const v12::RingItem*>(item.getItemPointer());
+    EQ(
+        reinterpret_cast<const uint8_t*>(pItem->s_body.u_noBodyHeader.s_body),
+        reinterpret_cast<const uint8_t*>(pBody)
+    );
+                
+}
+// non const body pointer with body header:
+
+void v12ringtest::bodyptr_3()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT, 0x1234567890, 1, 2    
+    );
+    void* pBody = item.getBodyPointer();
+    v12::pRingItem pItem = reinterpret_cast<v12::pRingItem>(item.getItemPointer());
+    EQ(
+        reinterpret_cast<uint8_t*>(pItem->s_body.u_hasBodyHeader.s_body),
+        reinterpret_cast<uint8_t*>(pBody)
+    );
+}
+// const body pointer with body header:
+void v12ringtest::bodyptr_4()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT, 0x1234567890, 1, 2    
+    );
+    const void* pBody = item.getBodyPointer();
+    const v12::RingItem* pItem =
+        reinterpret_cast<const v12::RingItem*>(item.getItemPointer());
+    EQ(
+        reinterpret_cast<const uint8_t*>(pItem->s_body.u_hasBodyHeader.s_body),
+        reinterpret_cast<const uint8_t*>(pBody)
+    );
 }
