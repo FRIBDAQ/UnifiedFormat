@@ -23,6 +23,7 @@
 #include "Asserts.h"
 #include "CRingItem.h"
 #include "DataFormat.h"
+#include <stdexcept>
 
 class v12ringtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12ringtest);
@@ -46,6 +47,9 @@ class v12ringtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getbodyhdr_1);
     CPPUNIT_TEST(getbodyhdr_2);
+    
+    CPPUNIT_TEST(ts_1);
+    CPPUNIT_TEST(ts_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -78,6 +82,9 @@ protected:
     
     void getbodyhdr_1();
     void getbodyhdr_2();
+    
+    void ts_1();
+    void ts_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12ringtest);
@@ -275,4 +282,27 @@ void v12ringtest::getbodyhdr_2()
         reinterpret_cast<v12::pBodyHeader>(&pItem->s_body.u_hasBodyHeader.s_bodyHeader),
         reinterpret_cast<v12::pBodyHeader>(pBH)
     );
+}
+// timestamp no body header is logic error:
+
+void v12ringtest::ts_1()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    CPPUNIT_ASSERT_THROW(
+        item.getEventTimestamp(),
+        std::logic_error
+    );
+}
+// Timestamp with body header:
+
+void v12ringtest::ts_2()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT, 0x1234567890, 1, 2
+    );
+    uint64_t ts;
+    CPPUNIT_ASSERT_NO_THROW(
+        ts = item.getEventTimestamp();
+    );
+    EQ(uint64_t(0x1234567890), ts);
 }
