@@ -38,6 +38,11 @@ class v12ringtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(bodyptr_2);
     CPPUNIT_TEST(bodyptr_3);
     CPPUNIT_TEST(bodyptr_4);
+    
+    CPPUNIT_TEST(swap);
+    
+    CPPUNIT_TEST(hasbodyhdr_1);
+    CPPUNIT_TEST(hasbodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -62,6 +67,11 @@ protected:
     void bodyptr_2();
     void bodyptr_3();
     void bodyptr_4();
+    
+    void swap();
+    
+    void hasbodyhdr_1();
+    void hasbodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12ringtest);
@@ -217,4 +227,25 @@ void v12ringtest::bodyptr_4()
         reinterpret_cast<const uint8_t*>(pItem->s_body.u_hasBodyHeader.s_body),
         reinterpret_cast<const uint8_t*>(pBody)
     );
+}
+// bit of white box we know it returns a const just make sure it's
+// the right one:
+void v12ringtest::swap()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    ASSERT(!item.mustSwap());
+}
+// has no body header:
+void v12ringtest::hasbodyhdr_1()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    ASSERT(!item.hasBodyHeader());
+}
+// has body header
+void v12ringtest::hasbodyhdr_2()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT,
+        0x1234567890, 2, 1
+    );
+    ASSERT(item.hasBodyHeader());
 }
