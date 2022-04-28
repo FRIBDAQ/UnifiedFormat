@@ -43,6 +43,9 @@ class v12ringtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(hasbodyhdr_1);
     CPPUNIT_TEST(hasbodyhdr_2);
+    
+    CPPUNIT_TEST(getbodyhdr_1);
+    CPPUNIT_TEST(getbodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -72,6 +75,9 @@ protected:
     
     void hasbodyhdr_1();
     void hasbodyhdr_2();
+    
+    void getbodyhdr_1();
+    void getbodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12ringtest);
@@ -248,4 +254,25 @@ void v12ringtest::hasbodyhdr_2()
         0x1234567890, 2, 1
     );
     ASSERT(item.hasBodyHeader());
+}
+// get body header from non body header:
+
+void v12ringtest::getbodyhdr_1()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    ASSERT(item.getBodyHeader() == nullptr);
+}
+void v12ringtest::getbodyhdr_2()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT<
+        0x1234567890, 1, 2
+    );
+    void* pBH = item.getBodyHeader();
+    ASSERT(pBH);
+    v12::pRingItem pItem = reinterpret_cast<v12::pRingItem>(item.getItemPointer());
+    EQ(
+        reinterpret_cast<v12::pBodyHeader>(&pItem->s_body.u_hasBodyHeader.s_bodyHeader),
+        reinterpret_cast<v12::pBodyHeader>(pBH)
+    );
 }
