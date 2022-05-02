@@ -50,6 +50,9 @@ class v12ringtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(ts_1);
     CPPUNIT_TEST(ts_2);
+    
+    CPPUNIT_TEST(src_1);
+    CPPUNIT_TEST(src_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -85,6 +88,9 @@ protected:
     
     void ts_1();
     void ts_2();
+    
+    void src_1();
+    void src_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12ringtest);
@@ -305,4 +311,27 @@ void v12ringtest::ts_2()
         ts = item.getEventTimestamp();
     );
     EQ(uint64_t(0x1234567890), ts);
+}
+// sourceid with no body header is a logic error:
+
+void v12ringtest::src_1()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    CPPUNIT_ASSERT_THROW(
+        item.getSourceId(),
+        std::logic_error
+    );
+}
+// sourceid with body header gets it:
+
+void v12ringtest::src_2()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT, 0x1234567890, 1, 2
+    );
+    uint32_t src;
+    CPPUNIT_ASSERT_NO_THROW(
+        src = item.getSourceId()
+    );
+    EQ(uint32_t(1), src);
 }
