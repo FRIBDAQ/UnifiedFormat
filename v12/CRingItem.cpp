@@ -254,6 +254,14 @@ CRingItem::setBodyHeader(
        v12::pRingItem pItem = reinterpret_cast<v12::pRingItem>(getItemPointer());
        pBh = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
        pBh->s_size= sizeof(v12::BodyHeader);
+       
+       // Set new body cursor and size:
+       
+       uint8_t* p = reinterpret_cast<uint8_t*>(getBodyCursor());
+       p += sizeof(v12::BodyHeader) - sizeof(uint32_t);
+       setBodyCursor(p);
+       updateSize();
+       
    } else {
     
        pBh = reinterpret_cast<v12::pBodyHeader>(getBodyHeader());
