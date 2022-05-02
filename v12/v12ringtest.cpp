@@ -53,6 +53,9 @@ class v12ringtest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(src_1);
     CPPUNIT_TEST(src_2);
+    
+    CPPUNIT_TEST(barrier_1);
+    CPPUNIT_TEST(barrier_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -91,6 +94,9 @@ protected:
     
     void src_1();
     void src_2();
+    
+    void barrier_1();
+    void barrier_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12ringtest);
@@ -334,4 +340,28 @@ void v12ringtest::src_2()
         src = item.getSourceId()
     );
     EQ(uint32_t(1), src);
+}
+// getBarrierType with no body header is std::logic_error
+
+void v12ringtest::barrier_1()
+{
+    v12::CRingItem item(v12::PHYSICS_EVENT);
+    CPPUNIT_ASSERT_THROW(
+        item.getBarrierType(),
+        std::logic_error
+    );
+}
+
+// getBarrierType with body header gets it:
+
+void v12ringtest::barrier_2()
+{
+    v12::CRingItem item(
+        v12::PHYSICS_EVENT, 0x1234567890, 1, 2
+    );
+    uint32_t b;
+    CPPUNIT_ASSERT_NO_THROW(
+        b = item.getBarrierType()
+    );
+    EQ(uint32_t(2), b);
 }
