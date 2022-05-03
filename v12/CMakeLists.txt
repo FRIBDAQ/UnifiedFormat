@@ -2,10 +2,12 @@ set (v12headers
   DataFormat.h
   CRingItem.h
   CAbnormalEndItem.h
+  CDataFormatItem.h
 )
 set (v12sources
   CRingItem.cpp
   CAbnormalEndItem.cpp
+  CDataFormatItem.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
