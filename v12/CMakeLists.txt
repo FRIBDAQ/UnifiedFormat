@@ -3,11 +3,13 @@ set (v12headers
   CRingItem.h
   CAbnormalEndItem.h
   CDataFormatItem.h
+  CGlomParameters.h
 )
 set (v12sources
   CRingItem.cpp
   CAbnormalEndItem.cpp
   CDataFormatItem.cpp
+  CGlomParameters.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
