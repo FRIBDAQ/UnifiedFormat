@@ -37,6 +37,7 @@ install(FILES
 add_executable(v12unittests
   TestRunner.cpp
   v12ringtest.cpp
+  v12abend.cpp
 )
 
 target_link_libraries(v12unittests AbstractFormat V12Format cppunit)
