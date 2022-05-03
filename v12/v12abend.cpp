@@ -23,11 +23,13 @@
 #include "Asserts.h"
 #include "CAbnormalEndItem.h"
 #include "DataFormat.h"
-
+#include <stdexcept>
 
 class v12abendtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12abendtest);
     CPPUNIT_TEST(construct);
+    CPPUNIT_TEST(getbodyhdr);
+    CPPUNIT_TEST(setbodyhdr);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -41,6 +43,8 @@ public:
     }
 protected:
     void construct();
+    void getbodyhdr();
+    void setbodyhdr();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12abendtest);
@@ -57,4 +61,19 @@ void v12abendtest::construct()
     EQ(v12::ABNORMAL_ENDRUN, pItem->s_header.s_type);
     EQ(sizeof(v12::AbnormalEndItem), size_t(pItem->s_header.s_size));
        
+}
+// getting body header gives nullptr.;
+void v12abendtest::getbodyhdr()
+{
+    v12::CAbnormalEndItem item;
+    ASSERT(nullptr == item.getBodyHeader());
+}
+// Setting body header throws logic error.
+void v12abendtest::setbodyhdr()
+{
+    v12::CAbnormalEndItem item;
+    CPPUNIT_ASSERT_THROW(
+        item.setBodyHeader(0,0,0),
+        std::logic_error
+    );
 }
