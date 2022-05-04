@@ -4,12 +4,14 @@ set (v12headers
   CAbnormalEndItem.h
   CDataFormatItem.h
   CGlomParameters.h
+  CPhysicsEventItem.h
 )
 set (v12sources
   CRingItem.cpp
   CAbnormalEndItem.cpp
   CDataFormatItem.cpp
   CGlomParameters.cpp
+  CPhysicsEventItem.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
@@ -43,6 +45,7 @@ add_executable(v12unittests
   v12ringtest.cpp
   v12abend.cpp
   v12fmttests.cpp
+  v12glomtests.cpp
 )
 
 target_link_libraries(v12unittests AbstractFormat V12Format cppunit)
