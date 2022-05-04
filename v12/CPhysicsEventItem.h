@@ -53,12 +53,17 @@ public:
     virtual std::string typeName() const;	// Textual type of item.
     virtual std::string toString() const; // Provide string dump of the item.
     
+    size_t        getBodySize() const;
+    virtual void* getBodyPointer();
+    virtual const void* getBodyPointer() const;
     virtual bool  hasBodyHeader() const;
     virtual void* getBodyHeader() const;
     virtual void setBodyHeader(
         uint64_t tstamp, uint32_t sourceId, uint32_t barrierType
     );
-
+    virtual uint64_t getEventTimestamp() const;
+    virtual uint32_t getSourceId() const;
+    virtual uint32_t getBarrierType() const;
  
   
 };

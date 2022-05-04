@@ -109,8 +109,10 @@ size_t
 CRingItem::getBodySize() const
 {
    v12::CRingItem* pThis = const_cast<v12::CRingItem*>(this);
-   const uint8_t* pBegin = reinterpret_cast<const uint8_t*>(getBodyPointer());
-   const uint8_t* pEnd   = reinterpret_cast<const uint8_t*>(pThis->getBodyCursor());
+   const uint8_t* pBegin =
+    reinterpret_cast<const uint8_t*>(v12::CRingItem::getBodyPointer());
+   const uint8_t* pEnd   =
+    reinterpret_cast<const uint8_t*>(pThis->v12::CRingItem::getBodyCursor());
    return pEnd - pBegin;
 }
 /**
@@ -244,12 +246,12 @@ CRingItem::setBodyHeader(
 )
 {
    v12::pBodyHeader pBh;
-   if (!hasBodyHeader()) {
+   if (!v12::CRingItem::hasBodyHeader()) {
        // Create an empty body header:
        
-       uint8_t* src = reinterpret_cast<uint8_t*>(getBodyPointer());
+       uint8_t* src = reinterpret_cast<uint8_t*>(v12::CRingItem::getBodyPointer());
        uint8_t* dest = src + sizeof(v12::BodyHeader) - sizeof(uint32_t);
-       size_t nBytes= getBodySize();
+       size_t nBytes= v12::CRingItem::getBodySize();
        memmove(dest, src, nBytes);
        v12::pRingItem pItem = reinterpret_cast<v12::pRingItem>(getItemPointer());
        pBh = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
@@ -257,14 +259,14 @@ CRingItem::setBodyHeader(
        
        // Set new body cursor and size:
        
-       uint8_t* p = reinterpret_cast<uint8_t*>(getBodyCursor());
+       uint8_t* p = reinterpret_cast<uint8_t*>(v12::CRingItem::getBodyCursor());
        p += sizeof(v12::BodyHeader) - sizeof(uint32_t);
-       setBodyCursor(p);
-       updateSize();
+       v12::CRingItem::setBodyCursor(p);
+       v12::CRingItem::updateSize();
        
    } else {
     
-       pBh = reinterpret_cast<v12::pBodyHeader>(getBodyHeader());
+       pBh = reinterpret_cast<v12::pBodyHeader>(v12::CRingItem::getBodyHeader());
    }
    // We leave the size alone in case an existing body header had an
    // extension.

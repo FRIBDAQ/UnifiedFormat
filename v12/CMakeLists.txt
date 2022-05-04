@@ -46,6 +46,7 @@ add_executable(v12unittests
   v12abend.cpp
   v12fmttests.cpp
   v12glomtests.cpp
+  v12phystests.cpp
 )
 
 target_link_libraries(v12unittests AbstractFormat V12Format cppunit)

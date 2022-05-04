@@ -19,7 +19,7 @@
 #include "CRingItem.h"
 #include <sstream>
 #include <stdio.h>
-
+#include <stdexcept>
 #include <iostream>
 /**
  * @file CPhysicsEventItem.cpp
@@ -126,6 +126,34 @@ CPhysicsEventItem::toString() const
 }
 // These do a sort of sideways cast to v12::CRingItem to delegate to it.
 
+/**]
+ * getBodySize()
+ *   @return size_t number of body bytes.
+ */
+size_t
+CPhysicsEventItem::getBodySize() const
+{
+  const v12::CRingItem* This = reinterpret_cast<const v12::CRingItem*>(this);
+  return This->v12::CRingItem::getBodySize();
+}
+/**
+ * getBodyPointer
+ *   @return [const] void*  - pointer to the body of the item.
+ */
+void*
+CPhysicsEventItem::getBodyPointer()
+{
+  v12::CRingItem* This = reinterpret_cast<v12::CRingItem*>(this);
+  return This->v12::CRingItem::getBodyPointer();
+}
+const void*
+CPhysicsEventItem::getBodyPointer() const
+{
+  const v12::CRingItem* This = reinterpret_cast<const v12::CRingItem*>(this);
+  return This->v12::CRingItem::getBodyPointer();
+}
+
+
 /**
  * hasBodyHeader
  *   @return bool - true if the item has a body header.
@@ -167,4 +195,45 @@ CPhysicsEventItem::setBodyHeader(
   v12::CRingItem* pThis = reinterpret_cast<::v12::CRingItem*>(this);
   pThis->v12::CRingItem::setBodyHeader(tstamp, sourceId, barrierType);
 }
+/**
+ * getEventTimestamp
+ *   @return uint64_t - timestamp value
+ *   @throw std::logic_error if there's no body header.
+ */
+uint64_t
+CPhysicsEventItem::getEventTimestamp() const
+{
+  const v12::CRingItem* This =
+    reinterpret_cast<const v12::CRingItem*>(this);
+    
+  return This->v12::CRingItem::getEventTimestamp();
+}
+/**
+ * getSourceId
+ *   @return uint32_t fragment source id
+ *   @throw std::logic_error
+ */
+uint32_t
+CPhysicsEventItem::getSourceId() const
+{
+  const v12::CRingItem* This =
+    reinterpret_cast<const v12::CRingItem*>(this);
+    
+  return This->v12::CRingItem::getSourceId();
+}
+/**
+ * getBarrierType
+ *   @return uint32_t  - barrier type id.
+ *   @throw std::Logic_error
+ */
+uint32_t
+CPhysicsEventItem::getBarrierType() const
+{
+  const v12::CRingItem* This =
+    reinterpret_cast<const v12::CRingItem*>(this);
+    
+  return This->v12::CRingItem::getBarrierType();
+}
+
+
 }                     // V12 namespace.
