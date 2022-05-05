@@ -44,6 +44,15 @@ class v12counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(divisor_1);
     CPPUNIT_TEST(divisor_2);
+    
+    CPPUNIT_TEST(gettime_1);
+    CPPUNIT_TEST(gettime_2);
+    
+    CPPUNIT_TEST(settime_1);
+    CPPUNIT_TEST(settime_2);
+    
+    CPPUNIT_TEST(getcount_1);
+    CPPUNIT_TEST(getcount_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -72,6 +81,15 @@ protected:
     
     void divisor_1();
     void divisor_2();
+    
+    void gettime_1();
+    void gettime_2();
+    
+    void settime_1();
+    void settime_2();
+    
+    void getcount_1();
+    void getcount_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12counttest);
@@ -242,4 +260,48 @@ void v12counttest::divisor_2()
 {
     CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2, 2);
     EQ(uint32_t(2), item.getTimeDivisor());
+}
+// Get tod stamp from non body header item.
+
+void v12counttest::gettime_1()
+{
+    time_t now = time(nullptr);
+    CRingPhysicsEventCountItem item(12345, 10, 2);
+    ASSERT(item.getTimestamp() - now <= 1);    // Due to skew in time.
+}
+// Get tod stamp from body header item.
+void v12counttest::gettime_2()
+{
+    time_t now = time(nullptr);
+    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    EQ(now, item.getTimestamp());
+}
+
+void v12counttest::settime_1()
+{
+    time_t now = time(nullptr);
+    CRingPhysicsEventCountItem item(12345, 10, 2);
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+}
+void v12counttest::settime_2()
+{
+    time_t now = time(nullptr);
+    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    item.setTimestamp(now+20);
+    EQ(now+20, item.getTimestamp());
+}
+
+// get count from non body header:
+
+void v12counttest::getcount_1()
+{
+    CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(uint64_t(12345), item.getEventCount());
+}
+void v12counttest::getcount_2()
+{
+    time_t now = time(nullptr);
+    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    EQ(uint64_t(1234), item.getEventCount());
 }
