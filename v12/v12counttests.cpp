@@ -32,6 +32,18 @@ class v12counttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST(construct_4);
+    
+    CPPUNIT_TEST(getOffset_1);
+    CPPUNIT_TEST(getOffset_2);
+    
+    CPPUNIT_TEST(setOffset_1);
+    CPPUNIT_TEST(setOffset_2);
+    
+    CPPUNIT_TEST(elapsed_1);
+    CPPUNIT_TEST(elapsed_2);
+    
+    CPPUNIT_TEST(divisor_1);
+    CPPUNIT_TEST(divisor_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -48,6 +60,18 @@ protected:
     void construct_2();
     void construct_3();
     void construct_4();
+    
+    void getOffset_1();
+    void getOffset_2();
+    
+    void setOffset_1();
+    void setOffset_2();
+    
+    void elapsed_1();
+    void elapsed_2();
+    
+    void divisor_1();
+    void divisor_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12counttest);
@@ -162,4 +186,60 @@ void v12counttest::construct_4()
     EQ(now, time_t(pBody->s_timestamp));
     EQ(uint32_t(2), pBody->s_originalSid);
     EQ(uint64_t(123456), pBody->s_eventCount);
+}
+// retrieve time offset with no body header.
+void v12counttest::getOffset_1()
+{
+    CRingPhysicsEventCountItem item(12345, 10);
+    EQ(uint32_t(10), item.getTimeOffset());
+    
+}
+
+// retrieve time offset with body header
+void v12counttest::getOffset_2()
+{
+    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2);
+    
+    EQ(uint32_t(10), item.getTimeOffset());
+}
+// set time offset with no body header.
+void v12counttest::setOffset_1()
+{
+    CRingPhysicsEventCountItem item(12345, 10);
+    item.setTimeOffset(20);
+    EQ(uint32_t(20), item.getTimeOffset());
+}
+// set time offset with body header
+void v12counttest::setOffset_2()
+{
+    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2);
+    item.setTimeOffset(35);
+    EQ(uint32_t(35), item.getTimeOffset());
+}
+// compute elapsed with no body header.
+
+void v12counttest::elapsed_1()
+{
+    CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(float(5), item.computeElapsedTime());
+}
+// compute elapsed time with body header.
+void v12counttest::elapsed_2()
+{
+    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2, 2);
+    EQ(float(5), item.computeElapsedTime());
+}
+
+// get time divisor from no body header.
+void v12counttest::divisor_1()
+{
+    CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(uint32_t(2), item.getTimeDivisor());
+}
+// Get time divisor from body header:
+
+void v12counttest::divisor_2()
+{
+    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2, 2);
+    EQ(uint32_t(2), item.getTimeDivisor());
 }
