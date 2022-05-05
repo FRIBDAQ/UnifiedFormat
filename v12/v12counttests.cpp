@@ -53,6 +53,9 @@ class v12counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getcount_1);
     CPPUNIT_TEST(getcount_2);
+    
+    CPPUNIT_TEST(originalsid_1);
+    CPPUNIT_TEST(originalsid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -90,6 +93,9 @@ protected:
     
     void getcount_1();
     void getcount_2();
+    
+    void originalsid_1();
+    void originalsid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12counttest);
@@ -304,4 +310,15 @@ void v12counttest::getcount_2()
     time_t now = time(nullptr);
     CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
     EQ(uint64_t(1234), item.getEventCount());
+}
+void v12counttest::originalsid_1()
+{
+    CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+void v12counttest::originalsid_2()
+{
+    time_t now = time(nullptr);
+    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    EQ(uint32_t(2), item.getOriginalSourceId());
 }
