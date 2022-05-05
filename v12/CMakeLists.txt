@@ -5,6 +5,7 @@ set (v12headers
   CDataFormatItem.h
   CGlomParameters.h
   CPhysicsEventItem.h
+  CRingPhysicsEventCountItem.h
 )
 set (v12sources
   CRingItem.cpp
@@ -12,6 +13,7 @@ set (v12sources
   CDataFormatItem.cpp
   CGlomParameters.cpp
   CPhysicsEventItem.cpp
+  CRingPhysicsEventCountItem.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
