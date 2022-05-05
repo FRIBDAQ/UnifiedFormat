@@ -77,7 +77,7 @@ CRingPhysicsEventCountItem::CRingPhysicsEventCountItem(uint64_t count,
   pBody->s_offsetDivisor = divisor;
   pBody->s_timestamp = time(nullptr);
   pBody->s_originalSid = 0;
-  pBody->s_eventCount = 0;
+  pBody->s_eventCount = count;
  
   setBodyCursor(pBody+1);
   updateSize();                // Sets pItem->s_header.s_size.
@@ -441,6 +441,7 @@ CRingPhysicsEventCountItem::setBodyHeader(
   v12::CRingItem* pThis = reinterpret_cast<v12::CRingItem*>(this);
   pThis->v12::CRingItem::setBodyHeader(timestamp, sourceId, barrierType);
 }
+
 
 
 }                            // v12 namespace./
