@@ -56,6 +56,26 @@ class v12counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(originalsid_1);
     CPPUNIT_TEST(originalsid_2);
+    
+    CPPUNIT_TEST(bsize_1);
+    CPPUNIT_TEST(bsize_2);
+    
+    CPPUNIT_TEST(bptr_1);
+    CPPUNIT_TEST(bptr_2);
+    CPPUNIT_TEST(bptr_3);
+    CPPUNIT_TEST(bptr_4);
+    
+    CPPUNIT_TEST(hasbhdr_1);
+    CPPUNIT_TEST(hasbhdr_2);
+    
+    CPPUNIT_TEST(ets_1);
+    CPPUNIT_TEST(ets_2);
+    
+    CPPUNIT_TEST(sid_1);
+    CPPUNIT_TEST(sid_2);
+    
+    CPPUNIT_TEST(bar_1);
+    CPPUNIT_TEST(bar_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -96,6 +116,26 @@ protected:
     
     void originalsid_1();
     void originalsid_2();
+    
+    void bsize_1();
+    void bsize_2();
+    
+    void bptr_1();
+    void bptr_2();
+    void bptr_3();
+    void bptr_4();
+    
+    void hasbhdr_1();
+    void hasbhdr_2();
+    
+    void ets_1();
+    void ets_2();
+    
+    void sid_1();
+    void sid_2();
+    
+    void bar_1();
+    void bar_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12counttest);
@@ -214,7 +254,7 @@ void v12counttest::construct_4()
 // retrieve time offset with no body header.
 void v12counttest::getOffset_1()
 {
-    CRingPhysicsEventCountItem item(12345, 10);
+    v12::CRingPhysicsEventCountItem item(12345, 10);
     EQ(uint32_t(10), item.getTimeOffset());
     
 }
@@ -222,21 +262,21 @@ void v12counttest::getOffset_1()
 // retrieve time offset with body header
 void v12counttest::getOffset_2()
 {
-    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2);
     
     EQ(uint32_t(10), item.getTimeOffset());
 }
 // set time offset with no body header.
 void v12counttest::setOffset_1()
 {
-    CRingPhysicsEventCountItem item(12345, 10);
+    v12::CRingPhysicsEventCountItem item(12345, 10);
     item.setTimeOffset(20);
     EQ(uint32_t(20), item.getTimeOffset());
 }
 // set time offset with body header
 void v12counttest::setOffset_2()
 {
-    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2);
     item.setTimeOffset(35);
     EQ(uint32_t(35), item.getTimeOffset());
 }
@@ -244,27 +284,27 @@ void v12counttest::setOffset_2()
 
 void v12counttest::elapsed_1()
 {
-    CRingPhysicsEventCountItem item(12345, 10, 2);
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
     EQ(float(5), item.computeElapsedTime());
 }
 // compute elapsed time with body header.
 void v12counttest::elapsed_2()
 {
-    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2, 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2, 2);
     EQ(float(5), item.computeElapsedTime());
 }
 
 // get time divisor from no body header.
 void v12counttest::divisor_1()
 {
-    CRingPhysicsEventCountItem item(12345, 10, 2);
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
     EQ(uint32_t(2), item.getTimeDivisor());
 }
 // Get time divisor from body header:
 
 void v12counttest::divisor_2()
 {
-    CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2, 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, time(nullptr), 2, 2);
     EQ(uint32_t(2), item.getTimeDivisor());
 }
 // Get tod stamp from non body header item.
@@ -272,28 +312,28 @@ void v12counttest::divisor_2()
 void v12counttest::gettime_1()
 {
     time_t now = time(nullptr);
-    CRingPhysicsEventCountItem item(12345, 10, 2);
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
     ASSERT(item.getTimestamp() - now <= 1);    // Due to skew in time.
 }
 // Get tod stamp from body header item.
 void v12counttest::gettime_2()
 {
     time_t now = time(nullptr);
-    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
     EQ(now, item.getTimestamp());
 }
 
 void v12counttest::settime_1()
 {
     time_t now = time(nullptr);
-    CRingPhysicsEventCountItem item(12345, 10, 2);
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
     item.setTimestamp(now+10);
     EQ(now+10, item.getTimestamp());
 }
 void v12counttest::settime_2()
 {
     time_t now = time(nullptr);
-    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
     item.setTimestamp(now+20);
     EQ(now+20, item.getTimestamp());
 }
@@ -302,23 +342,138 @@ void v12counttest::settime_2()
 
 void v12counttest::getcount_1()
 {
-    CRingPhysicsEventCountItem item(12345, 10, 2);
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
     EQ(uint64_t(12345), item.getEventCount());
 }
 void v12counttest::getcount_2()
 {
     time_t now = time(nullptr);
-    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
     EQ(uint64_t(1234), item.getEventCount());
 }
 void v12counttest::originalsid_1()
 {
-    CRingPhysicsEventCountItem item(12345, 10, 2);
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
     EQ(uint32_t(0), item.getOriginalSourceId());
 }
 void v12counttest::originalsid_2()
 {
     time_t now = time(nullptr);
-    CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
     EQ(uint32_t(2), item.getOriginalSourceId());
+}
+void v12counttest::bsize_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    EQ(sizeof(v12::PhysicsEventCountItemBody), item.getBodySize());
+}
+void v12counttest::bsize_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    EQ(sizeof(v12::PhysicsEventCountItemBody), item.getBodySize());
+}
+void v12counttest::bptr_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    const v12::PhysicsEventCountItemBody* pBody =
+        reinterpret_cast<const v12::PhysicsEventCountItemBody*>(item.getBodyPointer());
+    const v12::PhysicsEventCountItem* pItem =
+        reinterpret_cast<const v12::PhysicsEventCountItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), pBody);
+}
+void v12counttest::bptr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    const v12::PhysicsEventCountItemBody* pBody =
+        reinterpret_cast<const v12::PhysicsEventCountItemBody*>(item.getBodyPointer());
+    const v12::PhysicsEventCountItem* pItem =
+        reinterpret_cast<const v12::PhysicsEventCountItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);
+}
+void v12counttest::bptr_3()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    v12::PhysicsEventCountItemBody* pBody =
+        reinterpret_cast<v12::PhysicsEventCountItemBody*>(item.getBodyPointer());
+    v12::PhysicsEventCountItem* pItem =
+        reinterpret_cast<v12::PhysicsEventCountItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), pBody);
+}
+void v12counttest::bptr_4()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    v12::PhysicsEventCountItemBody* pBody =
+        reinterpret_cast<v12::PhysicsEventCountItemBody*>(item.getBodyPointer());
+    v12::PhysicsEventCountItem* pItem =
+        reinterpret_cast<v12::PhysicsEventCountItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);
+}
+void v12counttest::hasbhdr_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    ASSERT(!item.hasBodyHeader());
+}
+void v12counttest::hasbhdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    ASSERT(item.hasBodyHeader());
+}
+void v12counttest::ets_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    CPPUNIT_ASSERT_THROW(
+        item.getEventTimestamp(),
+        std::logic_error
+    );
+}
+void v12counttest::ets_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 2);
+    uint64_t ts;
+    CPPUNIT_ASSERT_NO_THROW(
+        ts = item.getEventTimestamp()
+    );
+    EQ(uint64_t(0), ts);
+}
+void v12counttest::sid_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    CPPUNIT_ASSERT_THROW(
+        item.getSourceId(),
+        std::logic_error
+    );
+}
+void v12counttest::sid_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 3);
+    uint32_t id;
+    CPPUNIT_ASSERT_NO_THROW(
+        id = item.getSourceId()
+    );
+    EQ(uint32_t(2), id);
+}
+
+void v12counttest::bar_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    CPPUNIT_ASSERT_THROW(
+        item.getBarrierType(),
+        std::logic_error
+    );
+}
+void v12counttest::bar_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 3);
+    uint32_t id;
+    CPPUNIT_ASSERT_NO_THROW(
+        id = item.getBarrierType()
+    );
+    EQ(uint32_t(0), id);
 }
