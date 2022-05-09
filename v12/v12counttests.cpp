@@ -79,6 +79,9 @@ class v12counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(setbhdr_1);
     CPPUNIT_TEST(setbhdr_2);
+    
+    CPPUNIT_TEST(getbhdr_1);
+    CPPUNIT_TEST(getbhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -142,6 +145,9 @@ protected:
     
     void setbhdr_1();
     void setbhdr_2();
+    
+    void getbhdr_1();
+    void getbhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12counttest);
@@ -509,4 +515,20 @@ void v12counttest::setbhdr_2()
     EQ(uint64_t(0x1234567890), item.getEventTimestamp());
     EQ(uint32_t(2), item.getSourceId());
     EQ(uint32_t(1), item.getBarrierType());
+}
+void v12counttest::getbhdr_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    ASSERT(nullptr == item.getBodyHeader());
+}
+void v12counttest::getbhdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 3);
+    const v12::BodyHeader* pHdr =
+        reinterpret_cast<v12::BodyHeader*>(item.getBodyHeader());
+    ASSERT(pHdr);
+    const v12::PhysicsEventCountItem* pItem =
+        reinterpret_cast<v12::PhysicsEventCountItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), pHdr);
 }
