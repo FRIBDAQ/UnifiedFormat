@@ -76,6 +76,9 @@ class v12counttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(bar_1);
     CPPUNIT_TEST(bar_2);
+    
+    CPPUNIT_TEST(setbhdr_1);
+    CPPUNIT_TEST(setbhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -136,6 +139,9 @@ protected:
     
     void bar_1();
     void bar_2();
+    
+    void setbhdr_1();
+    void setbhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12counttest);
@@ -476,4 +482,31 @@ void v12counttest::bar_2()
         id = item.getBarrierType()
     );
     EQ(uint32_t(0), id);
+}
+void v12counttest::setbhdr_1()
+{
+    v12::CRingPhysicsEventCountItem item(12345, 10, 2);
+    size_t before = item.size();
+    item.setBodyHeader(0x1234567890, 2, 0);
+    size_t after = item.size();
+    EQ(before + sizeof(v12::BodyHeader) - sizeof(uint32_t), after);
+    EQ(uint64_t(12345), item.getEventCount());
+    ASSERT(item.hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item.getEventTimestamp());
+    EQ(uint32_t(2), item.getSourceId());
+    EQ(uint32_t(0), item.getBarrierType());
+}
+void v12counttest::setbhdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingPhysicsEventCountItem item(1234, 10, now, 2, 3);
+    size_t before = item.size();
+    item.setBodyHeader(0x1234567890, 2, 1);
+    size_t after = item.size();
+    EQ(before, after);
+    
+    ASSERT(item.hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item.getEventTimestamp());
+    EQ(uint32_t(2), item.getSourceId());
+    EQ(uint32_t(1), item.getBarrierType());
 }
