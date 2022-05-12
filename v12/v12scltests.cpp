@@ -39,7 +39,7 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getstart_2);
     
     CPPUNIT_TEST(computestart_1);
-    CPPUINT_TEST(computestart_2);
+    CPPUNIT_TEST(computestart_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -255,7 +255,7 @@ void v12scltest::computestart_1()
 }
 // computestart for body header item with non 1 divisor.
 
-vod v12scltest::computestart_2()
+void v12scltest::computestart_2()
 {
     time_t now = time(nullptr);
     std::vector<uint32_t> scalers;
