@@ -85,6 +85,11 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(bsize_1);
     CPPUNIT_TEST(bsize_2);
+    
+    CPPUNIT_TEST(bptr_1);
+    CPPUNIT_TEST(bptr_2);
+    CPPUNIT_TEST(bptr_3);
+    CPPUNIT_TEST(bptr_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -154,6 +159,11 @@ protected:
     
     void bsize_1();
     void bsize_2();
+    
+    void bptr_1();
+    void bptr_2();
+    void bptr_3();
+    void bptr_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -858,4 +868,81 @@ void v12scltest::bsize_2()
         0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
     );
     EQ(sizeof(v12::ScalerItemBody) + 32*sizeof(uint32_t), size_t(item.getBodySize()));
+}
+// const body pointer from non body header item.
+
+void v12scltest::bptr_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    const v12::ScalerItem* pItem = reinterpret_cast<const v12::ScalerItem*>(item.getItemPointer());
+    const v12::ScalerItemBody* pSb = &(pItem->s_body.u_noBodyHeader.s_body);
+    
+    const v12::ScalerItemBody* pIs = reinterpret_cast<const v12::ScalerItemBody*>(item.getBodyPointer());
+    
+    EQ(pSb, pIs);
+}
+// const body pointer from  item with body header:
+
+void v12scltest::bptr_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    const v12::ScalerItem* pItem = reinterpret_cast<const v12::ScalerItem*>(item.getItemPointer());
+    const v12::ScalerItemBody* pSb = &(pItem->s_body.u_hasBodyHeader.s_body);
+    
+    const v12::ScalerItemBody* pIs = reinterpret_cast<const v12::ScalerItemBody*>(item.getBodyPointer());
+    
+    EQ(pSb, pIs);
+}
+// non const body pointer from non bodyheaer
+void v12scltest::bptr_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+     v12::ScalerItem* pItem = reinterpret_cast< v12::ScalerItem*>(item.getItemPointer());
+     v12::ScalerItemBody* pSb = &(pItem->s_body.u_noBodyHeader.s_body);
+    
+     v12::ScalerItemBody* pIs = reinterpret_cast< v12::ScalerItemBody*>(item.getBodyPointer());
+    
+    EQ(pSb, pIs);
+}
+// non const body pointer from body header item.
+
+void v12scltest::bptr_4()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+     v12::ScalerItem* pItem = reinterpret_cast< v12::ScalerItem*>(item.getItemPointer());
+     v12::ScalerItemBody* pSb = &(pItem->s_body.u_hasBodyHeader.s_body);
+    
+     v12::ScalerItemBody* pIs = reinterpret_cast< v12::ScalerItemBody*>(item.getBodyPointer());
+    
+    EQ(pSb, pIs);
 }
