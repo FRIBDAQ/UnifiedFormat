@@ -51,6 +51,11 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(divisor_1);
     CPPUNIT_TEST(divisor_2);
+    
+    CPPUNIT_TEST(getts_1);
+    CPPUNIT_TEST(getts_2);
+    CPPUNIT_TEST(setts_1);
+    CPPUNIT_TEST(setts_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -87,6 +92,11 @@ protected:
     
     void divisor_1();
     void divisor_2();
+    
+    void getts_1();
+    void getts_2();
+    void setts_1();
+    void setts_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -407,4 +417,64 @@ void v12scltest::divisor_2()
     );
     
     EQ(uint32_t(2), item.getTimeDivisor());
+}
+// get timestamp nonbody header.
+void v12scltest::getts_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(now, item.getTimestamp());
+}
+// get timestamp from body header.
+void v12scltest::getts_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2
+    );
+    
+    EQ(now, item.getTimestamp());
+}
+// SEt timestamp in non-bodyh eader.
+
+void v12scltest::setts_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+}
+// set timestamp in body header
+
+void v12scltest::setts_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2
+    );
+    
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
 }
