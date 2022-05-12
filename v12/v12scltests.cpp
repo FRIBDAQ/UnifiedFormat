@@ -56,6 +56,12 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getts_2);
     CPPUNIT_TEST(setts_1);
     CPPUNIT_TEST(setts_2);
+    
+    CPPUNIT_TEST(isincr_1);
+    CPPUNIT_TEST(isincr_2);
+    CPPUNIT_TEST(isincr_3);
+    CPPUNIT_TEST(isincr_4);
+    CPPUNIT_TEST(isincr_5);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -97,6 +103,12 @@ protected:
     void getts_2();
     void setts_1();
     void setts_2();
+    
+    void isincr_1();
+    void isincr_2();
+    void isincr_3();
+    void isincr_4();
+    void isincr_5();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -477,4 +489,68 @@ void v12scltest::setts_2()
     
     item.setTimestamp(now+10);
     EQ(now+10, item.getTimestamp());
+}
+// minimal constructor makes incremental:
+
+void v12scltest::isincr_1()
+{
+    v12::CRingScalerItem item(32);
+    ASSERT(item.isIncremental());
+}
+// nonbody header incremental:
+void v12scltest::isincr_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    ASSERT(item.isIncremental());
+}
+// non body header not incremental
+
+void v12scltest::isincr_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, false, 2
+    );
+    ASSERT(!item.isIncremental());
+}
+// body header is incremental:
+
+void v12scltest::isincr_4()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    ASSERT(item.isIncremental());
+}
+// body header not incremental:
+
+void v12scltest::isincr_5()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, false
+    );
+    ASSERT(!item.isIncremental());
 }
