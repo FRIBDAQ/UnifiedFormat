@@ -29,6 +29,7 @@
 class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12scltest);
     CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -42,6 +43,7 @@ public:
     }
 protected:
     void construct_1();
+    void construct_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -74,6 +76,44 @@ void v12scltest::construct_1()
     EQ(uint32_t(0), pBody->s_originalSid);
     for (int i =0; i < 32; i++) {
         EQ(uint32_t(0), pBody->s_scalers[i]);
+    }
+    
+}
+// Construct with no body header.
+void v12scltest::construct_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers
+    );
+    
+    const v12::ScalerItem* pItem =
+        reinterpret_cast<v12::ScalerItem*>(item.getItemPointer());
+    EQ(uint32_t(v12::PERIODIC_SCALERS), pItem->s_header.s_type);
+    EQ(
+        sizeof(v12::RingItemHeader) +
+        sizeof(uint32_t) +
+        sizeof(v12::ScalerItemBody) +
+        32*sizeof(uint32_t),  
+        size_t(pItem->s_header.s_size)
+    );
+    EQ(uint32_t(sizeof(uint32_t)), pItem->s_body.u_noBodyHeader.s_empty);
+    const v12::ScalerItemBody* pBody =
+        reinterpret_cast<const v12::ScalerItemBody*>(&(pItem->s_body.u_noBodyHeader.s_body));
+    EQ(uint32_t(10), pBody->s_intervalStartOffset);
+    EQ(uint32_t(20), pBody->s_intervalEndOffset);
+    EQ(uint32_t(now), pBody->s_timestamp);
+    EQ(uint32_t(1), pBody->s_intervalDivisor);
+    EQ(uint32_t(32), pBody->s_scalerCount);
+    EQ(uint32_t(1), pBody->s_isIncremental);
+    EQ(uint32_t(0), pBody->s_originalSid);
+    for (int i =0; i < 32; i++) {
+        EQ(scalers[i], pBody->s_scalers[i]);
     }
     
 }
