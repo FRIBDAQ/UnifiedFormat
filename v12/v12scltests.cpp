@@ -37,6 +37,9 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getstart_1);
     CPPUNIT_TEST(getstart_2);
+    
+    CPPUNIT_TEST(computestart_1);
+    CPPUINT_TEST(computestart_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -58,6 +61,9 @@ protected:
     
     void getstart_1();
     void getstart_2();
+    
+    void computestart_1();
+    void computestart_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -229,4 +235,35 @@ void v12scltest::getstart_2()
     
     item.setStartTime(123);
     EQ(uint32_t(123), item.getStartTime());
+}
+// computestart for non body header but non 1 divisor.
+
+void v12scltest::computestart_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(float(5.0), item.computeStartTime());
+    
+    
+}
+// computestart for body header item with non 1 divisor.
+
+vod v12scltest::computestart_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2
+    );
+    EQ(float(5.0), item.computeStartTime());
 }
