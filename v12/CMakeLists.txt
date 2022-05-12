@@ -6,6 +6,7 @@ set (v12headers
   CGlomParameters.h
   CPhysicsEventItem.h
   CRingPhysicsEventCountItem.h
+  CRingScalerItem.h
 )
 set (v12sources
   CRingItem.cpp
@@ -14,6 +15,7 @@ set (v12sources
   CGlomParameters.cpp
   CPhysicsEventItem.cpp
   CRingPhysicsEventCountItem.cpp
+  CRingScalerItem.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
@@ -50,6 +52,7 @@ add_executable(v12unittests
   v12glomtests.cpp
   v12phystests.cpp
   v12counttests.cpp
+  v12scltests.cpp
 )
 
 target_link_libraries(v12unittests AbstractFormat V12Format cppunit)
