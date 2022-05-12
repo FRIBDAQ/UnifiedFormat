@@ -24,6 +24,7 @@
 #include "CRingScalerItem.h"
 #include "DataFormat.h"
 #include <time.h>
+#include <string.h>
 
 
 class v12scltest : public CppUnit::TestFixture {
@@ -62,6 +63,18 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(isincr_3);
     CPPUNIT_TEST(isincr_4);
     CPPUNIT_TEST(isincr_5);
+    
+    CPPUNIT_TEST(getscaler_1);
+    CPPUNIT_TEST(getscaler_2);
+    CPPUNIT_TEST(getscaler_3);
+    CPPUNIT_TEST(getscaler_4);
+    CPPUNIT_TEST(getscaler_5);
+    CPPUNIT_TEST(getscaler_6);
+    
+    CPPUNIT_TEST(setscaler_1);
+    CPPUNIT_TEST(setscaler_2);
+    CPPUNIT_TEST(setscaler_3);
+    CPPUNIT_TEST(setscaler_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -109,6 +122,18 @@ protected:
     void isincr_3();
     void isincr_4();
     void isincr_5();
+    
+    void getscaler_1();
+    void getscaler_2();
+    void getscaler_3();
+    void getscaler_4();
+    void getscaler_5();
+    void getscaler_6();
+    
+    void setscaler_1();
+    void setscaler_2();
+    void setscaler_3();
+    void setscaler_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -553,4 +578,167 @@ void v12scltest::isincr_5()
         0x1234567890, 1, 2, 10, 20, now, scalers, 2, false
     );
     ASSERT(!item.isIncremental());
+}
+// Get all scalers one at a time non body header.
+
+void v12scltest::getscaler_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i], item.getScaler(i));
+    }
+}
+// Git invalid scaler nonbody header throws:
+
+void v12scltest::getscaler_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getScaler(32), std::logic_error
+    );
+}
+// Get all scalers in one swoop not body header.
+
+void v12scltest::getscaler_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    auto gotten = item.getScalers();
+    EQ(scalers.size(), gotten.size());
+    EQ(0, memcmp(scalers.data(), gotten.data(), scalers.size()*sizeof(uint32_t)));
+}
+// get scalers one at a time from body header item:
+
+void v12scltest::getscaler_4()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    for (int i =0; i < scalers.size(); i++) {
+        EQ(scalers[i], item.getScaler(i));
+    }
+}
+// get individual scaler bad index - body header.
+
+void v12scltest::getscaler_5()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getScaler(32), std::logic_error
+    );
+}
+// get scalers in one fell swoop; body header.
+
+void v12scltest::getscaler_6()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    auto gotten = item.getScalers();
+    EQ(scalers.size(), gotten.size());
+    EQ(0, memcmp(scalers.data(), gotten.data(), scalers.size()*sizeof(uint32_t)));
+}
+
+// set scaler channel non body header.
+
+void v12scltest::setscaler_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    item.setScaler(5, 1234);
+    EQ(uint32_t(1234), item.getScaler(5));
+}
+// set scaler invalid channel:
+
+void v12scltest::setscaler_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    
+    CPPUNIT_ASSERT_THROW(
+        item.setScaler(32, 1), std::logic_error
+    );
+}
+// set scaler channel body header
+void v12scltest::setscaler_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    
+    item.setScaler(10, 1111);
+    EQ(uint32_t(1111), item.getScaler(10));
+}
+void v12scltest::setscaler_4()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.setScaler(32, 0), std::logic_error
+    );
 }
