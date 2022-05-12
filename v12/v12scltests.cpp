@@ -78,6 +78,10 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getnscaler_1);
     CPPUNIT_TEST(getnscaler_2);
+    
+    CPPUNIT_TEST(osid_1);
+    CPPUNIT_TEST(osid_2);
+    CPPUNIT_TEST(osid_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -140,6 +144,10 @@ protected:
     
     void getnscaler_1();
     void getnscaler_2();
+    
+    void osid_1();
+    void osid_2();
+    void osid_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -777,4 +785,40 @@ void v12scltest::getnscaler_2()
         0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
     );
     EQ(uint32_t(32), item.getScalerCount());
+}
+// Original sid of minimal construction:
+
+void v12scltest::osid_1()
+{
+    v12::CRingScalerItem item(1);
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// original sid of full non body header construction
+
+void v12scltest::osid_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// body header initially inherits body header sid
+
+void v12scltest::osid_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    EQ(uint32_t(1), item.getOriginalSourceId());
 }
