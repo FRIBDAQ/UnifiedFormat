@@ -40,6 +40,9 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(computestart_1);
     CPPUNIT_TEST(computestart_2);
+    
+    CPPUNIT_TEST(getend_1);
+    CPPUNIT_TEST(getend_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -64,6 +67,9 @@ protected:
     
     void computestart_1();
     void computestart_2();
+    
+    void getend_1();
+    void getend_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -266,4 +272,33 @@ void v12scltest::computestart_2()
         0x1234567890, 1, 2, 10, 20, now, scalers, 2
     );
     EQ(float(5.0), item.computeStartTime());
+}
+
+// get end time non body header.
+
+void v12scltest::getend_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(uint32_t(20), item.getEndTime());
+}
+// get end time body header:
+void v12scltest::getend_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2
+    );
+    EQ(uint32_t(20), item.getEndTime());
 }
