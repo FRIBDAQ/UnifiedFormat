@@ -75,6 +75,9 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(setscaler_2);
     CPPUNIT_TEST(setscaler_3);
     CPPUNIT_TEST(setscaler_4);
+    
+    CPPUNIT_TEST(getnscaler_1);
+    CPPUNIT_TEST(getnscaler_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -134,6 +137,9 @@ protected:
     void setscaler_2();
     void setscaler_3();
     void setscaler_4();
+    
+    void getnscaler_1();
+    void getnscaler_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -741,4 +747,34 @@ void v12scltest::setscaler_4()
     CPPUNIT_ASSERT_THROW(
         item.setScaler(32, 0), std::logic_error
     );
+}
+
+// number of scalers from no body header:
+void v12scltest::getnscaler_1()
+{
+    
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(uint32_t(32), item.getScalerCount());
+}
+// nmber of scalers from body header:
+
+void v12scltest::getnscaler_2()
+{
+     time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    EQ(uint32_t(32), item.getScalerCount());
 }
