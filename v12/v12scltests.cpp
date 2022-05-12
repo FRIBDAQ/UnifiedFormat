@@ -43,6 +43,11 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getend_1);
     CPPUNIT_TEST(getend_2);
+    CPPUNIT_TEST(setend_1);
+    CPPUNIT_TEST(setend_2);
+    
+    CPPUNIT_TEST(computeend_1);
+    CPPUNIT_TEST(computeend_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -70,6 +75,12 @@ protected:
     
     void getend_1();
     void getend_2();
+    
+    void setend_1();
+    void setend_2();
+    
+    void computeend_1();
+    void computeend_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -301,4 +312,63 @@ void v12scltest::getend_2()
         0x1234567890, 1, 2, 10, 20, now, scalers, 2
     );
     EQ(uint32_t(20), item.getEndTime());
+}
+// setend non body header.
+void v12scltest::setend_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    item.setEndTime(1234);
+    EQ(uint32_t(1234), item.getEndTime());
+}
+// setend on body header item:
+
+void v12scltest::setend_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2
+    );
+    item.setEndTime(1234);
+    EQ(uint32_t(1234), item.getEndTime());
+}
+// compute end time on non body header:
+void v12scltest::computeend_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(float(10.0), item.computeEndTime());
+}
+// compute end time for body header item.
+
+void v12scltest::computeend_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2
+    );
+    
+    EQ(float(10), item.computeEndTime());
 }
