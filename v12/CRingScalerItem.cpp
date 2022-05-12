@@ -116,7 +116,7 @@ CRingScalerItem::CRingScalerItem(
     CRingScalerItem(scalers.size())
 {
     v12::pScalerItem pItem =
-      reinterpret_cast<v12::pScalerItem>(getBodyPointer());
+      reinterpret_cast<v12::pScalerItem>(getItemPointer());
     
     pItem->s_header.s_type = v12::PERIODIC_SCALERS;
     pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size = sizeof(v12::BodyHeader);
@@ -131,7 +131,7 @@ CRingScalerItem::CRingScalerItem(
     pBody->s_intervalDivisor     = timeDivisor;
     pBody->s_scalerCount         = scalers.size();
     pBody->s_isIncremental       = incremental ? 1 : 0;
-    pBody->s_originalSid          = 0;
+    pBody->s_originalSid          = source;
     uint32_t* p = pBody->s_scalers;
     memcpy(p, scalers.data(), scalers.size()*sizeof(uint32_t));
     p += scalers.size();

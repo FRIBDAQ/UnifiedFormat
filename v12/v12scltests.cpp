@@ -30,6 +30,7 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12scltest);
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -44,6 +45,7 @@ public:
 protected:
     void construct_1();
     void construct_2();
+    void construct_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -116,4 +118,46 @@ void v12scltest::construct_2()
         EQ(scalers[i], pBody->s_scalers[i]);
     }
     
+}
+// vull construction with body header information.
+
+void v12scltest::construct_3()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers
+    );
+    const v12::ScalerItem* pItem =
+        reinterpret_cast<v12::ScalerItem*>(item.getItemPointer());
+    EQ(uint32_t(v12::PERIODIC_SCALERS), pItem->s_header.s_type);
+    EQ(
+        sizeof(v12::RingItemHeader) +
+        sizeof(v12::BodyHeader)     +
+        sizeof(v12::ScalerItemBody) +
+        32*sizeof(uint32_t),  
+        size_t(pItem->s_header.s_size)
+    );
+    
+    const v12::BodyHeader* pBh = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
+    EQ(uint32_t(sizeof(v12::BodyHeader)), pBh->s_size);
+    EQ(uint64_t(0x1234567890), pBh->s_timestamp);
+    EQ(uint32_t(1), pBh->s_sourceId);
+    EQ(uint32_t(2), pBh->s_barrier);
+    
+    const v12::ScalerItemBody* pBody =
+        reinterpret_cast<const v12::ScalerItemBody*>(&(pItem->s_body.u_hasBodyHeader.s_body));
+    EQ(uint32_t(10), pBody->s_intervalStartOffset);
+    EQ(uint32_t(20), pBody->s_intervalEndOffset);
+    EQ(uint32_t(now), pBody->s_timestamp);
+    EQ(uint32_t(1), pBody->s_intervalDivisor);
+    EQ(uint32_t(32), pBody->s_scalerCount);
+    EQ(uint32_t(1), pBody->s_isIncremental);
+    EQ(uint32_t(1), pBody->s_originalSid);
+    for (int i =0; i < 32; i++) {
+        EQ(scalers[i], pBody->s_scalers[i]);
+    }
 }
