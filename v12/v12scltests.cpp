@@ -48,6 +48,9 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(computeend_1);
     CPPUNIT_TEST(computeend_2);
+    
+    CPPUNIT_TEST(divisor_1);
+    CPPUNIT_TEST(divisor_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -81,6 +84,9 @@ protected:
     
     void computeend_1();
     void computeend_2();
+    
+    void divisor_1();
+    void divisor_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -371,4 +377,34 @@ void v12scltest::computeend_2()
     );
     
     EQ(float(10), item.computeEndTime());
+}
+// get time divisor from nonbody header.
+
+void v12scltest::divisor_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(uint32_t(2), item.getTimeDivisor());
+}
+// get time divisor from body header
+
+void v12scltest::divisor_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2
+    );
+    
+    EQ(uint32_t(2), item.getTimeDivisor());
 }
