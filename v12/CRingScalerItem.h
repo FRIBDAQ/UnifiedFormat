@@ -52,7 +52,7 @@ private:
   CRingScalerItem& operator=(const CRingScalerItem& rhs);
   int operator==(const CRingScalerItem& rhs) const;
   int operator!=(const CRingScalerItem& rhs) const;
-private:
+public:
   // Accessor member functions.
 
   virtual void     setStartTime(uint32_t startTime);

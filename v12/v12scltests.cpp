@@ -31,6 +31,12 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_1);
     CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST(construct_3);
+    
+    CPPUNIT_TEST(setstart_1);
+    CPPUNIT_TEST(setstart_2);
+    
+    CPPUNIT_TEST(getstart_1);
+    CPPUNIT_TEST(getstart_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -46,6 +52,12 @@ protected:
     void construct_1();
     void construct_2();
     void construct_3();
+    
+    void setstart_1();
+    void setstart_2();
+    
+    void getstart_1();
+    void getstart_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -160,4 +172,61 @@ void v12scltest::construct_3()
     for (int i =0; i < 32; i++) {
         EQ(scalers[i], pBody->s_scalers[i]);
     }
+}
+// set start no body header.
+void
+v12scltest::setstart_1()
+{
+    v12::CRingScalerItem item(1);
+    const v12::ScalerItem* pItem = reinterpret_cast<const v12::ScalerItem*>(item.getItemPointer());
+    item.setStartTime(123);
+    EQ(uint32_t(123),
+       pItem->s_body.u_noBodyHeader.s_body.s_intervalStartOffset);
+}
+// set start body header
+
+void
+v12scltest::setstart_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers
+    );
+    const v12::ScalerItem* pItem =
+        reinterpret_cast<v12::ScalerItem*>(item.getItemPointer());
+    
+    item.setStartTime(123);
+    EQ(uint32_t(123),
+       pItem->s_body.u_hasBodyHeader.s_body.s_intervalStartOffset);
+}
+
+// get start time from non body header.
+
+void v12scltest::getstart_1()
+{
+    v12::CRingScalerItem item(1);
+    
+    item.setStartTime(123);
+    EQ(uint32_t(123), item.getStartTime());
+}
+
+// get start time from body header
+
+void v12scltest::getstart_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers
+    );
+    
+    item.setStartTime(123);
+    EQ(uint32_t(123), item.getStartTime());
 }
