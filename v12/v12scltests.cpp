@@ -82,6 +82,9 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(osid_1);
     CPPUNIT_TEST(osid_2);
     CPPUNIT_TEST(osid_3);
+    
+    CPPUNIT_TEST(bsize_1);
+    CPPUNIT_TEST(bsize_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -148,6 +151,9 @@ protected:
     void osid_1();
     void osid_2();
     void osid_3();
+    
+    void bsize_1();
+    void bsize_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -820,5 +826,36 @@ void v12scltest::osid_3()
     v12::CRingScalerItem item(
         0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
     );
+
     EQ(uint32_t(1), item.getOriginalSourceId());
+}
+
+// body size no body header:
+
+void v12scltest::bsize_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    EQ(sizeof(v12::ScalerItemBody) + 32*sizeof(uint32_t), size_t(item.getBodySize()));
+}
+// bodysizse if body eader no different:
+
+void v12scltest::bsize_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    EQ(sizeof(v12::ScalerItemBody) + 32*sizeof(uint32_t), size_t(item.getBodySize()));
 }
