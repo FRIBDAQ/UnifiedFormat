@@ -19,6 +19,7 @@
 
 
 #include <CRingStateChangeItem.h>    // abstract.
+#include "DataFormat.h"
 
 namespace v12 {
 /*!
@@ -42,7 +43,7 @@ class CRingStateChangeItem : public ::CRingStateChangeItem
 
   // construction and other canonicals
 public:
-  CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
+  CRingStateChangeItem(uint16_t reason = v12::BEGIN_RUN);
   CRingStateChangeItem(uint16_t reason,
 		       uint32_t runNumber,
 		       uint32_t timeOffset,

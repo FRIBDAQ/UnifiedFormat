@@ -21,10 +21,18 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/Asserter.h>
 #include "Asserts.h"
+#include "CRingStateChangeItem.h"
+#include "DataFormat.h"
+#include <time.h>
+#include <string.h>
+#include <stdexcept>
 
 class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12statetest);
-    CPPUNIT_TEST(test_1);
+    CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
+    CPPUNIT_TEST(construct_3);
+    CPPUNIT_TEST(construct_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -37,11 +45,57 @@ public:
         
     }
 protected:
-    void test_1();
+    void construct_1();
+    void construct_2();
+    void construct_3();
+    void construct_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
 
-void v12statetest::test_1()
+/// minimal good construction.
+
+void v12statetest::construct_1()
 {
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(v12::BEGIN_RUN);
+    const v12::StateChangeItem* pItem =
+        reinterpret_cast<const v12::StateChangeItem*>(item.getItemPointer());
+    EQ(v12::BEGIN_RUN, pItem->s_header.s_type);
+    EQ(
+        sizeof(v12::RingItemHeader) + sizeof(uint32_t) +
+        sizeof(v12::StateChangeItemBody),
+        size_t(pItem->s_header.s_size)
+    );
+    EQ(sizeof(uint32_t), size_t(pItem->s_body.u_noBodyHeader.s_empty));
+    
+    const v12::StateChangeItemBody* pBody =
+        &(pItem->s_body.u_noBodyHeader.s_body);
+    EQ(uint32_t(0), pBody->s_runNumber);
+    EQ(uint32_t(0), pBody->s_timeOffset);
+    ASSERT((pBody->s_Timestamp - now) < 1);
+    EQ(uint32_t(1), pBody->s_offsetDivisor);
+    EQ(uint32_t(0), pBody->s_originalSid);
+    EQ(size_t(0), strlen(pBody->s_title));
+}
+// Minimal construction with bad type:
+
+void v12statetest::construct_2()
+{
+    CPPUNIT_ASSERT_THROW(
+        v12::CRingStateChangeItem item(v12::PHYSICS_EVENT),
+        std::logic_error
+    );
+}
+
+// good full non-bodyheader construction.
+void v12statetest::construct_3()
+{
+    
+}
+// full non-body header construction with bad type:
+
+void v12statetest::construct_4()
+{
+    
 }
