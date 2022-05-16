@@ -18,7 +18,7 @@
 
 
 
-#include "CRingStateChangeItem.h"    // abstract.
+#include <CRingStateChangeItem.h>    // abstract.
 
 namespace v12 {
 /*!
@@ -37,7 +37,7 @@ namespace v12 {
 
 
 */
-class CRingStateChangeItem : public CRingStateChangeItem
+class CRingStateChangeItem : public ::CRingStateChangeItem
 {
 
   // construction and other canonicals
@@ -97,9 +97,6 @@ public:
   virtual uint32_t getBarrierType() const;
 
   
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-
   
 
   // Utitlity functions..
@@ -107,9 +104,12 @@ public:
   
   
 private:
-  void init();
-  bool isStateChange();
-  pStateChangeItemBody getStateChangeBody();
+  
+  bool isStateChange(unsigned reason);
+  void fillStateChangeBody(
+      void* pBody, unsigned run, unsigned offset, unsigned divisor,
+      time_t clocktime, const char* title, unsigned osid
+  );
 };
 }
 #endif
