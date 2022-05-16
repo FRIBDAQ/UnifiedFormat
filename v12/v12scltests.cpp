@@ -94,8 +94,8 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(hasbhdr_1);
     CPPUNIT_TEST(hasbhdr_2);
     
-    CPPUNIT_TEST(getbhdr_1);
-    CPPUNIT_TEST(getbhdr_2);
+    CPPUNIT_TEST(getbodyhdr_1);
+    CPPUNIT_TEST(getbodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -174,8 +174,8 @@ protected:
     void hasbhdr_1();
     void hasbhdr_2();
     
-    void getbhdr_1();
-    void getbhdr_2();
+    void getbodyhdr_1();
+    void getbodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
