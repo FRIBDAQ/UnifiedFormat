@@ -7,6 +7,7 @@ set (v12headers
   CPhysicsEventItem.h
   CRingPhysicsEventCountItem.h
   CRingScalerItem.h
+  CRingStateChangeItem.h
 )
 set (v12sources
   CRingItem.cpp
@@ -16,6 +17,7 @@ set (v12sources
   CPhysicsEventItem.cpp
   CRingPhysicsEventCountItem.cpp
   CRingScalerItem.cpp
+  CRingStateChangeItem.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
