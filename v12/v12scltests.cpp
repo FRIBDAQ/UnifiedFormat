@@ -90,6 +90,9 @@ class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(bptr_2);
     CPPUNIT_TEST(bptr_3);
     CPPUNIT_TEST(bptr_4);
+    
+    CPPUNIT_TEST(hasbhdr_1);
+    CPPUNIT_TEST(hasbhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -164,6 +167,9 @@ protected:
     void bptr_2();
     void bptr_3();
     void bptr_4();
+    
+    void hasbhdr_1();
+    void hasbhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -945,4 +951,33 @@ void v12scltest::bptr_4()
      v12::ScalerItemBody* pIs = reinterpret_cast< v12::ScalerItemBody*>(item.getBodyPointer());
     
     EQ(pSb, pIs);
+}
+// non bodyheader has none.
+
+void v12scltest::hasbhdr_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    ASSERT(!item.hasBodyHeader());
+}
+// body hgeader has body header
+//
+void v12scltest::hasbhdr_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    ASSERT(item.hasBodyHeader());
 }
