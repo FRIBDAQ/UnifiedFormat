@@ -96,6 +96,9 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getbodyhdr_1);
     CPPUNIT_TEST(getbodyhdr_2);
+    
+    CPPUNIT_TEST(setbodyhdr_1);
+    CPPUNIT_TEST(setbodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -176,6 +179,9 @@ protected:
     
     void getbodyhdr_1();
     void getbodyhdr_2();
+    
+    void setbodyhdr_1();
+    void setbodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -1020,4 +1026,66 @@ void v12scltest::getbodyhdr_2()
         reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
     ASSERT(nullptr != pbHdr);
     EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), pbHdr);
+}
+// setbodyhdr - with non body header starting point.
+
+void v12scltest::setbodyhdr_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    size_t original = item.size();
+    item.setBodyHeader(0x222222222, 1, 2);
+    size_t snow      = item.size();
+    EQ(original + sizeof(v12::BodyHeader) - sizeof(uint32_t), snow);
+    
+    const v12::BodyHeader* p =
+        reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    ASSERT(p != nullptr);
+    const v12::ScalerItem* pItem =
+        reinterpret_cast<const v12::ScalerItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), p);
+    EQ(sizeof(v12::BodyHeader), size_t(p->s_size));
+    EQ(uint64_t(0x222222222), p->s_timestamp);
+    EQ(uint32_t(1), p->s_sourceId);
+    EQ(uint32_t(2), p->s_barrier);
+    
+    auto data = item.getScalers();    // Good enough to test data moved.
+    EQ(scalers.size(), data.size());
+    EQ(
+       0,
+       memcmp(scalers.data(), data.data(), sizeof(uint32_t)*scalers.size())
+    );
+       
+}
+// setbodyhdr with body header starting point:
+
+void v12scltest::setbodyhdr_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    size_t original = item.size();
+    item.setBodyHeader(0x543212345, 2, 3);
+    size_t final = item.size();
+    EQ(original, final);
+    
+    const v12::BodyHeader* p =
+        reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    ASSERT(p != nullptr);
+    EQ(sizeof(v12::BodyHeader), size_t(p->s_size));
+    EQ(uint64_t(0x543212345), p->s_timestamp);
+    EQ(uint32_t(2), p->s_sourceId);
+    EQ(uint32_t(3), p->s_barrier);
 }
