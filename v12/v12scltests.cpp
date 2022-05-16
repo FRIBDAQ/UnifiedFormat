@@ -99,6 +99,15 @@ class v12scltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(setbodyhdr_1);
     CPPUNIT_TEST(setbodyhdr_2);
+    
+    CPPUNIT_TEST(getfrts_1);
+    CPPUNIT_TEST(getfrts_2);
+    
+    CPPUNIT_TEST(srcid_1);
+    CPPUNIT_TEST(srcid_2);
+    
+    CPPUNIT_TEST(barrier_1);
+    CPPUNIT_TEST(barrier_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -182,6 +191,15 @@ protected:
     
     void setbodyhdr_1();
     void setbodyhdr_2();
+    
+    void getfrts_1();
+    void getfrts_2();
+    
+    void srcid_1();
+    void srcid_2();
+    
+    void barrier_1();
+    void barrier_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12scltest);
@@ -1088,4 +1106,111 @@ void v12scltest::setbodyhdr_2()
     EQ(uint64_t(0x543212345), p->s_timestamp);
     EQ(uint32_t(2), p->s_sourceId);
     EQ(uint32_t(3), p->s_barrier);
+}
+// get fragment ts with not body header throws
+
+void v12scltest::getfrts_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getEventTimestamp(), std::logic_error
+    );
+}
+// Get fragment t with body header:
+
+void v12scltest::getfrts_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    
+    uint64_t ts;
+    CPPUNIT_ASSERT_NO_THROW(
+        ts = item.getEventTimestamp()
+    );
+    EQ(uint64_t(0x1234567890), ts);
+}
+// get source id from non body header throws:
+
+void v12scltest::srcid_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getSourceId(), std::logic_error
+    );
+}
+// get source id from body header item:
+void v12scltest::srcid_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    
+    uint32_t sid;
+    CPPUNIT_ASSERT_NO_THROW(
+        sid = item.getSourceId()
+    );
+    EQ(uint32_t(1), sid);
+}
+// get barrier id from nonbody header throws:
+
+void v12scltest::barrier_1()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        10, 20, now,
+        scalers, true, 2
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getBarrierType(), std::logic_error
+    );
+}
+
+// get barrier type from body header:
+void v12scltest::barrier_2()
+{
+    time_t now = time(nullptr);
+    std::vector<uint32_t> scalers;
+    for (int i=0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    v12::CRingScalerItem item(
+        0x1234567890, 1, 2, 10, 20, now, scalers, 2, true
+    );
+    
+    uint32_t bid;
+    CPPUNIT_ASSERT_NO_THROW(
+        bid = item.getBarrierType()
+    );
+    EQ(uint32_t(2), bid);
 }
