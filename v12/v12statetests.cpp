@@ -49,6 +49,11 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getdivisor_2);
     CPPUNIT_TEST(computetime_1);
     CPPUNIT_TEST(computetime_2);
+    
+    CPPUNIT_TEST(gettitle_1);
+    CPPUNIT_TEST(gettitle_2);
+    CPPUNIT_TEST(settitle_1);
+    CPPUNIT_TEST(settitle_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -82,6 +87,11 @@ protected:
     void getdivisor_2();
     void computetime_1();
     void computetime_2();
+    
+    void gettitle_1();
+    void gettitle_2();
+    void settitle_1();
+    void settitle_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -328,4 +338,44 @@ void v12statetest::computetime_2()
         2
     );
     EQ(float(60), item.computeElapsedTime());
+}
+// Get title - no body header.
+void v12statetest::gettitle_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    EQ(std::string("This is a title"), item.getTitle());
+}
+void v12statetest::gettitle_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    EQ(std::string("This is a title"), item.getTitle());
+}
+// set title no body header:
+void v12statetest::settitle_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    item.setTitle("This title has changed");
+    EQ(std::string("This title has changed"), item.getTitle());
+}
+// set title body header.
+
+void v12statetest::settitle_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    item.setTitle("This is a different title");
+    EQ(std::string("This is a different title"), item.getTitle());
 }
