@@ -54,6 +54,11 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(gettitle_2);
     CPPUNIT_TEST(settitle_1);
     CPPUNIT_TEST(settitle_2);
+    
+    CPPUNIT_TEST(getclock_1);
+    CPPUNIT_TEST(getclock_2);
+    CPPUNIT_TEST(setclock_1);
+    CPPUNIT_TEST(setclock_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -92,6 +97,11 @@ protected:
     void gettitle_2();
     void settitle_1();
     void settitle_2();
+    
+    void getclock_1();
+    void getclock_2();
+    void setclock_1();
+    void setclock_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -378,4 +388,46 @@ void v12statetest::settitle_2()
     );
     item.setTitle("This is a different title");
     EQ(std::string("This is a different title"), item.getTitle());
+}
+// get clock time from no bodyheader.
+void v12statetest::getclock_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    EQ(now, item.getTimestamp());
+}
+// get clock time from body header item:
+
+void v12statetest::getclock_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    EQ(now, item.getTimestamp());
+}
+// set timestamp for non body header:
+
+void v12statetest::setclock_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
+}
+// set timestamp for body header:
+void v12statetest::setclock_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    item.setTimestamp(now+10);
+    EQ(now+10, item.getTimestamp());
 }
