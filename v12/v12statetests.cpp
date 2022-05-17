@@ -74,6 +74,8 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(hashdr_2);
     CPPUNIT_TEST(gethdr_1);
     CPPUNIT_TEST(gethdr_2);
+    CPPUNIT_TEST(sethdr_1);
+    CPPUNIT_TEST(sethdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -132,6 +134,9 @@ protected:
     void hashdr_2();
     void gethdr_1();
     void gethdr_2();
+    void sethdr_1();
+    void sethdr_2();
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -606,4 +611,53 @@ void v12statetest::gethdr_2()
     const v12::StateChangeItem* pItem =
         reinterpret_cast<const v12::StateChangeItem*>(item.getItemPointer());
     EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), p);
+}
+//set body header if there's none makes space and inserts a new on:
+
+void v12statetest::sethdr_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    size_t initial = item.size();
+    item.setBodyHeader(0x1234567890, 2,3);
+    size_t final = item.size();
+    EQ(initial + sizeof(v12::BodyHeader) -  sizeof(uint32_t), final);
+    ASSERT(item.hasBodyHeader());
+    const v12::BodyHeader* p =
+        reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    ASSERT(nullptr != p);
+    EQ(sizeof(v12::BodyHeader), size_t(p->s_size));
+    EQ(uint64_t(0x1234567890), p->s_timestamp);
+    EQ(uint32_t(2), p->s_sourceId);
+    EQ(uint32_t(3), p->s_barrier);
+    
+    // If I can read the title correctly probably everything was properly shifted:
+    
+    EQ(std::string("This is a title"), item.getTitle());
+}
+// setBodyHeader - if there's  already one, replaces the contents.
+
+void v12statetest::sethdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    size_t initial = item.size();
+    item.setBodyHeader(0x666666666, 2, 3);
+    size_t final  = item.size();
+    EQ(initial, final);
+    
+    
+    const v12::BodyHeader* p =
+        reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    ASSERT(nullptr != p);
+    EQ(sizeof(v12::BodyHeader), size_t(p->s_size));
+    EQ(uint64_t(0x666666666), p->s_timestamp);
+    EQ(uint32_t(2), p->s_sourceId);
+    EQ(uint32_t(3), p->s_barrier);
+    
 }
