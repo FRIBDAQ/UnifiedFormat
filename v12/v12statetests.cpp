@@ -62,6 +62,13 @@ class v12statetest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getosid_1);
     CPPUNIT_TEST(getosid_2);
+    
+    CPPUNIT_TEST(bodysize_1);
+    CPPUNIT_TEST(bodysize_2);
+    CPPUNIT_TEST(getbody_1);
+    CPPUNIT_TEST(getbody_2);
+    CPPUNIT_TEST(getbody_3);
+    CPPUNIT_TEST(getbody_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -108,6 +115,13 @@ protected:
     
     void getosid_1();
     void getosid_2();
+    
+    void bodysize_1();
+    void bodysize_2();
+    void getbody_1();
+    void getbody_2();
+    void getbody_3();
+    void getbody_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -457,4 +471,85 @@ void v12statetest::getosid_2()
         2
     );
     EQ(uint32_t(1), item.getOriginalSourceId());
+}
+
+// body size from non body header:
+
+void v12statetest::bodysize_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    EQ(sizeof(v12::StateChangeItemBody), item.getBodySize());
+}
+// body size from body header item.
+
+void v12statetest::bodysize_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    EQ(sizeof(v12::StateChangeItemBody), item.getBodySize());
+}
+
+// Get body  pointer (const) non body header:
+
+void v12statetest::getbody_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    const v12::StateChangeItemBody* p =
+        reinterpret_cast<const v12::StateChangeItemBody*>(item.getBodyPointer());
+    const v12::StateChangeItem* pItem =
+        reinterpret_cast<const v12::StateChangeItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), p);
+}
+// get body pointer (non const) no body header:
+
+void v12statetest::getbody_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+     v12::StateChangeItemBody* p =
+        reinterpret_cast< v12::StateChangeItemBody*>(item.getBodyPointer());
+     v12::StateChangeItem* pItem =
+        reinterpret_cast< v12::StateChangeItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), p);
+}
+// Get body pointer (const) body header:
+
+void v12statetest::getbody_3()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    const v12::StateChangeItemBody* p =
+        reinterpret_cast<const v12::StateChangeItemBody*>(item.getBodyPointer());
+    const v12::StateChangeItem* pItem =
+        reinterpret_cast<const v12::StateChangeItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), p);
+}
+// get body pointer (non const) has body header:
+
+void v12statetest::getbody_4()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+     v12::StateChangeItemBody* p =
+        reinterpret_cast< v12::StateChangeItemBody*>(item.getBodyPointer());
+     v12::StateChangeItem* pItem =
+        reinterpret_cast< v12::StateChangeItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), p);
 }
