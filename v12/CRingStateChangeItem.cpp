@@ -128,7 +128,7 @@ CRingStateChangeItem::CRingStateChangeItem(
       pItem->s_header.s_type = reason;
       
       v12::pBodyHeader pBh = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
-      pBh->s_size = sizeof(v12::pBodyHeader);
+      pBh->s_size = sizeof(v12::BodyHeader);
       pBh->s_timestamp = eventTimestamp;
       pBh->s_sourceId   = sourceId;
       pBh->s_barrier    = barrierType;
@@ -465,10 +465,10 @@ CRingStateChangeItem::isStateChange(unsigned t)
 {
 
   return (
-	  (t == BEGIN_RUN )              ||
-	  (t == END_RUN)                 ||
-	  (t == PAUSE_RUN)               ||
-	  (t == RESUME_RUN));
+	  (t == v12::BEGIN_RUN )              ||
+	  (t == v12::END_RUN)                 ||
+	  (t == v12::PAUSE_RUN)               ||
+	  (t == v12::RESUME_RUN));
 }
 /**
  * fillStateChangeBody
