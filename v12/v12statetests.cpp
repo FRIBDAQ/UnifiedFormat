@@ -69,6 +69,11 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getbody_2);
     CPPUNIT_TEST(getbody_3);
     CPPUNIT_TEST(getbody_4);
+    
+    CPPUNIT_TEST(hashdr_1);
+    CPPUNIT_TEST(hashdr_2);
+    CPPUNIT_TEST(gethdr_1);
+    CPPUNIT_TEST(gethdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -122,6 +127,11 @@ protected:
     void getbody_2();
     void getbody_3();
     void getbody_4();
+    
+    void hashdr_1();
+    void hashdr_2();
+    void gethdr_1();
+    void gethdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -552,4 +562,48 @@ void v12statetest::getbody_4()
      v12::StateChangeItem* pItem =
         reinterpret_cast< v12::StateChangeItem*>(item.getItemPointer());
     EQ(&(pItem->s_body.u_hasBodyHeader.s_body), p);
+}
+// hasBody Header false for non body header.
+
+void v12statetest::hashdr_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    ASSERT(!item.hasBodyHeader());
+}
+// hasBodyHeader true if there is one:
+void v12statetest::hashdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    ASSERT(item.hasBodyHeader());
+}
+// getBodyHeader - nullptr if none
+void v12statetest::gethdr_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    ASSERT(nullptr == item.getBodyHeader());
+}
+// getBodyHeader - non null correct value if there is one.
+void v12statetest::gethdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    const v12::BodyHeader* p =
+        reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    ASSERT(p != nullptr);
+    const v12::StateChangeItem* pItem =
+        reinterpret_cast<const v12::StateChangeItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), p);
 }
