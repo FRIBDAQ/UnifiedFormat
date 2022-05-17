@@ -388,6 +388,16 @@ CRingStateChangeItem::getBodyPointer()
   return pThis->v12::CRingItem::getBodyPointer();
 }
 /**
+ * hasBodyHeader
+ *    @return bool - true if the item has a body header:
+ */
+bool
+CRingStateChangeItem::hasBodyHeader() const
+{
+    const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+    return pThis->v12::CRingItem::hasBodyHeader();
+}
+/**
  * getBodyHeader
  *    Return a pointer to the item's body header or nullptr if there isn't
  *    one.
