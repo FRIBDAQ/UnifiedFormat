@@ -38,6 +38,8 @@ class v12statetest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getrun_1);
     CPPUNIT_TEST(getrun_2);
+    CPPUNIT_TEST(setrun_1);
+    CPPUNIT_TEST(setrun_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -59,6 +61,9 @@ protected:
     
     void getrun_1();
     void getrun_2();
+    
+    void setrun_1();
+    void setrun_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -198,4 +203,26 @@ void v12statetest::getrun_2()
         0x1234567890, 1, 2, v12::BEGIN_RUN, 12, 0, now, "This is a title"
     );
     EQ(uint32_t(12), item.getRunNumber());
+}
+// can set a new run number in a non body header item.
+void v12statetest::setrun_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 0, now, "This is a title" 
+    );
+    
+    item.setRunNumber(666);
+    EQ(uint32_t(666), item.getRunNumber());
+}
+// can set run number in an item with a body header:
+
+void v12statetest::setrun_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::BEGIN_RUN, 12, 0, now, "This is a title"
+    );
+    item.setRunNumber(12345);
+    EQ(uint32_t(12345), item.getRunNumber());
 }
