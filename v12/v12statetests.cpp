@@ -40,6 +40,15 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getrun_2);
     CPPUNIT_TEST(setrun_1);
     CPPUNIT_TEST(setrun_2);
+    
+    CPPUNIT_TEST(getelapsed_1);
+    CPPUNIT_TEST(getelapsed_2);
+    CPPUNIT_TEST(setelapsed_1);
+    CPPUNIT_TEST(setelapsed_2);
+    CPPUNIT_TEST(getdivisor_1);
+    CPPUNIT_TEST(getdivisor_2);
+    CPPUNIT_TEST(computetime_1);
+    CPPUNIT_TEST(computetime_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -64,6 +73,15 @@ protected:
     
     void setrun_1();
     void setrun_2();
+    
+    void getelapsed_1();
+    void getelapsed_2();
+    void setelapsed_1();
+    void setelapsed_2();
+    void getdivisor_1();
+    void getdivisor_2();
+    void computetime_1();
+    void computetime_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -225,4 +243,89 @@ void v12statetest::setrun_2()
     );
     item.setRunNumber(12345);
     EQ(uint32_t(12345), item.getRunNumber());
+}
+
+// get elapsed time no body  header.
+
+void v12statetest::getelapsed_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::PAUSE_RUN, 1234, 100, now, "This is a title" 
+    );
+    EQ(uint32_t(100), item.getElapsedTime());
+}
+// Get elapsed time body header.
+
+void v12statetest::getelapsed_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title"
+    );
+    EQ(uint32_t(120), item.getElapsedTime());
+}
+// set elapsed time no body header:
+
+void v12statetest::setelapsed_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 0, now, "This is a title" 
+    );
+    item.setElapsedTime(200);
+    EQ(uint32_t(200), item.getElapsedTime());
+}
+// set elapsed time body header case.
+
+void v12statetest::setelapsed_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title"
+    );
+    item.setElapsedTime(200);
+    EQ(uint32_t(200), item.getElapsedTime());
+}
+// get elapsed time divisor no body header.
+
+void v12statetest::getdivisor_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 0, now, "This is a title" 
+    );
+    EQ(uint32_t(1), item.getTimeDivisor());
+}
+// get elapsed time divisor body header
+
+void v12statetest::getdivisor_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    EQ(uint32_t(2), item.getTimeDivisor());
+}
+// compute elapsed time no body header:
+
+void v12statetest::computetime_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    EQ(float(10), item.computeElapsedTime());
+}
+// compute elapsed time body heaer:
+
+void v12statetest::computetime_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    EQ(float(60), item.computeElapsedTime());
 }
