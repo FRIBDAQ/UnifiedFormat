@@ -59,6 +59,9 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getclock_2);
     CPPUNIT_TEST(setclock_1);
     CPPUNIT_TEST(setclock_2);
+    
+    CPPUNIT_TEST(getosid_1);
+    CPPUNIT_TEST(getosid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -102,6 +105,9 @@ protected:
     void getclock_2();
     void setclock_1();
     void setclock_2();
+    
+    void getosid_1();
+    void getosid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -430,4 +436,25 @@ void v12statetest::setclock_2()
     );
     item.setTimestamp(now+10);
     EQ(now+10, item.getTimestamp());
+}
+// osid for non body header item is 0:
+
+void v12statetest::getosid_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// osid for body header item is the source id (the body header can
+// be changed the osid is immutable).
+void v12statetest::getosid_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    EQ(uint32_t(1), item.getOriginalSourceId());
 }
