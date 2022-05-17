@@ -15,16 +15,36 @@
 	     East Lansing, MI 48824-1321
 */
 
-#include <config.h>
+
 #include "CRingTextItem.h"
+#include "DataFormat.h"
+#include "CRingItem.h"
+
 #include <string.h>
 #include <sstream>
+#include <stdexcept>
+
 using namespace std;
+
+namespace v12 {
 
 ///////////////////////////////////////////////////////////////////////////////////
 //
 //   Constructors and other canonical member functions.
 //
+
+/**
+ * constructor
+ *   @param type - Item type - must be valid.
+ *   @param maxsize - maximum size of the item.
+ */
+CRingTextItem::CRingTextItem(uint16_t type, size_t maxsize) :
+  ::CRingTextItem(type, maxsize)
+{
+    if (!validType(type)) {
+      throw std::logic_error("Invalid ring text item item type code");
+    }
+}
 
 /*!
    Construct a ring item that contains text strings.
@@ -37,16 +57,21 @@ using namespace std;
          we're building the  body header ourself.
 */
 CRingTextItem::CRingTextItem(uint16_t type, vector<string> theStrings) :
-  CRingItem(type, bodySize(theStrings) + sizeof(BodyHeader))
+  ::CRingTextItem(type, itemSize(theStrings))
 {
-
-    auto stringPtrs = makeStringPointers(theStrings);
-    void* p = fillTextItemBody(
-      getItemPointer(), 0, 1, time(nullptr), stringPtrs.size(), stringPtrs.data(),
-      0
-    );
-    setBodyCursor(p);
+    if (!validType(type)) {
+        throw std::logic_error("Invalid ring text item type code");
+    }
+    v12::TextItem* pItem = reinterpret_cast<v12::TextItem*>(getItemPointer());
+    pItem->s_header.s_type = type;
+    pItem->s_body.u_noBodyHeader.s_empty = sizeof(uint32_t);
+    
+    v12::TextItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
+    void* pEnd = fillBody(pBody, 0, time(nullptr), 1, 0, theStrings);
+    
+    setBodyCursor(pEnd);
     updateSize();
+  
 }
 /*!
   Construct a ring buffer, but this time provide actual values for the
@@ -63,16 +88,22 @@ CRingTextItem::CRingTextItem(uint16_t type, vector<string> theStrings) :
 CRingTextItem::CRingTextItem(uint16_t       type,
 			     vector<string> strings,
 			     uint32_t       offsetTime,
-			     time_t         timestamp) :
-  CRingItem(type, bodySize(strings) + sizeof(BodyHeader))
+			     time_t         timestamp, uint32_t divisor) :
+  ::CRingTextItem(type, itemSize(strings))
 {
+  if(!validType(type)) {
+    throw std::logic_error("Invalid text item type code");
+  }
+  v12::TextItem* pItem = reinterpret_cast<v12::TextItem*>(getItemPointer());
+  pItem->s_header.s_type = type;
   
-  auto stringPtrs = makeStringPointers(strings);
-  void* p = fillTextItemBody(
-    getItemPointer(), offsetTime, 1, timestamp, stringPtrs.size(),
-    stringPtrs.data(), 0
-  );
-  setBodyCursor(p);
+  
+  pItem->s_body.u_noBodyHeader.s_empty = sizeof(uint32_t);
+    
+  v12::TextItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
+  void* pEnd = fillBody(pBody, offsetTime, timestamp, divisor, 0, strings);
+  
+  setBodyCursor(pEnd);
   updateSize();
 }
 /**
@@ -100,44 +131,27 @@ CRingTextItem::CRingTextItem(
     uint16_t type, uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
     std::vector<std::string> theStrings, uint32_t offsetTime, time_t timestamp,
     int divisor) :
-    CRingItem(type, eventTimestamp, source, barrier,
-    bodySize(theStrings) + sizeof(BodyHeader))
+  ::CRingTextItem(type, itemSize(theStrings))
+    
 {
     
-    auto stringPointers = makeStringPointers(theStrings);
-    void* p = fillTextItemBody(
-      getItemPointer(), offsetTime, divisor, timestamp,
-      stringPointers.size(), stringPointers.data(), source 
-    );
-    setBodyCursor(p);
-    updateSize();
-
-}
-
-/*!
-   Construct from an undifferentiated ring item.
-   If the ring item does not have a type that is consistent with
-   a text item type that is a strong error.
-   \param rhs  - The ring item from which this is constructed.
-   
-   \throw bad_cast - if rhs is not a text ring item.
-*/
-CRingTextItem::CRingTextItem(const CRingItem& rhs) 
-  : CRingItem(rhs)
-{
-  if (!validType()) throw bad_cast();
-
+  if(!validType(type)) {
+    throw std::logic_error("Invalid text item type code");
+  }
+  v12::TextItem* pItem = reinterpret_cast<v12::TextItem*>(getItemPointer());
+  pItem->s_header.s_type = type;
   
-}
-
-/*!
-  Copy construction.  
-  \param rhs - the item we are being copied from.
-*/
-CRingTextItem::CRingTextItem(const CRingTextItem& rhs) :
-  CRingItem(rhs)
-{
   
+  pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size = sizeof(v12::BodyHeader);
+  pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp = eventTimestamp;
+  pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_sourceId  = source;
+  pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_barrier   = barrier;
+    
+  v12::TextItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+  void* pEnd = fillBody(pBody, offsetTime, timestamp, divisor, source, theStrings);
+  
+  setBodyCursor(pEnd);
+  updateSize();
 }
 
 /*!
@@ -145,54 +159,6 @@ CRingTextItem::CRingTextItem(const CRingTextItem& rhs) :
 */
 CRingTextItem::~CRingTextItem()
 {}
-
-/*!
-  Assignment
-  \param rhs - the item being assigned to this.
-  \return CRingTextItem&
-  \retval *this
-*/
-CRingTextItem&
-CRingTextItem::operator=(const CRingTextItem& rhs)
-{
-  if (this != &rhs) {
-    CRingItem::operator=(rhs);
-    
-  }
-  return *this;
-}
-/*!
-  Comparison for equality.  No real point in comparing the item pointers.
-  unless this == &rhs they will always differ.
-  \param rhs - the item being compared to *this
-  \return int
-  \retval 0        - Not equal
-  \retval nonzero  - equal.
-*/
-int
-CRingTextItem::operator==(const CRingTextItem& rhs) const
-{
-  return CRingItem::operator==(rhs);
-}
-/*!
-  Comparison for inequality.
-  \param rhs      - the item being compared to *this.
-  \retval 0       - Items are not inequal
-  \retval nonzero - items are inequal
-
-  \note My stilted English is because C++ allows perverse cases where 
-  a == b  does not necesarily imply !(a != b) and vica versa. In fact, these
-  operators can be defined in  such a way that they have nothing whatever to do
-  with comparison (just as ostream::operator<< has nothing to do with 
-  shifting). however  my definition is sensible in that a == b is the logical converse of 
-  a != b, and vicaversa, and these operators really do compare.
-*/
-int 
-CRingTextItem::operator!=(const CRingTextItem& rhs) const
-{
-  return !(*this == rhs);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //
@@ -207,7 +173,8 @@ vector<string>
 CRingTextItem::getStrings() const
 {
   vector<string> result;
-  pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());
+  const v12::TextItemBody* pItem =
+    reinterpret_cast<const v12::TextItemBody* >(getBodyPointer());
   
   const char*     pNextString = pItem->s_strings;
 
@@ -229,7 +196,8 @@ CRingTextItem::getStrings() const
 void
 CRingTextItem::setTimeOffset(uint32_t offset)
 {
-  pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());    
+  v12::pTextItemBody pItem =
+      reinterpret_cast<v12::pTextItemBody>(getBodyPointer());    
   pItem->s_timeOffset = offset;
 }
 /*!
@@ -239,7 +207,8 @@ CRingTextItem::setTimeOffset(uint32_t offset)
 uint32_t
 CRingTextItem::getTimeOffset() const
 {
-  pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());
+  const v12::TextItemBody* pItem =
+      reinterpret_cast<const v12::TextItemBody*>(getBodyPointer());
   return pItem->s_timeOffset;
 }
 /**
@@ -253,9 +222,9 @@ CRingTextItem::getTimeOffset() const
 float
 CRingTextItem::computeElapsedTime() const
 {
-    pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());
-    float time   = pItem->s_timeOffset;
-    float divisor= pItem->s_offsetDivisor;
+    
+    float time   = getTimeOffset();
+    float divisor= getTimeDivisor();
     
     return time/divisor;
 }
@@ -265,7 +234,8 @@ CRingTextItem::computeElapsedTime() const
 uint32_t
 CRingTextItem::getTimeDivisor() const
 {
-  pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());
+  const v12::TextItemBody* pItem =
+    reinterpret_cast<const v12::TextItemBody*>(getBodyPointer());
   return pItem->s_offsetDivisor;
 }
 /*!
@@ -274,7 +244,7 @@ CRingTextItem::getTimeDivisor() const
 void
 CRingTextItem::setTimestamp(time_t stamp)
 {
-  pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());
+  v12::pTextItemBody pItem = reinterpret_cast<v12::pTextItemBody>(getBodyPointer());
   pItem->s_timestamp = stamp;
 }
 /*!
@@ -285,7 +255,8 @@ CRingTextItem::setTimestamp(time_t stamp)
 time_t
 CRingTextItem::getTimestamp() const
 {
-  pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());
+  const v12::TextItemBody* pItem =
+    reinterpret_cast<const v12::TextItemBody*>(getBodyPointer());
   return pItem->s_timestamp;
 }
 /**
@@ -298,7 +269,8 @@ CRingTextItem::getTimestamp() const
 uint32_t
 CRingTextItem::getOriginalSourceId() const
 {
-  pTextItemBody pItem = reinterpret_cast<pTextItemBody>(getBodyPointer());
+  const v12::TextItemBody* pItem =
+    reinterpret_cast<const v12::TextItemBody*>(getBodyPointer());
   return pItem->s_originalSid;
 }
 ///////////////////////////////////////////////////////////
@@ -337,13 +309,16 @@ CRingTextItem::toString() const
   std::ostringstream out;
 
   // uint32_t elapsed  = getTimeOffset();
-  string   time     = timeString(getTimestamp());
+  
+  time_t t = getTimestamp();
+  string   time     = ctime(&t);
   vector<string> strings = getStrings();
   uint32_t sid      = getOriginalSourceId();
 
   out << time << " : Documentation item ";
   out << typeName();
-  out << bodyHeaderToString();
+  const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+  out << pThis->v12::CRingItem::bodyHeaderToString();
   out << "Originally emitted by source id: " << sid << " ";
   out << computeElapsedTime() << " seconds in to the run\n";
   for (int i = 0; i < strings.size(); i++) {
@@ -352,6 +327,108 @@ CRingTextItem::toString() const
 
 
   return out.str();
+}
+
+// Subsequent methods use our sideways cast to v12::CRingItem.. While
+// this class is not in our inheritance hierarchy (and to put it there will result
+// in an inheritance diamond of death leading to ::CRingItem), the data structures
+// used to store our ring item and our mutual derivation from ::CRingItem which
+// provides services needed to get at stuff we really need.
+
+
+/**
+ * getBodyHeader
+ *    @return void* - pointer to the items' body header.
+ *    @retval nullptr - the item has no body header (see hasbodyheader).
+ */
+void*
+CRingTextItem::getBodyHeader() const
+{
+    const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+    return pThis->v12::CRingItem::getBodyHeader();
+}
+/**
+ * setBodyHeader
+ *    @param timestamp - fragment timestamp to put in the body header.
+ *    @param source    - fragment source id to put in the body header.
+ *    @param barrierType - barrier type codee to put in the body header.
+ *    @note if the underlying ring item does not yet have a body header,
+ *          data will be slid down to make room for one and that will be filled in.
+ */
+void
+CRingTextItem::setBodyHeader(uint64_t timestamp, uint32_t source , uint32_t barrierType)
+{
+    v12::CRingItem* pThis = reinterpret_cast<v12::CRingItem*>(this);
+    pThis->v12::CRingItem::setBodyHeader(timestamp, source, barrierType);
+}
+/**
+ * getBodySize
+ *   @return size_t number of bytes in the item body.
+ */
+size_t
+CRingTextItem::getBodySize() const
+{
+  const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+  return pThis->v12::CRingItem::getBodySize();
+}
+/** getBodyPointer
+ *  @return [const] void* - pointer to the body.
+ */
+const void*
+CRingTextItem::getBodyPointer() const
+{
+  const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+  return pThis->v12::CRingItem::getBodyPointer();
+}
+void*
+CRingTextItem::getBodyPointer()
+{
+  v12::CRingItem* pThis = reinterpret_cast<v12::CRingItem*>(this);
+  return pThis->v12::CRingItem::getBodyPointer();
+}
+/**
+ * hasBodyHeader
+ *   @return bool
+ *   @retval false - item has no body header.
+ */
+bool
+CRingTextItem::hasBodyHeader() const
+{
+  const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+  return pThis->v12::CRingItem::hasBodyHeader();
+}
+/**
+ * getEventTimestamp
+ *    @return uint64_t fragment timestamp.
+ *    @throw std::logic_error - no body header in item.
+ */
+uint64_t
+CRingTextItem::getEventTimestamp() const
+{
+  const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+  return pThis->v12::CRingItem::getEventTimestamp();
+}
+/**
+ * getSourceId
+ *    @return uint32_t - source id
+ *    @throw std::logic_error - no body header in item.
+ */
+uint32_t
+CRingTextItem::getSourceId() const
+{
+  const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+  return pThis->v12::CRingItem::getSourceId();
+}
+/**
+ * getBarrierType
+ *   @return uint32_t barrier type.
+ *   @throw std::logic_error - no body header.
+ */
+uint32_t
+CRingTextItem::getBarrierType() const
+{
+  const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
+  return pThis->v12::CRingItem::getBarrierType();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,7 +445,7 @@ CRingTextItem::toString() const
 size_t 
 CRingTextItem::bodySize(vector<string> strings) const
 {
-  size_t result = sizeof(TextItemBody) - sizeof(char);
+  size_t result = sizeof(v12::TextItemBody) ;
   for (int i=0; i < strings.size(); i++) {
     result += strings[i].size() + 1;
   }
@@ -379,33 +456,60 @@ CRingTextItem::bodySize(vector<string> strings) const
 **
 */
 bool
-CRingTextItem::validType() const
+CRingTextItem::validType(uint16_t t) const
 {
-  uint32_t t = type();
-  return ((t == PACKET_TYPES)               ||
-	  (t == MONITORED_VARIABLES));
+  
+  return ((t == v12::PACKET_TYPES)               ||
+	  (t == v12::MONITORED_VARIABLES));
 }
-
 /**
- * makeStringPointers
- *    Sets up for e.g. fillTextItemBody by producing a vector of
- *    pointers to the string data.  The data method of that vector can
- *    then provide the pointer to the array of string pointers needed by
- *    that call.
+ * itemSize
+ *   Given a set of strings determines an uppper bound on the size of the
+ *   string item needed to hold it.
+ * @param strings - vector of strings to put in the body.
+ * @return size_t - note this is an upper bound.
  *
- *  @param strings - Reference to the vector of strings we're getting pointers to
- *  @return  std::vector<const char*
- *  @note any operations on  original vector
- *        can invalidate the pointers.
  */
-std::vector<const char*>
-CRingTextItem::makeStringPointers(const std::vector<std::string>& strings)
+size_t
+CRingTextItem::itemSize(const std::vector<std::string>& strings) const
 {
-  std::vector<const char*> result;
-  
-  for (int i =0; i < strings.size(); i++) {
-    result.push_back(strings[i].c_str());
-  }
-  
+  size_t result = bodySize(strings);
+  result += sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader);
   return result;
 }
+/**
+ * fillBody
+ *    Fills a text item body:
+ * @param pBody - pointer to the body.
+ * @param offset - time offset.
+ * @param stamp  - clock time stamp
+ * @param divisor - time offset divisor.
+ * @param osid   - original source id.
+ * @param strings - strings to put in the payload.
+ * @return void*  - pointer past the strings - suitable for e.g. setBodyCursor.
+ */
+void*
+CRingTextItem::fillBody(
+  void* pBody, unsigned offset, time_t stamp, unsigned divisor,
+  unsigned osid, const std::vector<std::string>& strings
+)
+{
+  v12::pTextItemBody p = reinterpret_cast<v12::pTextItemBody>(pBody);
+  p->s_timeOffset = offset;
+  p->s_timestamp  = stamp;
+  p->s_stringCount  = strings.size();
+  p->s_offsetDivisor = divisor;
+  p->s_originalSid   = osid;
+  
+  char* pDest = p->s_strings;
+  for (int i =0; i < strings.size(); i++) {
+    strcpy(pDest, strings[i].c_str());
+    pDest += strings[i].size() + 1;   // +1 for null terminator.
+  }
+  
+  return pDest;
+  
+}
+
+
+}                               // v12 namespace.

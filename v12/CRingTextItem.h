@@ -1,5 +1,5 @@
-#ifndef CRINGTEXTITEM_H
-#define CRINGTEXTITEM_H
+#ifndef V12_CRINGTEXTITEM_H
+#define V12_CRINGTEXTITEM_H
 
 /*
     This software is Copyright by the Board of Trustees of Michigan
@@ -17,21 +17,15 @@
 	     East Lansing, MI 48824-1321
 */
 
-#include "CRingItem.h"
-#include "DataFormat.h"
-#include <RangeError.h>
-#include <stdint.h>
-#include <time.h>
-#include <string>
-#include <vector>
-#include <typeinfo>
+#include <CRingTextItem.h>    // Abstract
 
+namespace v12 {
 
 /*!
   The text ring item provides a mechanism to put an item in/take an item out of 
   a ring buffer that consists of null terminated text strings.  
 */
-class CRingTextItem : public CRingItem
+class CRingTextItem : public ::CRingTextItem
 {
   // Private data:
 
@@ -39,21 +33,24 @@ class CRingTextItem : public CRingItem
 public:
   // Constructors and other canonicals:
 
+  CRingTextItem(uint16_t type, size_t maxsize);
   CRingTextItem(uint16_t type,
 		std::vector<std::string> theStrings);
   CRingTextItem(uint16_t type,
 		std::vector<std::string> theStrings,
 		uint32_t                 offsetTime,
-		time_t                   timestamp) ;
+		time_t                   timestamp, uint32_t divisor=1) ;
   CRingTextItem(
     uint16_t type, uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
     std::vector<std::string> theStrings, uint32_t offsetTime, time_t timestamp,
     int offsetDivisor = 1
   );
+  virtual ~CRingTextItem();
+private:  
   CRingTextItem(const CRingItem& rhs) ;
   CRingTextItem(const CRingTextItem& rhs);
 
-  virtual ~CRingTextItem();
+  
 
   CRingTextItem& operator=(const CRingTextItem& rhs);
   int operator==(const CRingTextItem& rhs) const;
@@ -61,30 +58,45 @@ public:
 
   // Public interface:
 public:
-  std::vector<std::string>  getStrings() const;
+  virtual std::vector<std::string>  getStrings() const;
 
-  void     setTimeOffset(uint32_t offset);
-  uint32_t getTimeOffset() const;
-  float    computeElapsedTime() const;
-  uint32_t getTimeDivisor() const;
+  virtual void     setTimeOffset(uint32_t offset);
+  virtual uint32_t getTimeOffset() const;
+  virtual float    computeElapsedTime() const;
+  virtual uint32_t getTimeDivisor() const;
 
-  void     setTimestamp(time_t stamp);
-  time_t   getTimestamp() const;
-  uint32_t getOriginalSourceId() const;
+  virtual void     setTimestamp(time_t stamp);
+  virtual time_t   getTimestamp() const;
+  virtual uint32_t getOriginalSourceId() const;
   
   // Virtual methods all ring overrides.
 
   virtual std::string typeName() const;
   virtual std::string toString() const;
   
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(
+        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
+  );
+  virtual size_t getBodySize()    const;
+  virtual const void*  getBodyPointer() const;
+  virtual void* getBodyPointer();
+  virtual bool hasBodyHeader() const;
+  uint64_t getEventTimestamp() const;
+  uint32_t getSourceId() const;
+  uint32_t getBarrierType() const;
+
 
   //private utilities:
 private:
   size_t bodySize(std::vector<std::string> strings) const;
-  bool   validType() const;
-  
-  std::vector<const char*> makeStringPointers(const std::vector<std::string>& strings);
+  bool   validType(uint16_t type) const;
+  size_t itemSize(const std::vector<std::string>& strings) const;
+  void* fillBody(
+        void* pBody, unsigned offset, time_t stamp, unsigned divisor,
+        unsigned osid, const std::vector<std::string>& strings
+  );
 };
 
-
+}                                     // v12 namespace.
 #endif
