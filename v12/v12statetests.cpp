@@ -76,6 +76,13 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(gethdr_2);
     CPPUNIT_TEST(sethdr_1);
     CPPUNIT_TEST(sethdr_2);
+    
+    CPPUNIT_TEST(getfrts_1);
+    CPPUNIT_TEST(getfrts_2);
+    CPPUNIT_TEST(getsid_1);
+    CPPUNIT_TEST(getsid_2);
+    CPPUNIT_TEST(getbar_1);
+    CPPUNIT_TEST(getbar_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -136,6 +143,13 @@ protected:
     void gethdr_2();
     void sethdr_1();
     void sethdr_2();
+    
+    void getfrts_1();
+    void getfrts_2();
+    void getsid_1();
+    void getsid_2();
+    void getbar_1();
+    void getbar_2();
     
 };
 
@@ -660,4 +674,78 @@ void v12statetest::sethdr_2()
     EQ(uint32_t(2), p->s_sourceId);
     EQ(uint32_t(3), p->s_barrier);
     
+}
+// get fragment timestamp if non body header is logic_error
+void v12statetest::getfrts_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getEventTimestamp(), std::logic_error
+    );
+}
+// get correct ts from body header item:
+
+void v12statetest::getfrts_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    uint64_t ts;
+    CPPUNIT_ASSERT_NO_THROW(ts = item.getEventTimestamp());
+    EQ(uint64_t( 0x1234567890), ts);
+}
+// get sid from non body header is logic error:
+
+void v12statetest::getsid_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getSourceId(), std::logic_error
+    );
+}
+// get correct sid from item with body header:
+
+void v12statetest::getsid_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    uint32_t sid;
+    CPPUNIT_ASSERT_NO_THROW(sid = item.getSourceId());
+    EQ(uint32_t(1), sid);
+}
+// getBarrierType logic error if there's no body header.
+
+void v12statetest::getbar_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 10, now, "This is a title" 
+    );
+    CPPUNIT_ASSERT_THROW(
+        item.getBarrierType(), std::logic_error
+    );
+}
+// getBarrierType gives correct result if body header:
+
+void v12statetest::getbar_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::PAUSE_RUN, 12, 120, now, "This is a title",
+        2
+    );
+    uint32_t bar;
+    CPPUNIT_ASSERT_NO_THROW(bar = item.getBarrierType());
+    EQ(uint32_t(2), bar);
 }
