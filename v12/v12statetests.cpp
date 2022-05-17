@@ -167,9 +167,9 @@ void v12statetest::construct_5()
 void v12statetest::construct_6()
 {
     time_t now = time(nullptr);
-    CPPUNIT_ASSSERT_THROW(
+    CPPUNIT_ASSERT_THROW(
         v12::CRingStateChangeItem item(
             0x1234567890, 1, 2, v12::ABNORMAL_ENDRUN, 12, 0, now, "This is a title"
         ), std::logic_error
-    )
+    );
 }
