@@ -35,6 +35,9 @@ class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_4);
     CPPUNIT_TEST(construct_5);
     CPPUNIT_TEST(construct_6);
+    
+    CPPUNIT_TEST(getrun_1);
+    CPPUNIT_TEST(getrun_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -53,6 +56,9 @@ protected:
     void construct_4();
     void construct_5();
     void construct_6();
+    
+    void getrun_1();
+    void getrun_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12statetest);
@@ -172,4 +178,24 @@ void v12statetest::construct_6()
             0x1234567890, 1, 2, v12::ABNORMAL_ENDRUN, 12, 0, now, "This is a title"
         ), std::logic_error
     );
+}
+
+// get run number from body headerless item.
+void v12statetest::getrun_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        v12::BEGIN_RUN, 1234, 0, now, "This is a title" 
+    );
+    EQ(uint32_t(1234), item.getRunNumber());
+}
+// get run number from item with body header:
+
+void v12statetest::getrun_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingStateChangeItem item(
+        0x1234567890, 1, 2, v12::BEGIN_RUN, 12, 0, now, "This is a title"
+    );
+    EQ(uint32_t(12), item.getRunNumber());
 }

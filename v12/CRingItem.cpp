@@ -124,7 +124,7 @@ CRingItem::getBodyPointer() const
 {
     const v12::RingItem* pItem =
       reinterpret_cast<const v12::RingItem*>(getItemPointer());
-    if (!hasBodyHeader()) {
+    if (!v12::CRingItem::hasBodyHeader()) {
       return pItem->s_body.u_noBodyHeader.s_body;
     } else {
       // We don't assume the body header has the 'right' shape:
@@ -140,7 +140,7 @@ CRingItem::getBodyPointer()
 {
     v12::RingItem* pItem =
       reinterpret_cast<v12::RingItem*>(getItemPointer());
-    if (!hasBodyHeader()) {
+    if (!v12::CRingItem::hasBodyHeader()) {
       return pItem->s_body.u_noBodyHeader.s_body;
     } else {
       // We don't assume the body header has the 'right' shape:
@@ -179,7 +179,7 @@ CRingItem::hasBodyHeader() const {
 void*
 CRingItem::getBodyHeader() const
 {
-     if(hasBodyHeader()) {
+     if(v12::CRingItem::hasBodyHeader()) {
         const v12::RingItem* pItem =
             reinterpret_cast<const v12::RingItem*>(getItemPointer());
         return const_cast<v12::BodyHeader*>(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader));
@@ -354,7 +354,7 @@ CRingItem::bodyHeaderToString() const
 {
     std::stringstream result;
     
-    if (hasBodyHeader()) {
+    if (v12::CRingItem::hasBodyHeader()) {
         pBodyHeader pHeader = reinterpret_cast<pBodyHeader>(getBodyHeader());
         result << "Body Header:\n";
         result << "Timestamp:    " << pHeader->s_timestamp << std::endl;
@@ -392,7 +392,7 @@ CRingItem::bodyHeaderToString() const
 void
 CRingItem::throwIfNoBodyHeader(const char*msg) const
 {
-    if (!hasBodyHeader()) {
+    if (!v12::CRingItem::hasBodyHeader()) {
         throw std::logic_error(msg);
     }
 }
