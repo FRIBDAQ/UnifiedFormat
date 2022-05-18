@@ -58,6 +58,8 @@ class v12txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getoffset_2);
     CPPUNIT_TEST(setoffset_1);
     CPPUNIT_TEST(setoffset_2);
+    CPPUNIT_TEST(computeelapsed_1);
+    CPPUNIT_TEST(computeelapsed_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -86,6 +88,8 @@ protected:
     void getoffset_2();
     void setoffset_1();
     void setoffset_2();
+    void computeelapsed_1();
+    void compueelapsed_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -317,4 +321,21 @@ void v12txttest::setoffset_2()
     
     item.setTimeOffset(150);
     EQ(uint32_t(150), item.getTimeOffset());
+}
+// compute elapsed time no body headzer.
+
+void v12txttest::computeelapsed_1()
+{
+     time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    EQ(float(5), item.computeElapsedTime());
+}
+// compute elapsed time  with body header
+void v12txttest::computeelapsed_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    EQ(float(100/5), item.computeElapsedTime());
 }
