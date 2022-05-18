@@ -50,6 +50,9 @@ class v12txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(construct_6);
     CPPUNIT_TEST(construct_7);
     CPPUNIT_TEST(construct_8);
+    
+    CPPUNIT_TEST(getstrings_1);
+    CPPUNIT_TEST(getstrings_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -71,6 +74,8 @@ protected:
     void construct_7();
     void construct_8();
 
+    void getstrings_1();
+    void getstrings_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -233,4 +238,33 @@ void v12txttest::construct_8()
             v12::BEGIN_RUN, 0x1234567890, 1, 2, theStrings, 100, now, 1
         ), std::logic_error
     );
+}
+
+// get strings from no body header item.
+void v12txttest::getstrings_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 1);
+    
+    auto strings = item.getStrings();
+    EQ(theStrings.size(), strings.size());
+    for (int i =0; i < strings.size(); i++) {
+        EQ(theStrings[i], strings[i]);
+    }
+}
+
+// get strings from body header item.
+
+void v12txttest::getstrings_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 1
+    );
+    
+    auto strings = item.getStrings();
+    EQ(theStrings.size(), strings.size());
+    for (int i =0; i < strings.size(); i++) {
+        EQ(theStrings[i], strings[i]);
+    }
 }
