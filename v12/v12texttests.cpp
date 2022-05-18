@@ -73,6 +73,8 @@ class v12txttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(bodysize_1);
     CPPUNIT_TEST(bodysize_2);
+    CPPUNIT_TEST(bodyptr_1);
+    CPPUNIT_TEST(bodyptr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -116,6 +118,9 @@ protected:
     
     void bodysize_1();
     void bodysize_2();
+    
+    void bodyptr_1();
+    void bodyptr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -464,4 +469,32 @@ void v12txttest::bodysize_2()
         item.getBodySize()
     );
 
+}
+// body pointer for non body header:
+
+void v12txttest::bodyptr_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    const v12::TextItem* pItem =
+        reinterpret_cast<const v12::TextItem>(item.getItemPointer());
+    const v12::TextItemBody* pBody =
+        reinterpret_cast<const v12::TextItemBody*>(item.getBodyPointer());
+    EQ(&pItem->s_body.u_noBodyHeader.s_body), pBody);        
+}
+// body pointe4r for body header case:
+
+void v12txttest::bodyptr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    const v12::TextItem* pItem =
+        reinterpret_cast<const v12::TextItem>(item.getItemPointer());
+    const v12::TextItemBody* pBody =
+        reinterpret_cast<const v12::TextItemBody*>(item.getBodyPointer());
+    EQ(&pItem->s_body.u_hasBodyHeader.s_body), pBody);  
+    
 }
