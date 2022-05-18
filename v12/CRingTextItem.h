@@ -74,14 +74,15 @@ public:
   virtual std::string typeName() const;
   virtual std::string toString() const;
   
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
-  );
   virtual size_t getBodySize()    const;
   virtual const void*  getBodyPointer() const;
   virtual void* getBodyPointer();
   virtual bool hasBodyHeader() const;
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(
+        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
+  );
+  
   uint64_t getEventTimestamp() const;
   uint32_t getSourceId() const;
   uint32_t getBarrierType() const;

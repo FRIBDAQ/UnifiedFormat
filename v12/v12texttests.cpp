@@ -70,6 +70,9 @@ class v12txttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(originalsid_1);
     CPPUNIT_TEST(originalsid_2);
+    
+    CPPUNIT_TEST(bodysize_1);
+    CPPUNIT_TEST(bodysize_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -110,6 +113,9 @@ protected:
     
     void originalsid_1();
     void originalsid_2();
+    
+    void bodysize_1();
+    void bodysize_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -432,4 +438,30 @@ void v12txttest::originalsid_2()
         v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
     );
     EQ(uint32_t(1), item.getOriginalSourceId());
+}
+// body size with no body header.
+
+void v12txttest::bodysize_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    EQ(
+        sizeof(v12::TextItemBody) + stringLength(theStrings),
+        item.getBodySize()
+    );
+}
+// body size with body header is the same:
+void v12txttest::bodysize_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    
+    EQ(
+        sizeof(v12::TextItemBody) + stringLength(theStrings),
+        item.getBodySize()
+    );
+
 }
