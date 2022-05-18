@@ -58,6 +58,7 @@ add_executable(v12unittests
   v12counttests.cpp
   v12scltests.cpp
   v12statetests.cpp
+  v12texttests.cpp
 )
 
 target_link_libraries(v12unittests AbstractFormat V12Format cppunit)
