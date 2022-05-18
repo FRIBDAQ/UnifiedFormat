@@ -481,7 +481,7 @@ void v12txttest::bodyptr_1()
         reinterpret_cast<const v12::TextItem>(item.getItemPointer());
     const v12::TextItemBody* pBody =
         reinterpret_cast<const v12::TextItemBody*>(item.getBodyPointer());
-    EQ(&pItem->s_body.u_noBodyHeader.s_body), pBody);        
+    EQ(&(pItem->s_body.u_noBodyHeader.s_body), pBody);        
 }
 // body pointe4r for body header case:
 
@@ -495,6 +495,6 @@ void v12txttest::bodyptr_2()
         reinterpret_cast<const v12::TextItem>(item.getItemPointer());
     const v12::TextItemBody* pBody =
         reinterpret_cast<const v12::TextItemBody*>(item.getBodyPointer());
-    EQ(&pItem->s_body.u_hasBodyHeader.s_body), pBody);  
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);  
     
 }
