@@ -67,6 +67,9 @@ class v12txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getts_2);
     CPPUNIT_TEST(setts_1);
     CPPUNIT_TEST(setts_2);
+    
+    CPPUNIT_TEST(originalsid_1);
+    CPPUNIT_TEST(originalsid_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -104,6 +107,9 @@ protected:
     void getts_2();
     void setts_1();
     void setts_2();
+    
+    void originalsid_1();
+    void originalsid_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -408,4 +414,22 @@ void v12txttest::setts_2()
     );
     item.setTimestamp(now+100);
     EQ(now+100, item.getTimestamp());
+}
+// original sid from no body heade ris 0.
+void v12txttest::originalsid_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    EQ(uint32_t(0), item.getOriginalSourceId());
+}
+// sid is osid if body header:
+
+void v12txttest::originalsid_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    EQ(uint32_t(1), item.getOriginalSourceId());
 }
