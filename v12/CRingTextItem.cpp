@@ -44,6 +44,16 @@ CRingTextItem::CRingTextItem(uint16_t type, size_t maxsize) :
     if (!validType(type)) {
       throw std::logic_error("Invalid ring text item item type code");
     }
+    v12::TextItem* pItem = reinterpret_cast<v12::TextItem*>(getItemPointer());
+    pItem->s_header.s_type = type;
+    pItem->s_body.u_noBodyHeader.s_empty = sizeof(uint32_t);
+    
+    v12::TextItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
+    std::vector<std::string> empty;
+    void* pEnd = fillBody(pBody, 0, time(nullptr), 1, 0, empty);
+    
+    setBodyCursor(pEnd);
+    updateSize();
 }
 
 /*!
