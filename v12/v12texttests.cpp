@@ -56,6 +56,8 @@ class v12txttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getoffset_1);
     CPPUNIT_TEST(getoffset_2);
+    CPPUNIT_TEST(setoffset_1);
+    CPPUNIT_TEST(setoffset_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -82,6 +84,8 @@ protected:
     
     void getoffset_1();
     void getoffset_2();
+    void setoffset_1();
+    void setoffset_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -286,10 +290,31 @@ void v12txttest::getoffset_1()
 
 void v12txttest::getoffset_2()
 {
-     time_t now = time(nullptr);
+    time_t now = time(nullptr);
     v12::CRingTextItem item(
         v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 1
     );
     
     EQ(uint32_t(100), item.getTimeOffset());
+}
+// set offset in non body header:
+
+void v12txttest::setoffset_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 1);
+    item.setTimeOffset(200);
+    EQ(uint32_t(200), item.getTimeOffset());
+}
+// set offset in body header item
+
+void v12txttest::setoffset_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 1
+    );
+    
+    item.setTimeOffset(150);
+    EQ(uint32_t(150), item.getTimeOffset());
 }
