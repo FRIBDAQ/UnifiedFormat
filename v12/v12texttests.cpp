@@ -60,6 +60,8 @@ class v12txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(setoffset_2);
     CPPUNIT_TEST(computeelapsed_1);
     CPPUNIT_TEST(computeelapsed_2);
+    CPPUNIT_TEST(getdivisor_1);
+    CPPUNIT_TEST(getdivisor_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -90,6 +92,8 @@ protected:
     void setoffset_2();
     void computeelapsed_1();
     void computeelapsed_2();
+    void getdivisor_1();
+    void getdivisor_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -326,7 +330,7 @@ void v12txttest::setoffset_2()
 
 void v12txttest::computeelapsed_1()
 {
-     time_t now = time(nullptr);
+    time_t now = time(nullptr);
     v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
     EQ(float(5), item.computeElapsedTime());
 }
@@ -338,4 +342,22 @@ void v12txttest::computeelapsed_2()
         v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
     );
     EQ(float(100/5), item.computeElapsedTime());
+}
+// get divisor from non body header
+
+void v12txttest::getdivisor_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    EQ(uint32_t(2), item.getTimeDivisor());
+}
+// get divisor from body header item.
+
+void v12txttest::getdivisor_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    EQ(uint32_t(5), item.getTimeDivisor());
 }
