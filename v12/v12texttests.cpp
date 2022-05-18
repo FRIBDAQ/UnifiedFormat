@@ -89,7 +89,7 @@ protected:
     void setoffset_1();
     void setoffset_2();
     void computeelapsed_1();
-    void compueelapsed_2();
+    void computeelapsed_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
