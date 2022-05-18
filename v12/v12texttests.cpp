@@ -65,6 +65,8 @@ class v12txttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getts_1);
     CPPUNIT_TEST(getts_2);
+    CPPUNIT_TEST(setts_1);
+    CPPUNIT_TEST(setts_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -100,6 +102,8 @@ protected:
     
     void getts_1();
     void getts_2();
+    void setts_1();
+    void setts_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -384,4 +388,24 @@ void v12txttest::getts_2()
         v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
     );
     EQ(now, item.getTimestamp());
+}
+// set timestamp for body header item.
+void v12txttest::setts_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    item.setTimestamp(now+100);
+    EQ(now+100, item.getTimestamp());
+}
+// for non body header:
+
+void v12txttest::setts_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    item.setTimestamp(now+100);
+    EQ(now+100, item.getTimestamp());
 }
