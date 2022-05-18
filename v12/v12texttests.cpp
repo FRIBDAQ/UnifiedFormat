@@ -62,6 +62,9 @@ class v12txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(computeelapsed_2);
     CPPUNIT_TEST(getdivisor_1);
     CPPUNIT_TEST(getdivisor_2);
+    
+    CPPUNIT_TEST(getts_1);
+    CPPUNIT_TEST(getts_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -94,6 +97,9 @@ protected:
     void computeelapsed_2();
     void getdivisor_1();
     void getdivisor_2();
+    
+    void getts_1();
+    void getts_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -360,4 +366,22 @@ void v12txttest::getdivisor_2()
         v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
     );
     EQ(uint32_t(5), item.getTimeDivisor());
+}
+
+// get timestamp from non body header:
+
+void v12txttest::getts_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    EQ(now, item.getTimestamp());
+}
+// Get from body header item.
+void v12txttest::getts_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    EQ(now, item.getTimestamp());
 }
