@@ -83,6 +83,8 @@ class v12txttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(getbhdr_1);
     CPPUNIT_TEST(getbhdr_2);
+    CPPUNIT_TEST(setbhdr_1);
+    CPPUNIT_TEST(setbhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -136,6 +138,8 @@ protected:
     void hasbhdr_2();
     void getbhdr_1();
     void getbhdr_2();
+    void setbhdr_1();
+    void setbhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -578,4 +582,49 @@ void v12txttest::getbhdr_2()
     const v12::TextItem* pItem =
         reinterpret_cast<const v12::TextItem*>(item.getItemPointer());
     EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), p);
+}
+// Not body header setBodyHeader enlarges the item:
+
+void v12txttest::setbhdr_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    size_t before = item.size();
+    item.setBodyHeader(0x1234567890, 2, 3);
+    size_t after = item.size();
+    EQ(before + sizeof(v12::BodyHeader) - sizeof(uint32_t), after);
+    ASSERT(item.hasBodyHeader());                  // Gave us a body header.
+    
+    const v12::TextItem* pItem =
+        reinterpret_cast<const v12::TextItem*>(item.getItemPointer());
+    const v12::BodyHeader* p =
+        reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), p);
+    
+    EQ(sizeof(v12::BodyHeader), size_t(p->s_size));
+    EQ(uint64_t(0x1234567890), p->s_timestamp);
+    EQ(uint32_t(2), p->s_sourceId);
+    EQ(uint32_t(3), p->s_barrier);
+    
+    
+    
+}
+void v12txttest::setbhdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    size_t before = item.size();
+    item.setBodyHeader(0x66666666666, 2, 3);
+    size_t after = item.size();
+    EQ(before, after);
+    
+    const v12::BodyHeader* p =
+        reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    EQ(sizeof(v12::BodyHeader), size_t(p->s_size));
+    EQ(uint64_t(0x66666666666), p->s_timestamp);
+    EQ(uint32_t(2), p->s_sourceId);
+    EQ(uint32_t(3), p->s_barrier);
 }
