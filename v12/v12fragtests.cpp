@@ -45,6 +45,15 @@ protected:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12fragtest);
 
+// empty item.
 void v12fragtest::construct_1()
 {
+    v12::CRingFragmentItem item(0x1234567890, 2, 0, nullptr, 1);
+    v12::pEventBuilderFragment pItem =
+        reinterpret_cast<v12::pEventBuilderFragment>(item.getItemPointer());
+    EQ(v12::EVB_FRAGMENT, pItem->s_header.s_type);
+    EQ(sizeof(v12::EventBuilderFragment), size_t(pItem->s_header.s_size));
+    EQ(uint64_t(0x1234567890), pItem->s_bodyHeader.s_timestamp);
+    EQ(uint32_t(2), pItem->s_bodyHeader.s_sourceId);
+    EQ(uint32_t(1), pItem->s_bodyHeader.s_barrier);
 }
