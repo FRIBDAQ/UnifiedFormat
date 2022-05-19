@@ -85,6 +85,12 @@ class v12txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(getbhdr_2);
     CPPUNIT_TEST(setbhdr_1);
     CPPUNIT_TEST(setbhdr_2);
+    CPPUNIT_TEST(getfragts_1);
+    CPPUNIT_TEST(getfragts_2);
+    CPPUNIT_TEST(getfragsid_1);
+    CPPUNIT_TEST(getfragsid_2);
+    CPPUNIT_TEST(getfragbarrier_1);
+    CPPUNIT_TEST(getfragbarrier_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -140,6 +146,12 @@ protected:
     void getbhdr_2();
     void setbhdr_1();
     void setbhdr_2();
+    void getfragts_1();
+    void getfragts_2();
+    void getfragsid_1();
+    void getfragsid_2();
+    void getfragbarrier_1();
+    void getfragbarrier_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -627,4 +639,81 @@ void v12txttest::setbhdr_2()
     EQ(uint64_t(0x66666666666), p->s_timestamp);
     EQ(uint32_t(2), p->s_sourceId);
     EQ(uint32_t(3), p->s_barrier);
+}
+// get event timestamp from non body header item throws
+
+void v12txttest::getfragts_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    CPPUNIT_ASSERT_THROW(
+        item.getEventTimestamp(), std::logic_error
+    );
+}
+// get event timestamp from body header gives the body header timestamp:
+
+void v12txttest::getfragts_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    
+    uint64_t ts;
+    CPPUNIT_ASSERT_NO_THROW(
+        ts = item.getEventTimestamp()
+    );
+    EQ(uint64_t(0x1234567890), ts);
+}
+// get source id from non body header throws:
+
+void v12txttest::getfragsid_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    CPPUNIT_ASSERT_THROW(
+        item.getSourceId(), std::logic_error
+    );
+}
+// get source id from body header works
+
+void v12txttest::getfragsid_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    
+    uint32_t sid;
+    CPPUNIT_ASSERT_NO_THROW(
+        sid = item.getSourceId()
+    );
+    EQ(uint32_t(1), sid);
+}
+// get barrier from body header throws if no body header.
+
+void v12txttest::getfragbarrier_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    
+    CPPUNIT_ASSERT_THROW(
+        item.getBarrierType(), std::logic_error
+    );
+}
+// get barrier from body header if there is one works.
+void v12txttest::getfragbarrier_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    
+    uint32_t bar;
+    CPPUNIT_ASSERT_NO_THROW(
+        bar = item.getBarrierType()
+    );
+    EQ(uint32_t(2), bar);
 }
