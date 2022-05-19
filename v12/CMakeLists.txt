@@ -9,6 +9,8 @@ set (v12headers
   CRingScalerItem.h
   CRingStateChangeItem.h
   CRingTextItem.h
+  CRingFragmentItem.h
+  CUnknownFragment.h
 )
 set (v12sources
   CRingItem.cpp
@@ -20,6 +22,8 @@ set (v12sources
   CRingScalerItem.cpp
   CRingStateChangeItem.cpp
   CRingTextItem.cpp
+  CRingFragmentItem.cpp
+  CUnknownFragment.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
