@@ -77,6 +77,9 @@ class v12txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(bodyptr_2);
     CPPUNIT_TEST(bodyptr_3);
     CPPUNIT_TEST(bodyptr_4);
+    
+    CPPUNIT_TEST(hasbhdr_1);
+    CPPUNIT_TEST(hasbhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -125,6 +128,9 @@ protected:
     void bodyptr_2();
     void bodyptr_3();
     void bodyptr_4();
+    
+    void hasbhdr_1();
+    void hasbhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -527,4 +533,22 @@ void v12txttest::bodyptr_4()
      v12::TextItemBody* pBody =
         reinterpret_cast< v12::TextItemBody*>(item.getBodyPointer());
     EQ(&(pItem->s_body.u_hasBodyHeader.s_body), pBody);  
+}
+// does not have body header:
+
+void v12txttest::hasbhdr_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    ASSERT(! item.hasBodyHeader());
+}
+// does have body header.
+
+void v12txttest::hasbhdr_2()
+{
+     time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    ASSERT(item.hasBodyHeader());
 }
