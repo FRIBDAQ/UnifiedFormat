@@ -80,6 +80,9 @@ class v12txttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(hasbhdr_1);
     CPPUNIT_TEST(hasbhdr_2);
+    
+    CPPUNIT_TEST(getbhdr_1);
+    CPPUNIT_TEST(getbhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -131,6 +134,8 @@ protected:
     
     void hasbhdr_1();
     void hasbhdr_2();
+    void getbhdr_1();
+    void getbhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12txttest);
@@ -551,4 +556,26 @@ void v12txttest::hasbhdr_2()
         v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
     );
     ASSERT(item.hasBodyHeader());
+}
+// If no body header getBodyHeader -> null
+
+void v12txttest::getbhdr_1()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(v12::PACKET_TYPES, theStrings, 10, now, 2);
+    ASSERT(nullptr == item.getBodyHeader());
+}
+// If body header getBodyHeder -> a non null pointer to it.
+
+void v12txttest::getbhdr_2()
+{
+    time_t now = time(nullptr);
+    v12::CRingTextItem item(
+        v12::PACKET_TYPES, 0x1234567890, 1, 2, theStrings, 100, now, 5
+    );
+    const v12::BodyHeader* p = reinterpret_cast<const v12::BodyHeader*>(item.getBodyHeader());
+    ASSERT(nullptr != p);
+    const v12::TextItem* pItem =
+        reinterpret_cast<const v12::TextItem*>(item.getItemPointer());
+    EQ(&(pItem->s_body.u_hasBodyHeader.s_bodyHeader), p);
 }
