@@ -24,10 +24,12 @@
 #include "CRingFragmentItem.h"
 #include "CUnknownFragment.h"
 #include "DataFormat.h"
+#include <string.h>
 
 class v12fragtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12fragtest);
     CPPUNIT_TEST(construct_1);
+    CPPUNIT_TEST(construct_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -41,6 +43,7 @@ public:
     }
 protected:
     void construct_1();
+    void construct_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12fragtest);
@@ -56,4 +59,25 @@ void v12fragtest::construct_1()
     EQ(uint64_t(0x1234567890), pItem->s_bodyHeader.s_timestamp);
     EQ(uint32_t(2), pItem->s_bodyHeader.s_sourceId);
     EQ(uint32_t(1), pItem->s_bodyHeader.s_barrier);
+}
+// data in item.
+
+void v12fragtest::construct_2()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    
+    // from construct_1 we can assume we only need to check the item size and
+    // payload contents.
+    v12::pEventBuilderFragment pItem =
+        reinterpret_cast<v12::pEventBuilderFragment>(item.getItemPointer());
+    EQ(
+        sizeof(v12::EventBuilderFragment) + sizeof(payload),
+        size_t(pItem->s_header.s_size)
+    );
+    
+    EQ(0, memcmp(payload, pItem->s_body, sizeof(payload)));
 }
