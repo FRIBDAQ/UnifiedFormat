@@ -46,6 +46,8 @@ class v12fragtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(bhdrts);
     CPPUNIT_TEST(bhdrsid);
     CPPUNIT_TEST(bhdrbtype);
+    
+    CPPUNIT_TEST(unktest);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -75,6 +77,8 @@ protected:
     void bhdrts();
     void bhdrsid();
     void bhdrbtype();
+    
+    void unktest();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12fragtest);
@@ -287,4 +291,16 @@ void v12fragtest::bhdrbtype()
     }
     v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
     EQ(item.barrierType(), item.getBarrierType());
+}
+// Unknow fragment just constructs to a fragment with  EVB_UNKNOWN_PAYLOAD
+// type
+
+void v12fragtest::unktest()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CUnknownFragment item(0x1234568790, 2, 1, sizeof(payload), payload);
+    EQ(v12::EVB_UNKNOWN_PAYLOAD, item.type());
 }
