@@ -20,6 +20,7 @@
  */
 #ifndef V12_RINGITEMFACTORY_H
 #define V12_RINGITEMFACTORY_H
+#include <RingItemFactoryBase.h>
 
 namespace v12 {
     

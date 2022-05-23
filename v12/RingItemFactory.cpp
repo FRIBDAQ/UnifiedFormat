@@ -20,3 +20,14 @@
  */
 #include "RingItemFactory.h"
 
+#include <CRingItem.h>
+#include <CAbnormalEndItem.h>
+#include <CGlomParameters.h>
+#include <CDataFormatItem.h>
+#include <CPhysicsEventItem.h>
+#include <CRingFragmentItem.h>
+#include <CRingPhysicsEventCountItem.h>
+#include <CRingScalerItem.h>
+#include <CRingTextItem.h>
+#include <CUnknownFragment.h>
+#include <CRingStateChangeItem.h>
