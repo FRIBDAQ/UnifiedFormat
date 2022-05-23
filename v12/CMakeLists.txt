@@ -11,6 +11,7 @@ set (v12headers
   CRingTextItem.h
   CRingFragmentItem.h
   CUnknownFragment.h
+  RingItemFactory.h
 )
 set (v12sources
   CRingItem.cpp
@@ -24,6 +25,7 @@ set (v12sources
   CRingTextItem.cpp
   CRingFragmentItem.cpp
   CUnknownFragment.cpp
+  RingItemFactory.cpp
 )
 add_library(
     V12Format SHARED ${v12sources}
