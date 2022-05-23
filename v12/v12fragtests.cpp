@@ -36,6 +36,16 @@ class v12fragtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(payloadsize);
     CPPUNIT_TEST(payloadptr);
     CPPUNIT_TEST(btype);
+    
+    CPPUNIT_TEST(bodysize);     // From v12::CRingBuffer side casts.
+    CPPUNIT_TEST(bodyptr_1);
+    CPPUNIT_TEST(bodyptr_2);
+    CPPUNIT_TEST(hasbodyhdr);
+    CPPUNIT_TEST(getbodyheader);
+    CPPUNIT_TEST(setbodyheader);
+    CPPUNIT_TEST(bhdrts);
+    CPPUNIT_TEST(bhdrsid);
+    CPPUNIT_TEST(bhdrbtype);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -55,6 +65,16 @@ protected:
     void payloadsize();
     void payloadptr();
     void btype();
+    
+    void bodysize();
+    void bodyptr_1();
+    void bodyptr_2();
+    void hasbodyhdr();
+    void getbodyheader();
+    void setbodyheader();
+    void bhdrts();
+    void bhdrsid();
+    void bhdrbtype();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12fragtest);
@@ -152,3 +172,119 @@ void v12fragtest::btype()
     EQ(uint32_t(1), item.barrierType());
 }
 
+
+// Get body size - s.b. payload size:
+
+void v12fragtest::bodysize()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    EQ(sizeof(payload), item.getBodySize());
+}
+// getbody pointer not const.
+
+void v12fragtest::bodyptr_1()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    v12::pEventBuilderFragment pItem =
+        reinterpret_cast<v12::pEventBuilderFragment>(item.getItemPointer());
+    void* pSb = pItem->s_body;
+    EQ(pSb, item.getBodyPointer());
+}
+
+
+// get body pointer const
+void v12fragtest::bodyptr_2()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    const v12::EventBuilderFragment* pItem =
+        reinterpret_cast<const v12::EventBuilderFragment*>(item.getItemPointer());
+    const void* pSb = pItem->s_body;
+    const void* pis = item.getBodyPointer();
+    EQ(pSb, pis);
+}
+
+// There's always a body header:
+
+void v12fragtest::hasbodyhdr()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    ASSERT(item.hasBodyHeader());
+}
+// getBodyheader is correct:
+
+void v12fragtest::getbodyheader()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    v12::pEventBuilderFragment pItem =
+        reinterpret_cast<v12::pEventBuilderFragment>(item.getItemPointer());
+    EQ(reinterpret_cast<void*>(&(pItem->s_bodyHeader)), item.getBodyHeader());
+}
+// setbody header - no size change and modifies properly.
+
+void v12fragtest::setbodyheader()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    size_t initial = item.size();
+    item.setBodyHeader(0x9876543210, 3, 0);
+    size_t final = item.size();
+    EQ(initial, final);
+    EQ(uint64_t(0x9876543210), item.timestamp());
+    EQ(uint32_t(3), item.source());
+    EQ(uint32_t(0), item.barrierType());
+}
+// timestamp from body header methods are right:
+
+void v12fragtest::bhdrts()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    EQ(item.timestamp(), item.getEventTimestamp());
+}
+// sid from body heaeder method is right.
+void v12fragtest::bhdrsid()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    EQ(item.source(), item.getSourceId());
+}
+// barriertype from header is right:
+
+void v12fragtest::bhdrbtype()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    v12::CRingFragmentItem item(0x1234568790, 2, sizeof(payload), payload, 1);
+    EQ(item.barrierType(), item.getBarrierType());
+}
