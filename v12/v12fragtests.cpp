@@ -56,6 +56,7 @@ void v12fragtest::construct_1()
         reinterpret_cast<v12::pEventBuilderFragment>(item.getItemPointer());
     EQ(v12::EVB_FRAGMENT, pItem->s_header.s_type);
     EQ(sizeof(v12::EventBuilderFragment), size_t(pItem->s_header.s_size));
+    EQ(sizeof(v12::BodyHeader), size_t(pItem->s_bodyHeader.s_size));
     EQ(uint64_t(0x1234567890), pItem->s_bodyHeader.s_timestamp);
     EQ(uint32_t(2), pItem->s_bodyHeader.s_sourceId);
     EQ(uint32_t(1), pItem->s_bodyHeader.s_barrier);
