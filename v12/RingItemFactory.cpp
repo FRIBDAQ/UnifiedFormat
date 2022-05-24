@@ -38,8 +38,13 @@
 #include <CRingBuffer.h>
 #include <io.h>
 #include <stdexcept>
+#include <set>
 
 namespace v12 {
+
+static std::set<uint16_t> validTextItemTypes = {
+        v12::PACKET_TYPES, v12::MONITORED_VARIABLES, v12::RING_FORMAT
+};
 
 /**
  * makeRingItem.
@@ -580,5 +585,83 @@ RingItemFactory::makeScalerItem(const ::CRingItem& rhs)
     }
     return pResult;
 }
+/**
+ * makeTextItem
+ *    Create a text item with some strings  and a type.
+ *    The type must be one of v12::PACKET_TYPES, v12::MONITORED_VARIABLES
+ *    or v12::RING_FORMAT
+ *  @param type -Item type; see above for restrictions.
+ *  @param theStrings - vector of strings to put in the item.
+ *  @return ::CRingTextItem*
+ *  
+ */
+::CRingTextItem*
+RingItemFactory::makeTextItem(
+    uint16_t type, std::vector<std::string> theStrings
+)
+{
+    
+    if (validTextItemTypes.count(type) == 0) {
+        throw std::invalid_argument("Invalid text item type (v12)");
+    }
+    return new v12::CRingTextItem(type, theStrings);
+}
+/**
+ *  makeTextItem
+ *     @param type  - text item type.
+ *     @param theStrings - the text strings.
+ *     @param offsetTime - Time offset into the run.
+ *     @param timestamp - clock time at which item was made.
+ *     @param divisor   - # offsetTimeTicks in a second.
+ *     @return ::CRingTextItem*
+ */
+::CRingTextItem*
+RingItemFactory::makeTextItem(
+    uint16_t type,
+    std::vector<std::string> theStrings,
+    uint32_t                 offsetTime,
+    time_t                   timestamp,
+    uint32_t divisor
+)
+{
+    if (validTextItemTypes.count(type) == 0) {
+        throw std::invalid_argument("Invalid text time type (v12)");
+    }
+    return new v12::CRingTextItem(
+        type, theStrings, offsetTime, timestamp, divisor
+    );
+}
+/**
+ * makeTextItem
+ *    Create a text item from an undifferentiated item. Note that while
+ *    the factory cannot make an item with a body header, we don't assume
+ *    the resulting text item has no body header.
+ * @param rhs - const reference to the item that will be copy casted into a
+ *       v12::CRingTextITem
+ * @return ::CRingTextItem*
+ */
+::CRingTextItem*
+RingItemFactory::makeTextItem(const ::CRingItem& rhs)
+{
+    if (validTextItemTypes.count(rhs.type()) == 0) {
+        throw std::bad_cast();
+    }
+    const ::CRingTextItem& item(dynamic_cast<const ::CRingTextItem&>(rhs));
+    if (item.hasBodyHeader()) {
+        return new v12::CRingTextItem(
+            item.type(),
+            item.getEventTimestamp(), item.getSourceId(), item.getBarrierType(),
+            item.getStrings(), item.getTimeOffset(), item.getTimestamp(),
+            item.getTimeDivisor()
+        );
+    } else {
+        return new v12::CRingTextItem(
+            item.type(), item.getStrings(), item.getTimeOffset(),
+            item.getTimestamp(), item.getTimeDivisor()
+        );
+    }
+}
 
+
+//// end of v12 namespace
 }
