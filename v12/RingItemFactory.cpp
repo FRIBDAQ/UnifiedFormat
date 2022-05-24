@@ -35,6 +35,8 @@
 #include "DataFormat.h"
 
 #include <string.h>
+#include <CRingBuffer.h>
+#include <io.h>
 
 namespace v12 {
 
@@ -98,6 +100,95 @@ RingItemFactory::makeRingItem(
         rhs->s_header.s_type, rhs->s_header.s_size
     );
     memcpy(pResult->getItemPointer(), rhs, rhs->s_header.s_size);
+    return pResult;
+}
+/**
+ * getRingItem
+ *    Get a ring item from a ring buffer.
+ *  @param ringbuf -references a ring buffer from which the ring item will be gotten.
+ *  @return ::CRingItem* - pointer to the dynamically created gotten item.
+ */
+::CRingItem*
+RingItemFactory::getRingItem(CRingBuffer& ringbuf)
+{
+    v12::RingItemHeader hdr;
+    ringbuf.get(&hdr, sizeof(hdr), sizeof(hdr));
+    v12::CRingItem* pResult = new CRingItem(hdr.s_type, hdr.s_size);
+    
+    // Read the remainder of the item:
+    
+    uint32_t remaining = hdr.s_size = sizeof(hdr);
+    uint8_t* p = reinterpret_cast<uint8_t*>(pResult->getItemPointer());
+    p += sizeof(hdr);
+    
+    if (remaining) {
+        ringbuf.get(p, remaining, remaining);
+        p += remaining;
+    }
+    pResult->setBodyCursor(p);
+    pResult->updateSize();
+    return pResult;
+}
+/**
+ * getRingItem
+ *    Read a ring item from file open on a file descriptor.,
+ *  @param fd - file descriptor opened on the file.
+ *  @return ::CRingItem* - pointer to the ring item that was dynamically made.
+ *  @retval nullptr - eof.
+ */
+::CRingItem*
+RingItemFactory::getRingItem(int fd)
+{
+    v12::RingItemHeader hdr;
+    if (io::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
+        return nullptr;
+    }
+    
+    v12::CRingItem* pResult = new v12::CRingItem(hdr.s_type, hdr.s_size);
+    
+    uint8_t* p = reinterpret_cast<uint8_t*>(pResult->getItemPointer());
+    p += sizeof(hdr);
+    uint32_t remaining = hdr.s_size - sizeof(hdr);
+    
+    if (remaining) {
+        if (io::readData(fd, p, remaining) < remaining) {
+            delete pResult;
+            return nullptr;
+        }
+    }
+    
+    p += remaining;
+    pResult->setBodyCursor(p);
+    pResult->updateSize();
+    return pResult;
+}
+/**
+ * getRingItem
+ *     Get a ring item from an std::istream
+ *  @param in - the stream from which we'll consume the item.
+ *  @return ::CRingItem*  - pointer to the new ring item.
+ */
+::CRingItem*
+RingItemFactory::getRingItem(std::istream& in)
+{
+    v12::RingItemHeader hdr;
+    in.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
+    if (!in) {
+        return nullptr;            
+    }
+    v12::CRingItem* pResult = new v12::CRingItem(hdr.s_type, hdr.s_size);
+    size_t remaining = hdr.s_size - sizeof(v12::RingItemHeader);
+    v12::pRingItem pRawItem =
+        reinterpret_cast<v12::pRingItem>(pResult->getItemPointer());
+    uint8_t* pCursor = reinterpret_cast<uint8_t*>(&(pRawItem->s_body));
+    in.read(reinterpret_cast<char*>(pCursor), remaining);
+    if (!in) {
+        delete pResult;
+        return nullptr;
+    }
+    pResult->setBodyCursor(pCursor + remaining);
+    pResult->updateSize();
+    
     return pResult;
 }
 
