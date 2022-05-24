@@ -21,7 +21,7 @@
 #include "RingItemFactory.h"
 
 #include "CRingItem.h"
-#include <CAbnormalEndItem.h>
+#include "CAbnormalEndItem.h"
 #include <CGlomParameters.h>
 #include <CDataFormatItem.h>
 #include <CPhysicsEventItem.h>
@@ -37,6 +37,7 @@
 #include <string.h>
 #include <CRingBuffer.h>
 #include <io.h>
+#include <stdexcept>
 
 namespace v12 {
 
@@ -236,6 +237,33 @@ RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf)
     size_t      n = pItem->size();
     
     ringbuf.put(p, n);
+}
+/**
+ *  makeAbnormalEndItem
+ *     Create an abnormal end run item:
+ *  @return - pointer to a new abnormal end item.
+ */
+::CAbnormalEndItem*
+RingItemFactory::makeAbnormalEndItem()
+{
+    return new v12::CAbnormalEndItem();
+}
+/**
+ * makeAbnormalEndItem
+ *    Create an abnormal end item from an undifferentiated ring item object.
+ *    The If the ring item type is not v12::ABNORMAL_ENDRUN
+ *    std::bad_cast is thrown.
+ * @param rhs - const reference to the ring item we're 'casting'.
+ * @return ::CAbnormalEndItem* - pointer to new abnormal end item.
+ * @throw std::bad_cast.
+ */
+::CAbnormalEndItem*
+RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() != v12::ABNORMAL_ENDRUN) {
+        throw std::bad_cast();
+    }
+    return new v12::CAbnormalEndItem();   // All look the same.
 }
 
 }
