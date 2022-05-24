@@ -191,5 +191,51 @@ RingItemFactory::getRingItem(std::istream& in)
     
     return pResult;
 }
+/**
+ * putRingItem
+ *    Put a ring item to an std::ostream.
+ * @param pItem  - pointer to the item to put.
+ * @paraqm out - reference to the ostream
+ * @return std::ostream&  - reference to the output stream that we put the item to
+ *               errors must be checked by the caller.
+ */
+std::ostream&
+RingItemFactory::putRingItem(const ::CRingItem* pItem, std::ostream& out)
+{
+    size_t n = pItem->size();
+    const void* p = pItem->getItemPointer();
+    out.write(reinterpret_cast<const char*>(p), n);
+    return out;
+}
+/**
+ * putRingItem
+ *   Put a ring item to a file open on an fd:
+ *
+ *   @param pItem - pointer to the item t put.
+ *   @param fd    - File descriptor open on the file.
+ *   @throw errors from io::writeData are thrown as exceptions.
+ */
+void
+RingItemFactory::putRingItem(const ::CRingItem* pItem, int fd)
+{
+    size_t n = pItem->size();
+    const void* p = pItem->getItemPointer();
+    io::writeData(fd, p, n);
+}
+/**
+ * putRingItem
+ *    Put a ring item to a ring buffer.
+ *
+ * @param pItem - pointer to the itme.
+ * @param ring  - reference the ring buffer object.
+ */
+void
+RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf)
+{
+    const void* p = pItem->getItemPointer();
+    size_t      n = pItem->size();
+    
+    ringbuf.put(p, n);
+}
 
 }
