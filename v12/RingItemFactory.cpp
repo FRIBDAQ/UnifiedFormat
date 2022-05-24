@@ -416,6 +416,8 @@ RingItemFactory::makePhysicsEventItem(const ::CRingItem& rhs)
     pDest += rhs.size();
     pResult->setBodyCursor(pDest);
     pResult->updateSize();
+    
+    return pResult;
 }
 /**
  * makeRingFragmentItem
@@ -497,6 +499,86 @@ RingItemFactory::makePhysicsEventCountItem(const ::CRingItem& rhs)
         item.getEventCount(), item.getTimeOffset(), item.getTimestamp(),
         item.getTimeDivisor()
     );
+}
+/**
+ * makeScalerItem
+ *    Make empty scaler item with just num scalers.  Object's methods must then
+ *    be used to fill it in.
+ * @param numScalers - number of scaler counters.
+ * @return ::CRingScalerItem*
+ */
+::CRingScalerItem*
+RingItemFactory::makeScalerItem(size_t numScalers)
+{
+    return new v12::CRingScalerItem(numScalers);
+}
+/**
+ * makeScalrItem
+ *    Make scaler item from parameters:
+ * @param startTime - Counting interval start time relative to the run start.
+ * @param endTime   - COunting interval end time.
+ * @param timestamp - CLock time of the end of the interval.
+ * @param scalers   - Scaler values.
+ * @param isIncremental - true if scalers are cleared after each read.
+ * @param sid        - Original source id.
+ * @param timeOffsetDivisor - startTime/timeOffsetDivisor (floating) is seconds.
+ * @note A fairely empty body header is created that can be filled in completely with
+ * setBodyHeader - however sid will remaina s the original source id.
+ * @return ::CRingScalerItem*
+ */
+::CRingScalerItem*
+RingItemFactory::makeScalerItem(
+    uint32_t startTime,
+    uint32_t stopTime,
+    time_t   timestamp,
+    std::vector<uint32_t> scalers,
+    bool                  isIncremental,
+    uint32_t              sid,
+    uint32_t              timeOffsetDivisor
+)
+{
+    return new v12::CRingScalerItem(
+        0, sid, 0,
+        startTime,stopTime, timestamp, scalers, timeOffsetDivisor, isIncremental
+    );
+}
+/**
+ * makeScalerItem
+ *    From an undifferentiated scaler item.
+ * @param rhs - rference to a ::CRingItem.
+ * @return ::CRingScalerItem*
+ */
+::CRingScalerItem*
+RingItemFactory::makeScalerItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() != v12::PERIODIC_SCALERS) {
+        throw std::bad_cast();
+    }
+    const ::CRingScalerItem& item(dynamic_cast<const ::CRingScalerItem&>(rhs));
+    v12::CRingScalerItem* pResult;
+    if (item.hasBodyHeader()) {
+         pResult = new v12::CRingScalerItem(
+            item.getEventTimestamp(), item.getSourceId(), item.getBarrierType(),
+            item.getStartTime(), item.getEndTime(), item.getTimestamp(),
+            item.getScalers(), item.getTimeDivisor(), item.isIncremental()
+        );
+         // It's possible the rhs has a different original sid than the body header
+         // (e.g. if it's been through the event builder):
+         
+         if (item.getSourceId() != item.getOriginalSourceId()) {
+            v12::pScalerItemBody pBody =
+                reinterpret_cast<v12::pScalerItemBody>(pResult->getBodyPointer());
+            pBody->s_originalSid = item.getOriginalSourceId();
+         }
+    } else {
+        pResult = dynamic_cast<v12::CRingScalerItem*>(makeScalerItem(
+            item.getStartTime(), item.getEndTime(), item.getTimestamp(),
+            item.getScalers(), item.isIncremental(), item.getOriginalSourceId(),
+            item.getTimeDivisor()
+        ));
+        
+    }
+    return pResult;
 }
 
 }

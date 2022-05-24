@@ -70,7 +70,9 @@ public:
         uint64_t count, uint32_t timeoffset, time_t stamp,
     int divisor=1
     ) ;
-    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(const ::CRingItem& rhs) ;
+    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+        const ::CRingItem& rhs
+    ) ;
 
     virtual ::CRingScalerItem* makeScalerItem(size_t numScalers) ;
     virtual ::CRingScalerItem* makeScalerItem(
