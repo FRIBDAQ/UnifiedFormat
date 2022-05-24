@@ -457,5 +457,46 @@ RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
         item.barrierType()
     );
 }
+/**
+ * makePhysicsEventCountItem
+ *   Make one of these from the parameters
+ *   @param count - triggers.
+ *   @param offset - run offset.
+ *   @stamp   - clock time.
+ *   @param divisor - offset divisor.
+ *   @return ::CRingPhysicsEventCountItem*
+ */
+::CRingPhysicsEventCountItem*
+RingItemFactory::makePhysicsEventCountItem(
+    uint64_t count, uint32_t timeoffset, time_t stamp, int divisor
+)
+{
+    return new v12::CRingPhysicsEventCountItem(count, timeoffset, stamp, 0, divisor);
+}
+/**
+ * makePhysicsEventCountItem
+ *     Makes one by copying an undifferentiated item that's actually a count item.
+ * @param rhs - references the item we're copying.
+ * @return ::CRingPhysicsEventCountItem*
+ * @throw std::bad_cast - wrong type or size too small.
+ */
+::CRingPhysicsEventCountItem*
+RingItemFactory::makePhysicsEventCountItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() != v12::PHYSICS_EVENT_COUNT) {
+        throw std::bad_cast();
+    }
+    if(rhs.size() < sizeof(v12::PhysicsEventCountItem)) {
+        throw std::bad_cast();
+    }
+    const ::CRingPhysicsEventCountItem& item(
+        dynamic_cast<const ::CRingPhysicsEventCountItem&>(rhs)
+    );
+    
+    return makePhysicsEventCountItem(
+        item.getEventCount(), item.getTimeOffset(), item.getTimestamp(),
+        item.getTimeDivisor()
+    );
+}
 
 }
