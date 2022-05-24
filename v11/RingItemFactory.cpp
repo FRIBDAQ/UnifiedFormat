@@ -156,7 +156,7 @@ RingItemFactory::getRingItem(int fd)
     size_t remainingSize = hdr.s_size - sizeof(v11::RingItemHeader);
     uint8_t* p = reinterpret_cast<uint8_t*>(&(pRawItem->s_body));
     if (io::readData(fd, p, remainingSize) != remainingSize) {
-        delete p;
+        delete pResult;
         return nullptr;                 // EOF.
     }
     p += remainingSize;
