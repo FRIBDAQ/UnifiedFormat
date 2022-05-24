@@ -22,8 +22,8 @@
 
 #include "CRingItem.h"
 #include "CAbnormalEndItem.h"
-#include <CGlomParameters.h>
-#include <CDataFormatItem.h>
+#include "CGlomParameters.h"
+#include "CDataFormatItem.h"
 #include <CPhysicsEventItem.h>
 #include <CRingFragmentItem.h>
 #include <CRingPhysicsEventCountItem.h>
@@ -264,6 +264,40 @@ RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
         throw std::bad_cast();
     }
     return new v12::CAbnormalEndItem();   // All look the same.
+}
+/**
+ * makeDataFormatItem.
+ *    @return ::CDataFormatItem.
+ *    @note   We return one for v12.0.
+ */
+::CDataFormatItem*
+RingItemFactory::makeDataFormatItem()
+{
+    return new v12::CDataFormatItem();
+}
+/**
+ * makeDataFormatItem
+ *    'cast' a ring item to a data format item.
+ *    -  The ring item must have type v12::RING_FORMAT
+ *    -  The item must also, therefore have it's major version as
+ *       v12::FORMAT_MAJOR
+ *   @param rhs -The item we're making a differentiated ring item from.
+ *   @return CDataFormatItem* - pointer to the newly created item.
+ *   @throw std::bad_cast - if one of the tests above fails.
+ */
+::CDataFormatItem*
+RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() != v12::RING_FORMAT) {
+        throw std::bad_cast();
+    }
+    // This can throw as well:
+    
+    const ::CDataFormatItem& original(dynamic_cast<const ::CDataFormatItem&>(rhs));
+    if (original.getMajor() != v12::FORMAT_MAJOR) {
+        throw std::bad_cast();
+    }
+    return new v12::CDataFormatItem();        // No actual differentiation.
 }
 
 }
