@@ -24,13 +24,13 @@
 #include "CAbnormalEndItem.h"
 #include "CGlomParameters.h"
 #include "CDataFormatItem.h"
-#include <CPhysicsEventItem.h>
-#include <CRingFragmentItem.h>
-#include <CRingPhysicsEventCountItem.h>
-#include <CRingScalerItem.h>
-#include <CRingTextItem.h>
-#include <CUnknownFragment.h>
-#include <CRingStateChangeItem.h>
+#include "CPhysicsEventItem.h"
+#include "CRingFragmentItem.h"
+#include "CRingPhysicsEventCountItem.h"
+#include "CRingScalerItem.h"
+#include "CRingTextItem.h"
+#include "CUnknownFragment.h"
+#include "CRingStateChangeItem.h"
 #include <DataFormat.h>
 #include "DataFormat.h"
 
@@ -298,6 +298,67 @@ RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
         throw std::bad_cast();
     }
     return new v12::CDataFormatItem();        // No actual differentiation.
+}
+/**
+ * makeGlomParameters
+ *    Make a glom parameters ring item from the actual parameters.
+ * @param interval - build interval.
+ * @param isBuilding - True if glom is building events
+ * @param policy    - Timestamp policy which is one of
+ *      *  v12::GLOM_TIMESTAMP_FIRST  output timestamp from first fragment
+ *      *  v12::GLOM_TIMESTAMP_LAST   Output timestamp  from last fragment.
+ *      *  v12::GLOM_TIMESTAMP_AVERAGE Output timestamp average of all fragments.
+ * @return ::CGlomParameters* - pointer to a newly created glom parameters item.
+ */
+::CGlomParameters*
+RingItemFactory::makeGlomParameters(
+    uint64_t interval, bool isBuilding, uint16_t policy
+)
+{
+    // Validate the policy:
+    
+    ::CGlomParameters::TimestampPolicy policySelector;
+    switch (policy) {
+        case v12::GLOM_TIMESTAMP_FIRST:
+            policySelector = ::CGlomParameters::first;
+            break;
+        case v12::GLOM_TIMESTAMP_LAST:
+            policySelector = ::CGlomParameters::last;
+            break;
+        case v12::GLOM_TIMESTAMP_AVERAGE:
+            policySelector = ::CGlomParameters::average;
+            break;
+        default:
+            throw std::invalid_argument("Invalid timestamp policy value");
+    }
+    return new v12::CGlomParameters(interval, isBuilding, policySelector);
+}
+/**
+ * makeGlomParameters
+ *    Create a CGlomParameters object from some undifferentiated ring item.
+ * @param rhs - reference to the source item.
+ * @throw std::bad_cast if: rhs is not a v12::EVB_GLOM_INFO type item.
+ *             or if the size of the item is not sizeof(v12::GlomParametrs).
+ */
+::CGlomParameters*
+RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
+{
+    if (rhs.type() != EVB_GLOM_INFO) {
+        throw std::bad_cast();
+    }
+    if (rhs.size() != sizeof(v12::GlomParameters)) {
+        throw std::bad_cast();
+    }
+    
+    // this too could throw:
+    
+    const ::CGlomParameters& item(dynamic_cast<const ::CGlomParameters&>(rhs));
+    
+    // Make the new item:
+    
+    return new v12::CGlomParameters(
+        item.coincidenceTicks(), item.isBuilding(), item.timestampPolicy()
+    );
 }
 
 }
