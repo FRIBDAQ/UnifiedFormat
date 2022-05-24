@@ -360,5 +360,62 @@ RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
         item.coincidenceTicks(), item.isBuilding(), item.timestampPolicy()
     );
 }
+/**
+ * makePhysicsEventItem
+ *    Create a physics event item.  This will return a pointer to an
+ *    item without a body header that you have to fill by getting the body
+ *    cursor, resetting it when done an invoking updateSize() to set the size.
+ * @param maxbody - the maximum size of the body that you'll be able to fill without
+ *                   'bad' things happening.
+ * @return ::CPhysicsEventItem* - pointer to the newly created item.
+ */
+::CPhysicsEventItem*
+RingItemFactory::makePhysicsEventItem(size_t maxBody)
+{
+    return new v12::CPhysicsEventItem(maxBody);
+}
+/**
+ * makePhysicsEventITem
+ *    Same as above but the empty item has a body header determined by the
+ *    parameters:
+ * @param timestamp - body header timestamp.
+ * @param source    - Body header source id.
+ * @param barrier   - Barrier type (usually 0).
+ * @param maxBody   - Size of largest possible body.
+ * @return ::CPhysicsEventItem* - pointer to the newly created item.
+ */
+::CPhysicsEventItem*
+RingItemFactory::makePhysicsEventItem(
+    uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
+)
+{
+    return new v12::CPhysicsEventItem(
+        timestamp, source, barrier, maxBody
+    );
+}
+/**
+ * makePhysicsEventItem
+ *    Make an item from the contents of an undifferentiated ring item.
+ *    - the source type must be v12::PHYSICS_EVENT.
+ * @param rhs - Reference to the source item.
+ * @return ::CPhysicsEventItem*
+ * @throw std::bad_cast if the source item is not a physics item.
+ */
+::CPhysicsEventItem*
+RingItemFactory::makePhysicsEventItem(const ::CRingItem& rhs)
+{
+    if (rhs.type() != v12::PHYSICS_EVENT) {
+        throw std::bad_cast();
+    }
+    v12::CPhysicsEventItem* pResult = new v12::CPhysicsEventItem(rhs.size());
+    
+    uint8_t* pDest = reinterpret_cast<uint8_t*>(pResult->getItemPointer());
+    
+    const uint8_t* pSrc = reinterpret_cast<const uint8_t*>(rhs.getItemPointer());
+    memcpy(pDest, pSrc, rhs.size());
+    pDest += rhs.size();
+    pResult->setBodyCursor(pDest);
+    pResult->updateSize();
+}
 
 }
