@@ -417,5 +417,45 @@ RingItemFactory::makePhysicsEventItem(const ::CRingItem& rhs)
     pResult->setBodyCursor(pDest);
     pResult->updateSize();
 }
+/**
+ * makeRingFragmentItem
+ *    Create a ring fragment item from parameters:
+ *  @param timestamp - body header timestamp.
+ *  @param source    - body header source id.
+ *  @param payloadsize - size of the fragment payload
+ *  @param payload - pointer to the data to put in the payload.
+ *  @param barrier   - Body header barrier type.
+ *  @return ::CRingFragmentItem*
+ */
+::CRingFragmentItem*
+RingItemFactory::makeRingFragmentItem(
+    uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+    const void* payload, uint32_t barrier
+)
+{
+    return new v12::CRingFragmentItem(timestamp, source, payloadSize, payload, barrier);
+}
+/**
+ * makeRingFragmentItem
+ *    Crete a ring fragment item from an undifferentiated ring item.
+ * @param rhs - reference to the source item.
+ * @return ::CRingFragmentItem*
+ */
+::CRingFragmentItem*
+RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
+{
+    if ((rhs.type() != v12::EVB_FRAGMENT) && (rhs.type() != v12::EVB_UNKNOWN_PAYLOAD)) {
+        throw std::bad_cast();
+    }
+    if (rhs.size() < sizeof(v12::EventBuilderFragment)) {
+        throw std::bad_cast();
+    }
+    const ::CRingFragmentItem& item(dynamic_cast<const::CRingFragmentItem&>(rhs));
+    
+    return new v12::CRingFragmentItem(
+        item.timestamp(), item.source(), item.getBodySize(), item.getBodyPointer(),
+        item.barrierType()
+    );
+}
 
 }
