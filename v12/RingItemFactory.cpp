@@ -74,7 +74,7 @@ RingItemFactory::makeRingItem(
     size_t maxBody, uint32_t barrierType
 )
 {
-    return new v12::CRingItem(type, timestamp, sourceId, maxBody, barrierType);    
+    return new v12::CRingItem(type, timestamp, sourceId, barrierType, maxBody);    
 }
 /**
  * makeRingItem
