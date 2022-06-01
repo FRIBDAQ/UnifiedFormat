@@ -32,7 +32,7 @@ class CUnknownFragment : public ::v12::CRingFragmentItem
     
 public:
     CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-                     uint32_t size, void* pPayload);
+                     uint32_t size, const void* pPayload);
     virtual ~CUnknownFragment();
 private:
     CUnknownFragment(const CUnknownFragment& rhs);

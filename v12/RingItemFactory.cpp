@@ -661,6 +661,59 @@ RingItemFactory::makeTextItem(const ::CRingItem& rhs)
         );
     }
 }
+/**
+ * makeUnknownFragment
+ *     Create a RingFragmentItem from its parameterization with
+ *     an unknown payload type.  Normal ring fragments have payloads
+ *     that can be assumed to be RingItems.  These cannot be assumed
+ *     to have payloads of any recognizable shape.
+ * @param timestamp - body header timestamp.
+ * @param sourceid  - body header source id.
+ * @param barrier   - body header barrier code.
+ * @param size      - size of the payload.
+ * @param pPayload   - pointer to the paylaod.
+ * @return ::CUnknownFragment* - dynamically allocated.
+ */
+::CUnknownFragment*
+RingItemFactory::makeUnknownFragment(
+        uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+        uint32_t size, void* pPayload
+)
+{
+    return reinterpret_cast<::CUnknownFragment*> (new 
+        v12::CUnknownFragment(timestamp, sourceid, barrier, size, pPayload));
+}
+/**
+ * makeUnknownFragment
+ *    Create an unknown fragment from a normal ring item.
+ *    - The ring item must have type v12::EVB_UNKNOWN_PAYLOAD
+ *    - The size of the fragment must be at least that of a
+ *      ring fragment item (zero payload item e.g).
+ * @param rhs - the ring itemt that's being constructe into an
+ *              unknown fragment type.
+ * @return ::CUnknownFragment* - unknown fragment dynamically created.
+ */
+::CUnknownFragment*
+RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
+{
+    if (rhs.type() != EVB_UNKNOWN_PAYLOAD) {
+        throw std::bad_cast();
+    }
+    if (rhs.size() < sizeof(v12::EventBuilderFragment)) {
+        throw std::bad_cast();
+    }
+    const v12::EventBuilderFragment* pItem =
+        reinterpret_cast<const v12::EventBuilderFragment*>(rhs.getItemPointer());
+        
+    size_t payloadSize = rhs.size() - sizeof(v12::EventBuilderFragment);
+    
+    return makeUnknownFragment(
+        pItem->s_bodyHeader.s_timestamp, pItem->s_bodyHeader.s_sourceId,
+        pItem->s_bodyHeader.s_barrier,
+        payloadSize, const_cast<uint8_t*>(pItem->s_body)
+    );
+}
+
 
 
 //// end of v12 namespace

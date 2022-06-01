@@ -88,13 +88,14 @@ public:
 
     virtual ::CRingTextItem* makeTextItem(
         uint16_t type,
-                std::vector<std::string> theStrings
+        std::vector<std::string> theStrings
     ) ;
     virtual ::CRingTextItem* makeTextItem(
         uint16_t type,
         std::vector<std::string> theStrings,
         uint32_t                 offsetTime,
-        time_t                   timestamp, uint32_t divisor=1
+        time_t                   timestamp,
+        uint32_t divisor 
     ) ;
     virtual ::CRingTextItem* makeTextItem(const ::CRingItem& rhs) ;
 
