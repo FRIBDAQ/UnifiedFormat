@@ -90,11 +90,11 @@ void v12facttest::mkringitem_2()
     );
     
 }
-// Make ring item from another item.:
+// Make ring item from another item. (no body header).
 
 void v12facttest::mkringitem_3()
 {
-    std::unique_ptr<::CRingItem> src(m_pFactory->makeRingITem(v12::PHYSICS_EVENT, 100))lo
+    std::unique_ptr<::CRingItem> src(m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100));
     uint8_t* pBody = reinterpret_cast<uint8_t*>(src->getBodyPointer());
     for(int i =0; i < 10; i++) {
         *pBody++ = i;
@@ -103,7 +103,7 @@ void v12facttest::mkringitem_3()
     src->updateSize();
     size_t srcSize = src->size();
     
-    std::unique_ptr<::CRingItem> cpy(*src);
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->makeRingItem(*src));
     EQ(srcSize, size_t(cpy->size()));
     EQ(src->type(), cpy->type());
     ASSERT(!cpy->hasBodyHeader());
