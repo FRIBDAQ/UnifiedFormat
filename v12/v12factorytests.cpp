@@ -59,6 +59,8 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(put_2);
     CPPUNIT_TEST(put_3);
     CPPUNIT_TEST(put_4);
+    CPPUNIT_TEST(put_5);
+    CPPUNIT_TEST(put_6);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -100,6 +102,8 @@ protected:
     void put_2();
     void put_3();
     void put_4();
+    void put_5();
+    void put_6();
     
 };
 
@@ -535,6 +539,60 @@ void v12facttest::put_4()
     
     std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(fd));
     close(fd);
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+    
+}
+void v12facttest::put_5()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    std::stringstream s;
+    m_pFactory->putRingItem(src.get(), s);
+    s.seekp(0);
+    
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(s));
+    
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+    
+}
+void v12facttest::put_6()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    std::stringstream s;
+    m_pFactory->putRingItem(src.get(), s);
+    s.seekp(0);
+    
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(s));
+    
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
     
