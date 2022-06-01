@@ -268,6 +268,9 @@ RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
     if (rhs.type() != v12::ABNORMAL_ENDRUN) {
         throw std::bad_cast();
     }
+    if (rhs.size() != sizeof(v12::AbnormalEndItem)) {
+        throw std::bad_cast();
+    }
     return new v12::CAbnormalEndItem();   // All look the same.
 }
 /**

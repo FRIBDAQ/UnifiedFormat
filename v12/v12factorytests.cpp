@@ -27,6 +27,7 @@
 #include "RingItemFactory.h"
 #include "CRingItem.h"
 #include <CRingBuffer.h>
+#include <CAbnormalEndItem.h>
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -61,6 +62,10 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(put_4);
     CPPUNIT_TEST(put_5);
     CPPUNIT_TEST(put_6);
+    
+    CPPUNIT_TEST(abend_1);
+    CPPUNIT_TEST(abend_2);
+    CPPUNIT_TEST(abend_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -104,6 +109,10 @@ protected:
     void put_4();
     void put_5();
     void put_6();
+    
+    void abend_1();
+    void abend_2();
+    void abend_3();
     
 };
 
@@ -595,5 +604,49 @@ void v12facttest::put_6()
     
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+    
+}
+// abnormal end from nothing:
+
+void v12facttest::abend_1()
+{
+    std::unique_ptr<::CAbnormalEndItem> p(m_pFactory->makeAbnormalEndItem());
+    
+    EQ(v12::ABNORMAL_ENDRUN, p->type());
+    EQ(sizeof(v12::AbnormalEndItem), size_t(p->size()));
+    ASSERT(!p->hasBodyHeader());
+}
+// abend from proper ring item
+
+void v12facttest::abend_2()
+{
+    std::unique_ptr<::CAbnormalEndItem> src(m_pFactory->makeAbnormalEndItem());
+    
+    std::unique_ptr<::CAbnormalEndItem> p;
+    CPPUNIT_ASSERT_NO_THROW(
+        p.reset(m_pFactory->makeAbnormalEndItem(*src))
+    );
+    EQ(src->size(), p->size());
+    EQ(0, memcmp(p->getItemPointer(), src->getItemPointer(), p->size()));
+}
+
+// invalid type makes a std::bad_cast
+
+void v12facttest::abend_3()
+{
+    std::unique_ptr<::CRingItem> src1(m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100));
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeAbnormalEndItem(*src1), std::bad_cast
+    );
+    // Bad sizes:
+    
+    std::unique_ptr<CRingItem> src2(m_pFactory->makeRingItem(
+        v12::ABNORMAL_ENDRUN, 0X1234567890, 1, 100, 2)
+    ); // Bad size!
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeAbnormalEndItem(*src2), std::bad_cast
+    );
     
 }
