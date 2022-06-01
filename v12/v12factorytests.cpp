@@ -30,6 +30,9 @@
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
+#include <sys/mman.h>   // where memfd_create really  lives.
+#include <sys/types.h>
+#include <sstream>      // For get std::istream e..
 
 
 // In our tests, we use std::unique_ptr to ensure there's not
@@ -47,6 +50,10 @@ class v12facttest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(get_1);
     CPPUNIT_TEST(get_2);
+    CPPUNIT_TEST(get_3);
+    CPPUNIT_TEST(get_4);
+    CPPUNIT_TEST(get_5);
+    CPPUNIT_TEST(get_6);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -79,6 +86,10 @@ protected:
     
     void get_1();
     void get_2();
+    void get_3();
+    void get_4();
+    void get_5();
+    void get_6();
     
 };
 
@@ -297,4 +308,120 @@ void v12facttest::get_2()
     std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+}
+// Get from fd (memfd will be used.)
+
+void v12facttest::get_3()
+{
+    
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    int fd = memfd_create("testing", 0);
+    write(fd, src->getItemPointer(), src->size());
+    lseek(fd, SEEK_SET, 0);
+    
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(fd));
+    close(fd);
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+    
+}
+// Get from fd with body header.
+
+void v12facttest::get_4()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    int fd = memfd_create("testing", 0);
+    write(fd, src->getItemPointer(), src->size());
+    lseek(fd, SEEK_SET, 0);
+    
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(fd));
+    close(fd);
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+    
+}
+// Get non body header from istream.
+void v12facttest::get_5()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    std::stringstream s;
+    s.write(reinterpret_cast<char*>(src->getItemPointer()), src->size());
+    s.seekp(0);
+    
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(s));
+    
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+    
+}
+// get body header item from istream
+
+void v12facttest::get_6()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    std::stringstream s;
+    s.write(reinterpret_cast<char*>(src->getItemPointer()), src->size());
+    s.seekp(0);
+    
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(s));
+    
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+    
 }
