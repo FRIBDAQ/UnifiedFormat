@@ -278,5 +278,23 @@ void v12facttest::get_1()
 // Get a ring item with a body header from a ringbuffer.
 void v12facttest::get_2()
 {
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
     
+    // put the item to the ring buffer
+    
+    m_pProducer->put(src->getItemPointer(), src->size());
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
 }
