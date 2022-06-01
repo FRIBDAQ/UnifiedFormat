@@ -54,6 +54,9 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(get_4);
     CPPUNIT_TEST(get_5);
     CPPUNIT_TEST(get_6);
+    
+    CPPUNIT_TEST(put_1);
+    CPPUNIT_TEST(put_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -90,6 +93,9 @@ protected:
     void get_4();
     void get_5();
     void get_6();
+    
+    void put_1();
+    void put_2();
     
 };
 
@@ -424,4 +430,52 @@ void v12facttest::get_6()
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
     
+}
+// Put non body header item into ringbuffer:
+
+void v12facttest::put_1()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    m_pFactory->putRingItem(src.get(), *m_pProducer);
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+}
+// Put body header item into ring buffer.
+
+void v12facttest::put_2()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    m_pFactory->putRingItem(src.get(), *m_pProducer);
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
 }
