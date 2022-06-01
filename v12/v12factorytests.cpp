@@ -36,6 +36,7 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(mkringitem_1);
     CPPUNIT_TEST(mkringitem_2);
     CPPUNIT_TEST(mkringitem_3);
+    CPPUNIT_TEST(mkringitem_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -51,6 +52,7 @@ protected:
     void mkringitem_1();
     void mkringitem_2();
     void mkringitem_3();
+    void mkringitem_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
@@ -107,6 +109,40 @@ void v12facttest::mkringitem_3()
     EQ(srcSize, size_t(cpy->size()));
     EQ(src->type(), cpy->type());
     ASSERT(!cpy->hasBodyHeader());
+    
+    pBody = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    uint8_t* p = reinterpret_cast<uint8_t*>(cpy->getBodyPointer());
+    for (int i =0; i < 10; i++) {
+        EQ(*pBody, *p);
+        p++; pBody++;
+    }
+    
+    
+}
+// Copy an item with a body header:
+void v12facttest::mkringitem_4()
+{
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(
+            v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2
+        )
+    );
+    uint8_t* pBody = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for(int i =0; i < 10; i++) {
+        *pBody++ = i;
+    }
+    src->setBodyCursor(pBody);
+    src->updateSize();
+    size_t srcSize = src->size();
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->makeRingItem(*src));
+    EQ(srcSize, size_t(cpy->size()));
+    EQ(src->type(), cpy->type());
+    ASSERT(cpy->hasBodyHeader());
+    
+    EQ(src->getEventTimestamp(), cpy->getEventTimestamp());
+    EQ(src->getSourceId(), cpy->getSourceId());
+    EQ(src->getBarrierType(), cpy->getBarrierType());
     
     pBody = reinterpret_cast<uint8_t*>(src->getBodyPointer());
     uint8_t* p = reinterpret_cast<uint8_t*>(cpy->getBodyPointer());
