@@ -103,11 +103,11 @@ public:
 
   // Utitlity functions..
 
-  
+  static bool isStateChange(unsigned reason);
   
 private:
   
-  bool isStateChange(unsigned reason);
+  
   void fillStateChangeBody(
       void* pBody, unsigned run, unsigned offset, unsigned divisor,
       time_t clocktime, const char* title, unsigned osid

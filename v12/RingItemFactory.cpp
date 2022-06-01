@@ -714,7 +714,65 @@ RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
     );
 }
 
-
+/**
+ * makeStateChangeItem
+ *    Make state change item from parameterized construction.
+ *  @param itemType - type of item e.g. v12::BEGIN_RUN
+ *  @param runNumber - Number of the run unddergoing the transition.
+ *  @param timeOffset - Offset in to the run at which the transition occured.
+ *  @param timestamp - time of day at which the transition occured.
+ *  @param title     - Run title.
+ *  @return ::CRingSTateChangeItem* - dynamically allocated.
+ * 
+ */
+::CRingStateChangeItem*
+RingItemFactory::makeStateChangeItem(
+    uint32_t itemType, uint32_t runNumber, uint32_t timeOffset, time_t timestamp,
+    std::string title
+)
+{
+    return new v12::CRingStateChangeItem(
+        itemType, runNumber, timeOffset, timestamp, title
+    );
+}
+/**
+ * makeStateChangeItem
+ *    Create a state change item from an undifferentiated item
+ *    which must be a valid state change item.
+ *     - Item must be a valid state change item.
+ *     - Item must have the correct size.
+ *  @param rhs - the undifferentiated Ring item we're constructing
+ *        our item from.
+ *  @return ::CRingStateChangeItem* - dynamically allocated.
+ *  
+ */
+::CRingStateChangeItem*
+RingItemFactory::makeStateChangeItem(const ::CRingItem& rhs)
+{
+    if (!CRingStateChangeItem::isStateChange(rhs.type())) {
+        throw std::bad_cast();
+    }
+    if (rhs.size() != sizeof(v12::StateChangeItem)) {
+        throw std::bad_cast();
+    }
+    
+    const v12::StateChangeItemBody* pBody =
+        reinterpret_cast<const v12::StateChangeItemBody*>(rhs.getBodyPointer());
+    if (rhs.hasBodyHeader()) {
+        return new v12::CRingStateChangeItem(
+            rhs.getEventTimestamp(), rhs.getSourceId(), rhs.getBarrierType(),
+            rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
+            pBody->s_Timestamp, pBody->s_title
+        );
+    } else {
+        return new v12::CRingStateChangeItem(
+            rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
+            pBody->s_Timestamp,
+            pBody->s_title
+        );
+    }
+    
+}
 
 //// end of v12 namespace
 }
