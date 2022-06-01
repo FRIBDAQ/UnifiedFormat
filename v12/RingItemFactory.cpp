@@ -123,7 +123,7 @@ RingItemFactory::getRingItem(CRingBuffer& ringbuf)
     
     // Read the remainder of the item:
     
-    uint32_t remaining = hdr.s_size = sizeof(hdr);
+    uint32_t remaining = hdr.s_size - sizeof(hdr);
     uint8_t* p = reinterpret_cast<uint8_t*>(pResult->getItemPointer());
     p += sizeof(hdr);
     

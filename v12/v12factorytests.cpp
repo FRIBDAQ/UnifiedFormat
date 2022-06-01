@@ -26,6 +26,10 @@
 #include <DataFormat.h>
 #include "RingItemFactory.h"
 #include "CRingItem.h"
+#include <CRingBuffer.h>
+#include <iostream>
+#include <unistd.h>
+#include <string.h>
 
 
 // In our tests, we use std::unique_ptr to ensure there's not
@@ -40,16 +44,30 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(mkringitem_4);
     CPPUNIT_TEST(mkringitem_5);
     CPPUNIT_TEST(mkringitem_6);
+    
+    CPPUNIT_TEST(get_1);
+    CPPUNIT_TEST(get_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
     v12::RingItemFactory* m_pFactory;
+    CRingBuffer*          m_pProducer;
+    CRingBuffer*          m_pConsumer;
 public:
     void setUp() {
         m_pFactory = new v12::RingItemFactory;
+        m_pProducer = CRingBuffer::createAndProduce("v12factory");
+        m_pConsumer = new CRingBuffer("v12factory");
     }
     void tearDown() {
         delete m_pFactory;
+        delete m_pProducer;
+        delete m_pConsumer;
+        try {
+            CRingBuffer::remove("v12factory");
+        }
+        catch (...) {}
+        
     }
 protected:
     void mkringitem_1();
@@ -58,6 +76,9 @@ protected:
     void mkringitem_4();
     void mkringitem_5();
     void mkringitem_6();
+    
+    void get_1();
+    void get_2();
     
 };
 
@@ -226,5 +247,36 @@ void v12facttest::mkringitem_6()
         p++; pBody++;
     }
     
+    
+}
+
+// Get a ring item from a ringbufer (no body header).
+void v12facttest::get_1()
+{
+    
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for (int i = 0; i < 10; i++) {
+        *p++ = i;
+    }
+    src->setBodyCursor(p);
+    src->updateSize();
+    
+    // put the item to the ring buffer
+    
+    m_pProducer->put(src->getItemPointer(), src->size());
+    
+    // get it out:
+    
+    std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
+    EQ(src->size(), cpy->size());
+    EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+}
+
+// Get a ring item with a body header from a ringbuffer.
+void v12facttest::get_2()
+{
     
 }
