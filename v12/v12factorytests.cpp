@@ -28,6 +28,7 @@
 #include "CRingItem.h"
 #include <CRingBuffer.h>
 #include <CAbnormalEndItem.h>
+#include "CDataFormatItem.h"   // need the v12
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -66,6 +67,10 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(abend_1);
     CPPUNIT_TEST(abend_2);
     CPPUNIT_TEST(abend_3);
+    
+    CPPUNIT_TEST(fmt_1);
+    CPPUNIT_TEST(fmt_2);
+    CPPUNIT_TEST(fmt_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -113,6 +118,10 @@ protected:
     void abend_1();
     void abend_2();
     void abend_3();
+    
+    void fmt_1();
+    void fmt_2();
+    void fmt_3();
     
 };
 
@@ -649,4 +658,46 @@ void v12facttest::abend_3()
         m_pFactory->makeAbnormalEndItem(*src2), std::bad_cast
     );
     
+}
+// Make a data format item.
+
+void v12facttest::fmt_1()
+{
+    std::unique_ptr<::CDataFormatItem> item(m_pFactory->makeDataFormatItem());
+    EQ(v12::RING_FORMAT, item->type());
+    EQ(sizeof(v12::DataFormat), size_t(item->size()));
+    EQ(uint16_t(12), item->getMajor());
+}
+// copy a data format item (legally).
+
+void v12facttest::fmt_2()
+{
+    std::unique_ptr<::CDataFormatItem> item(m_pFactory->makeDataFormatItem());
+    std::unique_ptr<::CDataFormatItem> copy;
+    CPPUNIT_ASSERT_NO_THROW(
+        copy.reset(m_pFactory->makeDataFormatItem(*item))
+    );
+    EQ(v12::RING_FORMAT, copy->type());
+    EQ(sizeof(v12::DataFormat), size_t(copy->size()));
+    EQ(uint16_t(12), copy->getMajor());
+}
+// Various illegal ring item copy constructions for makeFormatItem.
+
+void v12facttest::fmt_3()
+{
+    // wrong type:
+    
+    v12::CRingItem badtype(v12::PHYSICS_EVENT, 100);
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeDataFormatItem(badtype), std::bad_cast
+    );
+    // bad version number
+    
+    v12::CDataFormatItem badvsn;
+    v12::pDataFormat p = reinterpret_cast<v12::pDataFormat>(badvsn.getItemPointer());
+    p->s_majorVersion--;
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeDataFormatItem(badvsn), std::bad_cast
+    );
 }
