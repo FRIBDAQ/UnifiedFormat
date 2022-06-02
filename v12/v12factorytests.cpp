@@ -34,6 +34,7 @@
 #include <CRingFragmentItem.h>
 #include <CRingPhysicsEventCountItem.h>
 #include <CRingScalerItem.h>
+#include <CRingTextItem.h>
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -45,6 +46,14 @@
 
 // In our tests, we use std::unique_ptr to ensure there's not
 // any memory leaking.
+
+// These are strings used in the text items:
+
+static std::vector<std::string> strings = {
+    "One string", "Two strings", "Three strings", "four",
+    "Five strings", "six strings", "Seven strings", "More",
+    "Sort of a parody of one fish with strings."
+};
 
 
 class v12facttest : public CppUnit::TestFixture {
@@ -101,6 +110,11 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(scaler_2);
     CPPUNIT_TEST(scaler_3);
     CPPUNIT_TEST(scaler_4);
+    
+    CPPUNIT_TEST(text_1);
+    CPPUNIT_TEST(text_2);
+    CPPUNIT_TEST(text_3);
+    CPPUNIT_TEST(text_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -176,8 +190,12 @@ protected:
     void scaler_2();
     void scaler_3();
     void scaler_4();
+    
+    void text_1();
+    void text_2();
+    void text_3();
+    void text_4();
 };
-
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
 
 // Empty ring item with capacity:
@@ -1100,12 +1118,87 @@ void v12facttest::scaler_3()
     
     
 }
-// Invalid cop construction.
+// Invalid copy construction.
 
 void v12facttest::scaler_4()
 {
     std::unique_ptr<::CAbnormalEndItem> original(m_pFactory->makeAbnormalEndItem());
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeScalerItem(*original), std::bad_cast
+    );
+}
+// minimal text item construction.
+void v12facttest::text_1()
+{
+    auto now = time(nullptr);
+    std::unique_ptr<::CRingTextItem> item(
+        m_pFactory->makeTextItem(v12::MONITORED_VARIABLES, strings)
+    );
+    
+    EQ(v12::MONITORED_VARIABLES, item->type());
+    ASSERT(!item->hasBodyHeader());
+    EQ(uint32_t(0), item->getTimeOffset());
+    ASSERT(item->getTimestamp() - now <= 1);
+    EQ(uint32_t(0), item->getOriginalSourceId());
+    auto contents = item->getStrings();
+    EQ(strings.size(), contents.size());
+    for (int i =0; i < strings.size(); i++) {
+        EQ(strings[i], contents[i]);
+    }
+}
+// Full text item construction.
+
+void v12facttest::text_2()
+{
+    auto now = time(nullptr);
+    std::unique_ptr<::CRingTextItem> item(
+        m_pFactory->makeTextItem(
+            v12::MONITORED_VARIABLES, strings,10, now, 1
+        )
+    );
+    EQ(v12::MONITORED_VARIABLES, item->type());
+    ASSERT(!item->hasBodyHeader());
+    EQ(uint32_t(10), item->getTimeOffset());
+    EQ(now, item->getTimestamp());
+    EQ(uint32_t(0), item->getOriginalSourceId());
+    auto contents = item->getStrings();
+    EQ(strings.size(), contents.size());
+    for (int i =0; i < strings.size(); i++) {
+        EQ(strings[i], contents[i]);
+    }
+}
+// Copy construction from valid source item.
+
+void v12facttest::text_3()
+{
+    auto now = time(nullptr);
+    std::unique_ptr<::CRingTextItem> original(
+        m_pFactory->makeTextItem(
+            v12::MONITORED_VARIABLES, strings,10, now, 1
+        )
+    );
+    std::unique_ptr<::CRingTextItem> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeTextItem(*original))
+    );
+    EQ(v12::MONITORED_VARIABLES, item->type());
+    ASSERT(!item->hasBodyHeader());
+    EQ(uint32_t(10), item->getTimeOffset());
+    EQ(now, item->getTimestamp());
+    EQ(uint32_t(0), item->getOriginalSourceId());
+    auto contents = item->getStrings();
+    EQ(strings.size(), contents.size());
+    for (int i =0; i < strings.size(); i++) {
+        EQ(strings[i], contents[i]);
+    }
+}
+// copy  construction from invalid source item fails:
+
+void v12facttest::text_4()
+{
+    std::unique_ptr<::CAbnormalEndItem> badType(m_pFactory->makeAbnormalEndItem());
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeTextItem(*badType), std::bad_cast
     );
 }
