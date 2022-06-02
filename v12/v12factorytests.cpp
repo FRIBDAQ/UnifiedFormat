@@ -29,6 +29,7 @@
 #include <CRingBuffer.h>
 #include <CAbnormalEndItem.h>
 #include "CDataFormatItem.h"   // need the v12
+#include "CGlomParameters.h"
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -71,6 +72,11 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(fmt_1);
     CPPUNIT_TEST(fmt_2);
     CPPUNIT_TEST(fmt_3);
+    
+    CPPUNIT_TEST(glompar_1);
+    CPPUNIT_TEST(glompar_2);
+    CPPUNIT_TEST(glompar_3);
+    
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -122,6 +128,10 @@ protected:
     void fmt_1();
     void fmt_2();
     void fmt_3();
+    
+    void glompar_1();
+    void glompar_2();
+    void glompar_3();
     
 };
 
@@ -699,5 +709,53 @@ void v12facttest::fmt_3()
     
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeDataFormatItem(badvsn), std::bad_cast
+    );
+}
+// Make glom parameters item from parameters.
+
+void v12facttest::glompar_1()
+{
+    std::unique_ptr<::CGlomParameters> item(m_pFactory->makeGlomParameters(100, true, 1));
+    EQ(v12::EVB_GLOM_INFO, item->type());
+    EQ(sizeof(v12::GlomParameters), size_t(item->size()));
+    EQ(uint64_t(100), item->coincidenceTicks());
+    ASSERT(item->isBuilding());
+    EQ(::CGlomParameters::last, item->timestampPolicy());
+}
+// make glom parameters as a  copy:
+
+void v12facttest::glompar_2()
+{
+    v12::CGlomParameters original(100, true, ::CGlomParameters::last);
+    std::unique_ptr<::CGlomParameters> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeGlomParameters(original))
+    );
+    
+    EQ(v12::EVB_GLOM_INFO, item->type());
+    EQ(sizeof(v12::GlomParameters), size_t(item->size()));
+    EQ(uint64_t(100), item->coincidenceTicks());
+    ASSERT(item->isBuilding());
+    EQ(::CGlomParameters::last, item->timestampPolicy());
+}
+// Illegal attempts to copy an item to a glom parameters fail
+
+void v12facttest::glompar_3()
+{
+    // Bad type:
+    
+    v12::CRingItem badtype(v12::PHYSICS_EVENT, 100);
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeGlomParameters(badtype), std::bad_cast
+    );
+    // Bad size:
+    
+    v12::CGlomParameters badsize(100, true, ::CGlomParameters::last);
+    uint8_t* p = reinterpret_cast<uint8_t*>(badsize.getBodyCursor());
+    p++;                    // this is safe even badsize is 'shrink wrapped'.
+    badsize.setBodyCursor(p); // Since only the header size is modified.
+    badsize.updateSize();
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeGlomParameters(badsize), std::bad_cast
     );
 }
