@@ -496,9 +496,7 @@ RingItemFactory::makePhysicsEventCountItem(const ::CRingItem& rhs)
     if (rhs.type() != v12::PHYSICS_EVENT_COUNT) {
         throw std::bad_cast();
     }
-    if(rhs.size() < sizeof(v12::PhysicsEventCountItem)) {
-        throw std::bad_cast();
-    }
+    
     const ::CRingPhysicsEventCountItem& item(
         dynamic_cast<const ::CRingPhysicsEventCountItem&>(rhs)
     );

@@ -31,12 +31,15 @@
 #include "CDataFormatItem.h"   // need the v12
 #include "CGlomParameters.h"
 #include "CPhysicsEventItem.h"
+#include <CRingFragmentItem.h>
+#include <CRingPhysicsEventCountItem.h>
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
 #include <sys/mman.h>   // where memfd_create really  lives.
 #include <sys/types.h>
 #include <sstream>      // For get std::istream e..
+#include <time.h>
 
 
 // In our tests, we use std::unique_ptr to ensure there's not
@@ -84,6 +87,14 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(mkphys_4);
     CPPUNIT_TEST(mkphys_5);
     
+    CPPUNIT_TEST(frag_1);
+    CPPUNIT_TEST(frag_2);
+    CPPUNIT_TEST(frag_3);
+    CPPUNIT_TEST(frag_4);
+    
+    CPPUNIT_TEST(ecount_1);
+    CPPUNIT_TEST(ecount_2);
+    CPPUNIT_TEST(ecount_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -145,7 +156,15 @@ protected:
     void mkphys_3();
     void mkphys_4();
     void mkphys_5();
+        
+    void frag_1();
+    void frag_2();
+    void frag_3();
+    void frag_4();
     
+    void ecount_1();
+    void ecount_2();
+    void ecount_3();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
@@ -830,4 +849,145 @@ void v12facttest::mkphys_5()
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makePhysicsEventItem(*badtype), std::bad_cast
     );
+}
+//fragment item with no payload.
+
+void v12facttest::frag_1()
+{
+    std::unique_ptr<::CRingFragmentItem> item(
+        m_pFactory->makeRingFragmentItem(0x1234567890, 1, 0, nullptr, 2)
+    );
+    EQ(v12::EVB_FRAGMENT, item->type());
+    EQ(sizeof(v12::EventBuilderFragment), size_t(item->size()));
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->getEventTimestamp());
+    EQ(uint32_t(1), item->getSourceId());
+    EQ(uint32_t(2), item->getBarrierType());
+}
+// fragment itemw with a payload:
+
+void v12facttest::frag_2()
+{
+    uint8_t payload[100];
+    for (int i=0; i < 100; i++) {
+        payload[i] = i;
+    }
+    std::unique_ptr<::CRingFragmentItem> item(
+        m_pFactory->makeRingFragmentItem(
+            0x1234567890, 1, sizeof(payload), payload, 2
+        )
+    );
+    EQ(v12::EVB_FRAGMENT, item->type());
+    EQ(
+       sizeof(v12::EventBuilderFragment) + sizeof(payload),
+       size_t(item->size())
+    );
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->getEventTimestamp());
+    EQ(uint32_t(1), item->getSourceId());
+    EQ(uint32_t(2), item->getBarrierType());
+    EQ(sizeof(payload), item->payloadSize());
+    uint8_t* p = reinterpret_cast<uint8_t*>(item->payloadPointer());
+    for (int i=0; i < sizeof(payload); i++) {
+        EQ(payload[i], *p);
+        p++;
+    }
+}
+// Good copy of a fragment item:
+
+void v12facttest::frag_3()
+{
+    uint8_t payload[100];
+    for (int i=0; i < 100; i++) {
+        payload[i] = i;
+    }
+    std::unique_ptr<::CRingFragmentItem> original(
+        m_pFactory->makeRingFragmentItem(
+            0x1234567890, 1, sizeof(payload), payload, 2
+        )
+    );
+    std::unique_ptr<::CRingFragmentItem> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeRingFragmentItem(*original))
+    );
+    EQ(v12::EVB_FRAGMENT, item->type());
+    EQ(
+       sizeof(v12::EventBuilderFragment) + sizeof(payload),
+       size_t(item->size())
+    );
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->getEventTimestamp());
+    EQ(uint32_t(1), item->getSourceId());
+    EQ(uint32_t(2), item->getBarrierType());
+    EQ(sizeof(payload), item->payloadSize());
+    uint8_t* p = reinterpret_cast<uint8_t*>(item->payloadPointer());
+    for (int i=0; i < sizeof(payload); i++) {
+        EQ(payload[i], *p);
+        p++;
+    }
+}
+// copying a non fragment item fails:
+void v12facttest::frag_4()
+{
+    std::unique_ptr<::CAbnormalEndItem> original(
+        m_pFactory->makeAbnormalEndItem()
+    );
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeRingFragmentItem(*original), std::bad_cast
+    );
+}
+// Make a count item from parameters:
+
+void v12facttest::ecount_1()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<::CRingPhysicsEventCountItem> item(
+        m_pFactory->makePhysicsEventCountItem(111111, 10, now)
+    );
+    
+    EQ(v12::PHYSICS_EVENT_COUNT, item->type());
+    EQ(
+       sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader)
+       + sizeof(v12::PhysicsEventCountItemBody),
+       size_t(item->size())
+    );
+    ASSERT(item->hasBodyHeader());
+    EQ(uint32_t(10), item->getTimeOffset());
+    EQ(now, item->getTimestamp());
+    EQ(uint64_t(111111), item->getEventCount());
+    
+}
+// Copy from original item is fine:
+
+void v12facttest::ecount_2()
+{
+    time_t now = time(nullptr);
+    std::unique_ptr<::CRingPhysicsEventCountItem> original(
+        m_pFactory->makePhysicsEventCountItem(111111, 10, now)
+    );
+    
+    std::unique_ptr<::CRingPhysicsEventCountItem> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makePhysicsEventCountItem(*original))
+    );
+    EQ(v12::PHYSICS_EVENT_COUNT, item->type());
+    EQ(
+       sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader)
+       + sizeof(v12::PhysicsEventCountItemBody),
+       size_t(item->size())
+    );
+    ASSERT(item->hasBodyHeader());
+    EQ(uint32_t(10), item->getTimeOffset());
+    EQ(now, item->getTimestamp());
+    EQ(uint64_t(111111), item->getEventCount());
+}
+// Copy from non event count is a bad  cast.
+void v12facttest::ecount_3()
+{
+    std::unique_ptr<::CAbnormalEndItem> badtype(m_pFactory->makeAbnormalEndItem());
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makePhysicsEventCountItem(*badtype), std::bad_cast
+    );
+    
+    
 }

@@ -220,7 +220,7 @@ void v12counttest::construct_3()
     );
     const v12::BodyHeader* pBh = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
     EQ(sizeof(v12::BodyHeader), size_t(pBh->s_size));
-    EQ(uint64_t(0), pBh->s_timestamp);
+    EQ(uint64_t(0xffffffffffffffff), pBh->s_timestamp);
     EQ(uint32_t(2), pBh->s_sourceId);
     EQ(uint32_t(0), pBh->s_barrier);
     
@@ -450,7 +450,7 @@ void v12counttest::ets_2()
     CPPUNIT_ASSERT_NO_THROW(
         ts = item.getEventTimestamp()
     );
-    EQ(uint64_t(0), ts);
+    EQ(uint64_t(0xffffffffffffffff), ts);
 }
 void v12counttest::sid_1()
 {

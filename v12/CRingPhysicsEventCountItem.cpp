@@ -106,7 +106,7 @@ CRingPhysicsEventCountItem::CRingPhysicsEventCountItem(uint64_t count,
   pItem->s_header.s_type = PHYSICS_EVENT_COUNT;
   pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_size = sizeof(v12::BodyHeader);
   pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_sourceId = sid;
-  pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp = 0;
+  pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_timestamp = 0xffffffffffffffff;
   pItem->s_body.u_hasBodyHeader.s_bodyHeader.s_barrier = 0;
   
   v12::pPhysicsEventCountItemBody  pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
