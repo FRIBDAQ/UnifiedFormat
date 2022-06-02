@@ -35,6 +35,7 @@
 #include <CRingPhysicsEventCountItem.h>
 #include <CRingScalerItem.h>
 #include <CRingTextItem.h>
+#include <CUnknownFragment.h>
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -115,6 +116,10 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(text_2);
     CPPUNIT_TEST(text_3);
     CPPUNIT_TEST(text_4);
+    
+    CPPUNIT_TEST(unk_1);
+    CPPUNIT_TEST(unk_2);
+    CPPUNIT_TEST(unk_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -195,6 +200,10 @@ protected:
     void text_2();
     void text_3();
     void text_4();
+    
+    void unk_1();
+    void unk_2();
+    void unk_3();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
 
@@ -1200,5 +1209,72 @@ void v12facttest::text_4()
     
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeTextItem(*badType), std::bad_cast
+    );
+}
+// construction from parameters: (we use that unknown fragment is atype
+// of fragment item.)
+
+void v12facttest::unk_1()
+{
+    uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    std::unique_ptr<::CUnknownFragment> item(
+        m_pFactory->makeUnknownFragment(0x1234567890, 1, 2, sizeof(payload), payload)
+    );
+    
+    EQ(v12::EVB_UNKNOWN_PAYLOAD, item->type());
+    EQ(sizeof(v12::EventBuilderFragment) + sizeof(payload), size_t(item->size()));
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->timestamp());
+    EQ(uint32_t(1), item->source());
+    EQ(uint32_t(2), item->barrierType());
+    EQ(sizeof(payload), item->payloadSize());
+    uint8_t* p = reinterpret_cast<uint8_t*>(item->payloadPointer());
+    for (int i =0; i < sizeof(payload); i++) {
+        EQ(payload[i], p[i]);
+    }
+    
+}
+// valid copy construction of unknown fragment.
+
+void v12facttest::unk_2()
+{
+     uint8_t payload[100];
+    for (int i =0; i < sizeof(payload); i++) {
+        payload[i] = i;
+    }
+    std::unique_ptr<::CUnknownFragment> original(
+        m_pFactory->makeUnknownFragment(0x1234567890, 1, 2, sizeof(payload), payload)
+    );
+    std::unique_ptr<::CUnknownFragment> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeUnknownFragment(*original))
+    );
+    
+    EQ(v12::EVB_UNKNOWN_PAYLOAD, item->type());
+    EQ(sizeof(v12::EventBuilderFragment) + sizeof(payload), size_t(item->size()));
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->timestamp());
+    EQ(uint32_t(1), item->source());
+    EQ(uint32_t(2), item->barrierType());
+    EQ(sizeof(payload), item->payloadSize());
+    uint8_t* p = reinterpret_cast<uint8_t*>(item->payloadPointer());
+    for (int i =0; i < sizeof(payload); i++) {
+        EQ(payload[i], p[i]);
+    }
+    
+}
+// invalid copy construction.
+
+void v12facttest::unk_3()
+{
+    std::unique_ptr<::CAbnormalEndItem> original(
+        m_pFactory->makeAbnormalEndItem()
+    );
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeUnknownFragment(*original), std::bad_cast
     );
 }
