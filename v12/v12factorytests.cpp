@@ -33,6 +33,7 @@
 #include "CPhysicsEventItem.h"
 #include <CRingFragmentItem.h>
 #include <CRingPhysicsEventCountItem.h>
+#include <CRingScalerItem.h>
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -95,6 +96,11 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(ecount_1);
     CPPUNIT_TEST(ecount_2);
     CPPUNIT_TEST(ecount_3);
+    
+    CPPUNIT_TEST(scaler_1);
+    CPPUNIT_TEST(scaler_2);
+    CPPUNIT_TEST(scaler_3);
+    CPPUNIT_TEST(scaler_4);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -165,6 +171,11 @@ protected:
     void ecount_1();
     void ecount_2();
     void ecount_3();
+    
+    void scaler_1();
+    void scaler_2();
+    void scaler_3();
+    void scaler_4();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
@@ -990,4 +1001,111 @@ void v12facttest::ecount_3()
     );
     
     
+}
+// Simple scaler creation:
+
+void v12facttest::scaler_1()
+{
+    auto now = time(nullptr);
+    
+    std::unique_ptr<::CRingScalerItem> item(
+        m_pFactory->makeScalerItem(32)
+    );
+    EQ(v12::PERIODIC_SCALERS, item->type());
+    ASSERT(!item->hasBodyHeader());
+    EQ(
+        sizeof(v12::RingItemHeader) + sizeof(uint32_t) +
+        sizeof(v12::ScalerItemBody) + 32 * sizeof(uint32_t),
+        size_t(item->size())
+    );
+    EQ(uint32_t(0), item->getStartTime());
+    EQ(uint32_t(0), item->getEndTime());
+    ASSERT(item->getTimestamp() - now <= 1);
+    ASSERT(item->isIncremental());
+    EQ(uint32_t(32), item->getScalerCount());
+    for (int i = 0; i < 32; i++) {
+        EQ(uint32_t(0), item->getScaler(i));
+    }
+}
+// Full scaler creation - note this makes  a body header.
+
+void v12facttest::scaler_2()
+{
+    std::vector<uint32_t> scalers;
+    for (int i =0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    auto now = time(nullptr);
+    std::unique_ptr<::CRingScalerItem> item(
+        m_pFactory->makeScalerItem(
+            10, 20, now, scalers,true, 2
+        )
+    );
+    EQ(v12::PERIODIC_SCALERS, item->type());
+    ASSERT(item->hasBodyHeader());
+    EQ(
+        sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader) +
+        sizeof(v12::ScalerItemBody) + 32 * sizeof(uint32_t),
+        size_t(item->size())
+    );
+    EQ(uint32_t(10), item->getStartTime());
+    EQ(uint32_t(20), item->getEndTime());
+    EQ(now, item->getTimestamp());
+    ASSERT(item->isIncremental());
+    EQ(uint32_t(32), item->getScalerCount());
+    for (int i = 0; i < 32; i++) {
+        EQ(scalers[i], item->getScaler(i));
+    }
+    EQ(uint32_t(2), item->getOriginalSourceId());
+    
+    
+    
+}
+// Construct valid copy:
+
+void v12facttest::scaler_3()
+{
+    std::vector<uint32_t> scalers;
+    for (int i =0; i < 32; i++) {
+        scalers.push_back(i*100);
+    }
+    auto now = time(nullptr);
+    std::unique_ptr<::CRingScalerItem>  original(
+        m_pFactory->makeScalerItem(
+            10, 20, now, scalers,true, 2
+        )
+    );
+    
+    std::unique_ptr<::CRingScalerItem> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeScalerItem(*original))
+    );
+    
+    EQ(v12::PERIODIC_SCALERS, item->type());
+    ASSERT(item->hasBodyHeader());
+    EQ(
+        sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader) +
+        sizeof(v12::ScalerItemBody) + 32 * sizeof(uint32_t),
+        size_t(item->size())
+    );
+    EQ(uint32_t(10), item->getStartTime());
+    EQ(uint32_t(20), item->getEndTime());
+    EQ(now, item->getTimestamp());
+    ASSERT(item->isIncremental());
+    EQ(uint32_t(32), item->getScalerCount());
+    for (int i = 0; i < 32; i++) {
+        EQ(scalers[i], item->getScaler(i));
+    }
+    EQ(uint32_t(2), item->getOriginalSourceId());
+    
+    
+}
+// Invalid cop construction.
+
+void v12facttest::scaler_4()
+{
+    std::unique_ptr<::CAbnormalEndItem> original(m_pFactory->makeAbnormalEndItem());
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeScalerItem(*original), std::bad_cast
+    );
 }

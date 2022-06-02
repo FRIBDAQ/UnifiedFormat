@@ -544,7 +544,7 @@ RingItemFactory::makeScalerItem(
 )
 {
     return new v12::CRingScalerItem(
-        0, sid, 0,
+        0xffffffffffffffff, sid, 0,
         startTime,stopTime, timestamp, scalers, timeOffsetDivisor, isIncremental
     );
 }
