@@ -30,6 +30,7 @@
 #include <CAbnormalEndItem.h>
 #include "CDataFormatItem.h"   // need the v12
 #include "CGlomParameters.h"
+#include "CPhysicsEventItem.h"
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -76,6 +77,12 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(glompar_1);
     CPPUNIT_TEST(glompar_2);
     CPPUNIT_TEST(glompar_3);
+    
+    CPPUNIT_TEST(mkphys_1);
+    CPPUNIT_TEST(mkphys_2);
+    CPPUNIT_TEST(mkphys_3);
+    CPPUNIT_TEST(mkphys_4);
+    CPPUNIT_TEST(mkphys_5);
     
     CPPUNIT_TEST_SUITE_END();
     
@@ -132,6 +139,12 @@ protected:
     void glompar_1();
     void glompar_2();
     void glompar_3();
+    
+    void mkphys_1();
+    void mkphys_2();
+    void mkphys_3();
+    void mkphys_4();
+    void mkphys_5();
     
 };
 
@@ -757,5 +770,64 @@ void v12facttest::glompar_3()
     badsize.updateSize();
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeGlomParameters(badsize), std::bad_cast
+    );
+}
+// Make a real physics item (no body header).
+
+void v12facttest::mkphys_1()
+{
+    std::unique_ptr<::CPhysicsEventItem> item(
+        m_pFactory->makePhysicsEventItem(100)
+    );
+    EQ(v12::PHYSICS_EVENT, item->type());
+    EQ(sizeof(v12::RingItemHeader) + sizeof(uint32_t), size_t(item->size()));
+    ASSERT(!item->hasBodyHeader());
+}
+// Make a real physics event with a body header:
+
+void v12facttest::mkphys_2()
+{
+    std::unique_ptr<::CPhysicsEventItem> item(
+        m_pFactory->makePhysicsEventItem(0x1234567890, 1, 2, 100)
+    );
+    EQ(v12::PHYSICS_EVENT, item->type());
+    EQ(sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader), size_t(item->size()));
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->getEventTimestamp());
+    EQ(uint32_t(1), item->getSourceId());
+    EQ(uint32_t(2), item->getBarrierType());
+}
+// Copy a non body header physics item (success).
+
+void v12facttest::mkphys_3()
+{
+    v12::CPhysicsEventItem original;
+    std::unique_ptr<::CPhysicsEventItem> item(m_pFactory->makePhysicsEventItem(original));
+    EQ(v12::PHYSICS_EVENT, item->type());
+    EQ(sizeof(v12::RingItemHeader) + sizeof(uint32_t), size_t(item->size()));
+    ASSERT(!item->hasBodyHeader());
+    
+}
+// copy a  physics event with a body header (success).
+
+void v12facttest::mkphys_4()
+{
+    v12::CPhysicsEventItem original(0x1234567890, 1, 2, 100);
+    std::unique_ptr<::CPhysicsEventItem> item(m_pFactory->makePhysicsEventItem(original));
+    EQ(v12::PHYSICS_EVENT, item->type());
+    EQ(sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader), size_t(item->size()));
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->getEventTimestamp());
+    EQ(uint32_t(1), item->getSourceId());
+    EQ(uint32_t(2), item->getBarrierType());
+    
+}
+// making a physics item by copying a non physics item is an error:
+
+void v12facttest::mkphys_5()
+{
+    std::unique_ptr<::CAbnormalEndItem> badtype(m_pFactory->makeAbnormalEndItem());
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makePhysicsEventItem(*badtype), std::bad_cast
     );
 }
