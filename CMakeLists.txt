@@ -20,3 +20,28 @@ add_subdirectory(v10)
 add_subdirectory(v11)
 add_subdirectory(v12)
 
+#  Now the top level library target:
+
+set (toplevel_sources
+    NSCLDAQFormatFactorySelector.cpp
+)
+
+set (toplevel_headers
+    NSCLDAQFormatFactorySelector.h
+)
+
+add_library(
+    NSCLDAQFormat SHARED ${toplevel_sources}
+)
+
+install(FILES
+    ${toplevel_headers}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+)
+target_include_directories(
+    NSCLDAQFormat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/v10
+    ${CMAKE_CURRENT_SOURCE_DIR}/v11
+    ${CMAKE_CURRENT_SOURCE_DIR}/v12
+    ${CMAKE_CURRENT_SOURCE_DIR}/abstract
+)
