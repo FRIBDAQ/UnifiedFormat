@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+                      "file:///usr/share/xml/docbook/schema/dtd/4.5/docbookx.dtd
+"
+>
+<book>
+    <bookinfo>
+      <title>NSCLDAQ Unified Format Library</title>
+      <author><firstname>Ron</firstname><surname>Fox</surname></author>
+      <revhistory>
+          <revision>
+             <revnumber>1.0</revnumber>
+             <date>June 6, 2022</date>
+             <authorinitials>RF</authorinitials>
+             <revremark>Original Release</revremark>
+          </revision>
+      </revhistory>
+    </bookinfo>
+    <chapter>
+       <title>Introduction</title>
+       <section>
+        <title>Motivation</title>
+        <para>
+         Data in the NSCLDAQ system are distributed online through ring buffers.
+         While a ring buffer, at its lowest level, is just a stream of bytes
+         produced by a producer and consumed by zero or more consumers,
+         in practice, a structure is layered on top of this byte stream.
+        </para>
+        <para>
+         Items are placed by producers as Ring Items.  A Ring Item consists of
+         a header and a payload.  The header contains the complete size of the item
+         and an item type.  As NSCLDAQ has evolved, so too have the formats
+         of the payloads for various item types.  This makes writing programs
+         that can process data from all versions of NSCLDAQ difficult to
+         write correctly.
+        </para>
+        <para>
+         This document describes a set of libraries which should ease this burden,
+         and allow you to very simply write programs that can operate on data
+         from any of the NSCLDAQ data formats.
+        </para>
+       </section>
+
+       <section>
+        <title>Document Organization</title>
+        <para>
+            The remainder of this document is organized as follows:
+        </para>
+        <itemizedlist>
+            <listitem>
+               <para>
+                   The remainder of this chapter,
+                   describes what you need to do to incorporate this library
+                   into your program (compilation and link directives).
+               </para>
+            </listitem>
+            <listitem>
+               <para>
+                  <link linkend='ch.organization' endterm='ch.organization.title' />
+                  Describes the organization of the library.
+               </para>
+            </listitem>
+            <listitem>
+               <para>
+                  <link linkend='ch.factories' endterm='ch.factories.title' />
+                  Describes the abstract factory design pattern and how it's applied
+                  to this library.
+               </para>
+            </listitem>
+            <listitem>
+               <para>
+                  <link linkend='ch.reference' endterm='ch.reference.title' />
+                  Provides detailed reference pages.
+               </para>
+            </listitem>
+        </itemizedlist>
+        <section>
+            <title>Incorporating this library into your programs</title>
+            <para>
+                As with most Linux library installations, there are
+                <filename>include</filename> and <filename>lib</filename> directories
+                under the installation directory.  If <literal>$INSTALL_ROOT</literal>
+                is the top level installation directory, at compilation time you'll
+                need to add
+            </para>
+            <informalexample>
+                <programlisting>
+-I$INSTALL_ROOT/include
+                </programlisting>
+            </informalexample>
+            <para>
+                to your compilation flags so that header files can be located
+                by the compiler's preprocessor.  Note that there are several
+                subdirectories below this top level header directory, however
+                you <emphasis>should not</emphasis> add those to the header
+                file search path.
+            </para>
+            <para>
+                The software consists of several libraries.  These must
+                be added to the link and, since the libraries are shared,
+                an rpath directive must be added so that the run time
+                loader can locate those libraries when programs using them
+                start.  
+            </para>
+            <para>
+                This means adding the following flags to the link command:
+            </para>
+            <informalexample>
+                <programlisting>
+-L$INSTALL_ROOT/lib -lNSCLDAQFormat \
+    -lV10Format -lV11Format -lV12Format -lAbstractFormat \
+    -Wl,-rpath=$INSTALL_ROOT/lib
+                </programlisting>
+            </informalexample>
+        </section>
+       </section>
+    </chapter>
+    <chapter id='ch.organization'>
+       <title id='ch.organization.title'>Library Organization</title>
+       <para>
+        This chapter describes the organization of the libraries.  
+       </para>
+       <para>
+        The first question a user might reasonbly ask is how a library can hide
+        the format differences between the versions of NSCLDAQ from a program.
+        This can be done mostly by understanding that each version layers on additional
+        fields and capabilities on the base of fields and capabilities supplied by
+        the prior version.  For example V11 adds the ability to have a body header
+        used in event building to the V10 format.  V12, makes a slight change to
+        the value that indicates there is no body header and provides the ability to
+        track the original source id of objects whose body headers are otherwise
+        overwritten during event building.
+       </para>
+       <para>
+        The format libary:
+       </para>
+       <orderedlist>
+        <listitem>
+           <para>
+              Provides a set of classes that is derived from a base class that
+              completely hides the actual layout of each item, only providing
+              constructors and accessors to retrieve/set fields in the underlying
+              data of each object.
+           </para>
+           <para>
+            Where capabilities dont' yet exist, the library either hands off
+            reasonable defaults or throws exceptions.
+           </para>
+        </listitem>
+        <listitem>
+           <para>
+              Provides a set of object factories, one for each supported
+              NSCLDAQ version to generate objects either from parameterization,
+              undifferentiated items or from sources of data (e.g. ringbuffers,
+              file descriptors or c++ streams).  The factories also provide support
+              for serializing objects to these entities.
+           </para>
+        </listitem>
+        <listitem>
+           <para>
+              Given information about the version of NSCLDAQ used (either an
+              explicit version number or a data format item, the library can
+              provide an instance of the appropriate factory.
+           </para>
+        </listitem>
+       </orderedlist>
+       <para>
+        In this way a program is not looking at the actual data but simply getting or
+        setting properties of the data based on an interface that can accomodate
+        the maximal capabilities of a ring item over all versions.
+       </para>
+       <para>
+        The next sections describe and give examples of
+       </para>
+       <itemizedlist>
+        <listitem>
+           <para>
+              <link linkend='sec.ringitems' endterm='sec.ringitems.title' />
+              The ring item classes which encapsulate the data from each ring item
+              type.
+           </para>
+        </listitem>
+        <listitem>
+           <para>
+              <link linkend='sec.factories' endterm='sec.factories.title' />
+              The factory classes see, however
+              <link linkend='ch.factories' endterm='ch.factories' /> for more.
+              
+           </para>
+        </listitem>
+       </itemizedlist>
+       <section id='sec.ringitems'>
+        <title id='sec.ringitems.title'>Ring Item classes.</title>
+        <para>
+         
+        </para>
+       </section>
+        <section id='sec.factories' >
+            <title id='sec.factories.title'>Factories.</title>
+            <para></para>
+        </section>
+    </chapter>
+    <chapter id='ch.factories'>
+       <title id='ch.factories.title'>Factories and the Abstract Factory Pattern</title>
+       <para>
+       </para>
+    </chapter>
+    <chapter id='ch.reference'>
+       <title id='ch.reference.title'>Reference pages</title>
+       <para>
+       </para>
+    </chapter>
+</book>
