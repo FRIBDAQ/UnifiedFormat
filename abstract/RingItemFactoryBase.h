@@ -20,7 +20,7 @@
  */
 #ifndef RINGITEMFACTORYBASE_H
 #define RINGITEMFACTORYBASE_H
-#include <DataFormat.h>
+#include "DataFormat.h"
 #include <stdint.h>
 #include <iostream>
 #include <vector>
