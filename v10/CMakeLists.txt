@@ -20,6 +20,11 @@ target_link_libraries(V10Format
   ${NSCLDAQ_LIB}/libException.so
 )
 
+install(TARGETS
+  V10Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v10
+)
+
 install(FILES DataFormat.h CRingItem.h CPhysicsEventItem.h
   CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
   CRingStateChangeItem.h CRingTextItem.h RingItemFactory.h

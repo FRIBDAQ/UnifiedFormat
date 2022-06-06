@@ -31,6 +31,10 @@ target_include_directories(V11Format PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
 )
 
+install(TARGETS V11Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v11
+)
+
 target_link_libraries(V11Format
   ${NSCLDAQ_LIB}/libdaqshm.so
   ${NSCLDAQ_LIB}/libDataFlow.so

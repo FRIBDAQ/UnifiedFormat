@@ -38,6 +38,8 @@ install(FILES
     ${toplevel_headers}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
+
+install(TARGETS NSCLDAQFormat LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
 target_include_directories(
     NSCLDAQFormat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/v10

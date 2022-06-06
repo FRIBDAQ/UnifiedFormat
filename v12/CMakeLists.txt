@@ -31,6 +31,10 @@ add_library(
     V12Format SHARED ${v12sources}
 )
 
+install(TARGETS V12Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v12
+)
+
 target_sources(
     V12Format PRIVATE
     ${v12headers}

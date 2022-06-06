@@ -18,9 +18,7 @@ set_target_properties(
 )
 
 
-#target_include_directories(AbstractFormat SYSTEM
-#PUBLIC /usr/opt/daq/12.0-pre3/include
-#)
+
 target_compile_options(AbstractFormat PRIVATE -g)
 target_link_options(AbstractFormat PRIVATE -g)
 
@@ -41,10 +39,7 @@ add_executable(
     Asserts.h DataFormat.h 
 )
 
-#target_include_directories(
-#    unittests SYSTEM
-#    PUBLIC /usr/opt/daq/12.0-pre3/include
-#)
+
 target_link_libraries(unittests AbstractFormat cppunit)
 target_compile_options(unittests PRIVATE -g)
 target_link_options(unittests PRIVATE -g)
