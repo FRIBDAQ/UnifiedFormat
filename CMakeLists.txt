@@ -47,3 +47,15 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/v12
     ${CMAKE_CURRENT_SOURCE_DIR}/abstract
 )
+
+## Unit tests
+
+add_executable(selectortests
+TestRunner.cpp
+)
+
+target_link_libraries(selectortests
+    NSCLDAQFormat AbstractFormat V10Format V11Format V12Format
+    cppunit
+)
+add_test(NAME selector COMMAND selectortests)
