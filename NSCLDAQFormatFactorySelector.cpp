@@ -88,7 +88,7 @@ namespace FormatSelector {
     ::RingItemFactoryBase&
     selectFactory(SupportedVersions version)
     {
-        if (instantiatedFactories.count(version) > 0) {
+        if (instantiatedFactories.count(version) == 0) {
             createFactory(version);
         }
         return *instantiatedFactories[version];
@@ -115,6 +115,20 @@ namespace FormatSelector {
             throw std::invalid_argument("Format item has unrecognized version");
         } else {
             return selectFactory(versionLookup[major]);
+        }
+    }
+    /**
+     * clearCache
+     *   only should be used for testing...destroys the map of existing
+     *   factory instances.  This invalidates existing references hence only
+     *   use in testing.
+     */
+    void
+    clearCache()
+    {
+        while (!instantiatedFactories.empty()) {
+            delete instantiatedFactories.begin()->second;
+            instantiatedFactories.erase(instantiatedFactories.begin());
         }
     }
 }

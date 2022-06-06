@@ -39,6 +39,9 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
 
+target_compile_options(NSCLDAQFormat PRIVATE -g)
+target_link_options(NSCLDAQFormat PRIVATE -g)
+
 install(TARGETS NSCLDAQFormat LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
 target_include_directories(
     NSCLDAQFormat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -52,7 +55,15 @@ target_include_directories(
 
 add_executable(selectortests
 TestRunner.cpp
+selectortests.cpp
 )
+target_include_directories(selectortests PRIVATE
+${CMAKE_CURRENT_SOURCE_DIR}/abstract
+${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_options(selectortests PRIVATE -g)
+target_link_options(selectortests PRIVATE -g)
 
 target_link_libraries(selectortests
     NSCLDAQFormat AbstractFormat V10Format V11Format V12Format

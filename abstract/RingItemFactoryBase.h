@@ -49,6 +49,7 @@ class CRingStateChangeItem;
  *   
  */
 class RingItemFactoryBase {
+public:
     virtual CRingItem* makeRingItem(uint16_t type, size_t maxBody) = 0;
     virtual CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
             size_t maxBody, uint32_t barrierType = 0 ) = 0;

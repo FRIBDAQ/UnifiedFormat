@@ -36,6 +36,7 @@ namespace FormatSelector {
     RingItemFactoryBase& selectFactory(SupportedVersions version);
     RingItemFactoryBase& selectFactory(CDataFormatItem& item);
     
+    void clearCache();                // For testing...users must not call this.
 }                          // End namespace.
 
 
