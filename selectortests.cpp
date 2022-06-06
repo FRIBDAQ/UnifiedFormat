@@ -38,6 +38,10 @@ class seltest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(v11_2);
     CPPUNIT_TEST(v12_2);
+    
+    CPPUNIT_TEST(cache_1);
+    CPPUNIT_TEST(cache_2);
+    CPPUNIT_TEST(cache_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -55,6 +59,11 @@ protected:
     void v12_1();
     void v11_2();
     void v12_2();
+    
+    void cache_1();
+    void cache_2();
+    void cache_3();
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(seltest);
@@ -104,4 +113,25 @@ void seltest::v12_2()
     auto& selfact = FormatSelector::selectFactory(*pItem);
     std::unique_ptr<::CDataFormatItem> item(selfact.makeDataFormatItem());
     EQ(uint16_t(12), item->getMajor());
+}
+// Asking for the same version factory gives the same actual factory (v10).
+
+void seltest::cache_1()
+{
+    auto& sel1 = FormatSelector::selectFactory(FormatSelector::v10);
+    auto& sel2 = FormatSelector::selectFactory(FormatSelector::v10);
+    EQ(&sel1, &sel2);
+}
+
+void seltest::cache_2()
+{
+    auto& sel1 = FormatSelector::selectFactory(FormatSelector::v11);
+    auto& sel2 = FormatSelector::selectFactory(FormatSelector::v11);
+    EQ(&sel1, &sel2);
+}
+void seltest::cache_3()
+{
+    auto& sel1 = FormatSelector::selectFactory(FormatSelector::v12);
+    auto& sel2 = FormatSelector::selectFactory(FormatSelector::v12);
+    EQ(&sel1, &sel2);
 }
