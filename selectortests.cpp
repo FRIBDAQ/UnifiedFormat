@@ -24,13 +24,20 @@
 #include "NSCLDAQFormatFactorySelector.h"
 #include <abstract/RingItemFactoryBase.h>
 #include <abstract/CDataFormatItem.h>
+#include <v11/RingItemFactory.h>
+#include <v12/RingItemFactory.h>
+
 #include <memory>
+
 
 class seltest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(seltest);
     CPPUNIT_TEST(v10_1);
     CPPUNIT_TEST(v11_1);
     CPPUNIT_TEST(v12_1);
+    
+    CPPUNIT_TEST(v11_2);
+    CPPUNIT_TEST(v12_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -46,6 +53,8 @@ protected:
     void v10_1();
     void v11_1();
     void v12_1();
+    void v11_2();
+    void v12_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(seltest);
@@ -71,5 +80,28 @@ void seltest::v12_1()
 {
     auto& fact = FormatSelector::selectFactory(::FormatSelector::v12);
     std::unique_ptr<::CDataFormatItem> item(fact.makeDataFormatItem());
+    EQ(uint16_t(12), item->getMajor());
+}
+
+// construct a v11 factory from a format item.
+
+void seltest::v11_2()
+{
+    v11::RingItemFactory fact;
+    std::unique_ptr<::CDataFormatItem> pItem(fact.makeDataFormatItem());
+    
+    auto& selfact = FormatSelector::selectFactory(*pItem);
+    std::unique_ptr<::CDataFormatItem> item(selfact.makeDataFormatItem());
+    EQ(uint16_t(11), item->getMajor());
+}
+// similarly from v12:
+
+void seltest::v12_2()
+{
+    v12::RingItemFactory fact;
+    std::unique_ptr<::CDataFormatItem> pItem(fact.makeDataFormatItem());
+    
+    auto& selfact = FormatSelector::selectFactory(*pItem);
+    std::unique_ptr<::CDataFormatItem> item(selfact.makeDataFormatItem());
     EQ(uint16_t(12), item->getMajor());
 }
