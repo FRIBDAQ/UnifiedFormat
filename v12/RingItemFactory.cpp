@@ -753,7 +753,13 @@ RingItemFactory::makeStateChangeItem(const ::CRingItem& rhs)
     if (!CRingStateChangeItem::isStateChange(rhs.type())) {
         throw std::bad_cast();
     }
-    if (rhs.size() != sizeof(v12::StateChangeItem)) {
+    // There are two valid sizes:
+    
+    size_t nobheaderSize = sizeof(v12::RingItemHeader) + sizeof(uint32_t) +
+        sizeof(v12::StateChangeItemBody);
+    size_t bodyHeaderSize = sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader) +
+        sizeof(v12::StateChangeItemBody);
+    if ((rhs.size() != nobheaderSize) && (rhs.size() != bodyHeaderSize)) {
         throw std::bad_cast();
     }
     

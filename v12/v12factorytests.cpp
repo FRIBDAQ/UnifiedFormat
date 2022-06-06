@@ -36,6 +36,7 @@
 #include <CRingScalerItem.h>
 #include <CRingTextItem.h>
 #include <CUnknownFragment.h>
+#include <CRingStateChangeItem.h>
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -120,6 +121,12 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(unk_1);
     CPPUNIT_TEST(unk_2);
     CPPUNIT_TEST(unk_3);
+    
+    CPPUNIT_TEST(state_1);
+    CPPUNIT_TEST(state_2);
+    CPPUNIT_TEST(state_3);
+    CPPUNIT_TEST(state_4);
+    CPPUNIT_TEST(state_5);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -204,6 +211,12 @@ protected:
     void unk_1();
     void unk_2();
     void unk_3();
+    
+    void state_1();
+    void state_2();
+    void state_3();
+    void state_4();
+    void state_5();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
 
@@ -1277,4 +1290,72 @@ void v12facttest::unk_3()
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeUnknownFragment(*original), std::bad_cast
     );
+}
+// good creation of state transition from parameter.
+
+void v12facttest::state_1()
+{
+    auto now = time(nullptr);
+    std::unique_ptr<::CRingStateChangeItem> item(
+        m_pFactory->makeStateChangeItem(
+            v12::BEGIN_RUN, 12, 0, now, "This is a title"
+        )
+    );
+    EQ(v12::BEGIN_RUN, item->type());
+    EQ(
+        sizeof(v12::RingItemHeader) + sizeof(uint32_t) + sizeof(v12::StateChangeItemBody),
+        size_t(item->size())
+    );
+    EQ(uint32_t(12), item->getRunNumber());
+    EQ(uint32_t(0), item->getElapsedTime());
+    EQ(std::string("This is a title"), item->getTitle());
+    EQ(now, item->getTimestamp());
+    EQ(uint32_t(0), item->getOriginalSourceId());
+    ASSERT(!item->hasBodyHeader());
+    
+}
+// create state transition with bad type throws logic_error.
+
+void v12facttest::state_2()
+{
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(v12::PHYSICS_EVENT, 12, 0, 0, "junk"),
+        std::logic_error
+    );
+}
+// Copy 'construction' of valid state transition
+
+void v12facttest::state_3()
+{
+    auto now = time(nullptr);
+    std::unique_ptr<::CRingStateChangeItem> original(
+        m_pFactory->makeStateChangeItem(
+            v12::BEGIN_RUN, 12, 0, now, "This is a title"
+        )
+    );
+    std::unique_ptr<::CRingStateChangeItem> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeStateChangeItem(*original))
+    );
+     EQ(v12::BEGIN_RUN, item->type());
+    EQ(
+        sizeof(v12::RingItemHeader) + sizeof(uint32_t) + sizeof(StateChangeItemBody),
+        size_t(item->size())
+    );
+    EQ(uint32_t(12), item->getRunNumber());
+    EQ(uint32_t(0), item->getElapsedTime());
+    EQ(std::string("This is a title"), item->getTitle());
+    EQ(now, item->getTimestamp());
+    EQ(uint32_t(0), item->getOriginalSourceId());
+    ASSERT(!item->hasBodyHeader());   
+}
+// copy construct an item with a body header.
+void v12facttest::state_4()
+{
+    
+}
+// copy construct bad type or bad size throws.
+void v12facttest::state_5()
+{
+    
 }
