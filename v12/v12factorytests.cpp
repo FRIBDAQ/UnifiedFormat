@@ -36,7 +36,7 @@
 #include <CRingScalerItem.h>
 #include <CRingTextItem.h>
 #include <CUnknownFragment.h>
-#include <CRingStateChangeItem.h>
+#include "CRingStateChangeItem.h"
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -1352,10 +1352,76 @@ void v12facttest::state_3()
 // copy construct an item with a body header.
 void v12facttest::state_4()
 {
+    auto now = time(nullptr);
+    v12::CRingStateChangeItem original(
+        0x1234567890, 2, 0, v12::PAUSE_RUN, 2, 5, now, "Some Title"
+    );
+    std::unique_ptr<::CRingStateChangeItem> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeStateChangeItem(original))
+    );
     
+    EQ(v12::PAUSE_RUN, item->type());
+    EQ(
+        sizeof(v12::RingItemHeader) + sizeof(v12::BodyHeader) +
+        sizeof(v12::StateChangeItemBody),
+        size_t(item->size())
+    );
+    EQ(uint32_t(2), item->getRunNumber());
+    EQ(uint32_t(5), item->getElapsedTime());
+    EQ(now, item->getTimestamp());
+    EQ(std::string("Some Title"), item->getTitle());
+    EQ(uint32_t(2), item->getOriginalSourceId());
+    
+    ASSERT(item->hasBodyHeader());
+    EQ(uint64_t(0x1234567890), item->getEventTimestamp());
+    EQ(uint32_t(2), item->getSourceId());
+    EQ(uint32_t(0), item->getBarrierType());
 }
 // copy construct bad type or bad size throws.
 void v12facttest::state_5()
 {
+     auto now = time(nullptr);
+     std::unique_ptr<::CRingStateChangeItem> item(
+        m_pFactory->makeStateChangeItem(
+            v12::BEGIN_RUN, 12, 0, now, "This is a title"
+        )
+    );
+    // Pervert the type
     
+    v12::pRingItemHeader pHeader =
+        reinterpret_cast<v12::pRingItemHeader>(item->getItemPointer());
+    pHeader->s_type = v12::PHYSICS_EVENT;
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(*item), std::bad_cast
+    );
+    
+    // Now a perverted size -non body header>
+    
+    item.reset(
+        m_pFactory->makeStateChangeItem(
+            v12::BEGIN_RUN, 12, 0, now, "This is a title"
+        )
+    );
+    uint8_t* p = reinterpret_cast<uint8_t*>(item->getBodyCursor());
+    p++;
+    item->setBodyCursor(p);
+    item->updateSize();
+    
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(*item), std::bad_cast
+    );
+    
+    // perverted size for body header type:
+    
+    v12::CRingStateChangeItem item2(
+        0x1234567890, 2, 0, v12::PAUSE_RUN, 2, 5, now, "Some Title"
+    );
+    p = reinterpret_cast<uint8_t*>(item2.getBodyCursor());
+    p++;
+    item2.setBodyCursor(p);
+    item2.updateSize();
+    CPPUNIT_ASSERT_THROW(
+        m_pFactory->makeStateChangeItem(item2), std::bad_cast
+    );
 }
