@@ -194,22 +194,636 @@
        <section id='sec.ringitems'>
         <title id='sec.ringitems.title'>Ring Item classes.</title>
         <para>
-         
+         Ring item contents are hidden from users behind a family of classes.
+         A set of base classes, abstract ring items define a interfaces for each
+         type of ring item. For each supported version of NSCLDAQ a set of subclasses
+         exists that actually provide those interfaces for that specific data format.
+         In the next section we'll see how we can then use the factory classes
+         and factory selector to produce items without knowing the detailed format
+         of those items.
         </para>
+        <para>
+            The headers for the abstract ring items types are located in
+            the <filename>include</filename> subdirectory of the library's
+            installation directory root.  Subdirectories named
+            <literal>v</literal><emphasis>nn</emphasis> where <emphasis>nn</emphasis>
+            is the NSCLDAQ version number host the headers for specific NSCLDAQ
+            versions.  For example  <filename>include/v11</filename> holds
+            the headers for version 11.  
+        </para>
+        <para>
+            Since each of the version dependent headers will reference the
+            abstract headers, it's important to only add the top level include
+            directory to the header search path.  Here's a code fragment
+            that shows how to create and fill in a physics data item
+            with event builder information for version 11 (note that in
+            practice you'll do this using a ring item factory as described
+            in the next section).
+        </para>
+        <example>
+            <title>Generating a Physics item for NSCLDAQ-11</title>
+            <programlisting>
+#include &lt;v11/CPhysicsEventItem.h&gt;     <co id='v11phys.header' />
+...
+v11::CPhysicsEventItem item;                      <co id='v11phys.create' />
+item.setBodyHeader(someTimestamp, someSourceId); <co id='v11phys.setbodyheader' />
+uint16_t* pBody = reinterpret_cast&lt;uint16_t*&gt;(item.getBodyCursor); <co id='v11phys.getcursor' />
+...
+item.setBodyCursor(pBody);                   <co id='v11phys.updatecursor' />
+item.updateSize();                           <co id='v11phys.setsize' />
+...
+
+            </programlisting>
+        </example>
+        <calloutlist>
+            <callout arearefs='v11phys.header' >
+                <para>
+                    Note how we explicitly pull in the header from the v11
+                    subdirectory of the header directory tree for the library.
+                    This header will, in turn, refer to the header in the
+                    top level directory, which supplies the base interface.
+                </para>
+            </callout>
+            <callout arearefs='v11phys.create' >
+                <para>
+                    After some code that's not relevant, a V11 Physics item is
+                    created.  Note that each subclass family lives in a namespace
+                    that indicates its version.  The parameter-less constructor
+                    just reservers a default amount of storage (about 8192 bytes),
+                    and reserves the ring item header filling in the type field
+                    with <literal>v11::PHYSICS_EVENT</literal>.  An optional parameter
+                    can be used to reserve additional storage if needed.
+                </para>
+                <para>
+                    We'll still need to fill in the header's size field as we'll
+                    see later on.
+                </para>
+            </callout>
+            <callout arearefs='v11phys.setbodyheader' >
+                <para>
+                    Event builder data is in the item's body header which contains
+                    a timestamp, sourceid and barrier type.  The
+                    <methodname>setBodyHeader</methodname> sets the body header
+                    of the item, if necessary sliding down any existing body data
+                    to accomodate it.  The barrier type argumetn of
+                    <methodname>setBodyHeader</methodname> defaults to
+                    <literal>0</literal> which implies the event is not an
+                    event builder barrier.
+                </para>
+            </callout>
+            <callout arearefs='v11phys.getcursor' >
+                <para>
+                    Ring items have a <firstterm>body cursor</firstterm>. This is
+                    the location at which additional body data can be stored. The
+                    <methodname>getBodyCursor</methodname> method retrieves a
+                    <type>void*</type> pointer to this storage in a format
+                    independent manner.  This provides us a pointer which we
+                    can use to fill in the data from the physics trigger.
+                </para>
+                <para>
+                    Note that the code in the section marked <literal>...</literal>
+                    below is assumed to fill in the physics data and advance
+                    the <varname>pBody</varname> pointer to point past the
+                    body data we put in.
+                </para>
+            </callout>
+            <callout arearefs='v11phys.updatecursor' >
+                <para>
+                    Sets the item's body cursor this does two things:
+                    First it allows several distinct sections of code to fill
+                    in the body of an item without knowing what other sections
+                    of code did.  Each section just asks for the current body
+                    cursor, fills in its chunk of data and updates the body cursor
+                    for the next chunk.  More importantly, however, the body
+                    cursor tells the item's encapsulating object the extent of the
+                    object's storage.
+                </para>
+            </callout>
+            <callout arearefs='v11phys.setsize' >
+                <para>
+                    Uses the objects current body cursor to compute the size
+                    of the object and stores that in the item's header.
+                    The physics item is now completely filled in.  Later sections
+                    will describe what we do with that item.
+                </para>
+            </callout>
+        </calloutlist>
        </section>
         <section id='sec.factories' >
             <title id='sec.factories.title'>Factories.</title>
-            <para></para>
+            <para>
+                Factories are classes that create instances of other classes.
+                Abstract factories are a family (inheritance hierarchy) of factory
+                classes, where each factory instance createst instances of classes
+                from parallel class hierarchies.  
+            </para>
+            <para>
+                I Know the previous paragraph might sound a bit confusing.  Let's
+                describe this in the concrete terms of how factories and the
+                abstract factory pattern fit into this library:
+            </para>
+            <itemizedlist>
+                <listitem>
+                   <para>
+                      We have a base class factory with an interface that describes
+                      various ways to create different types of ring items.
+                   </para>
+                </listitem>
+                <listitem>
+                   <para>
+                      For each supported version of NSCLDAQ we have a factory
+                      which knows how to instantiate objects from the class
+                      hierarchy that implement its own ring item data formats.
+                   </para>
+                </listitem>
+                <listitem>
+                   <para>
+                      Finally, and this is slightly different from the classic
+                      abstract factory pattern, we have a factory factory which,
+                      given information about the version of NSCLDAQ being used
+                      (either an explicit version number or, in the case of
+                      versions 11 and higher a data format item), can give us an
+                      instance of the correct factory to use for that version of NSCLDAQ.
+                      <footnote>
+                        <para>
+                            Our use of the abstract factory pattern differs from the
+                            classic presentation in that in the classic presentation,
+                            there's a factory that makes use of specific factories for
+                            the desired concrete set of objects.
+                        </para>
+                        <para>
+                            For more on the abstract factory pattern as it is normally used,
+                            see e.g.
+                            <ulink url='https://en.wikipedia.org/wiki/Abstract_factory_pattern'>
+                                this Wikipedia article.
+                            </ulink>
+                        </para>
+                    </footnote>
+                   </para>
+                   <para>
+                    Since all factories provide the same interface as the factory
+                    base class, once we've selected the factory we're going to use,
+                    we don't need to know anything about the NSCLDAQ version.
+                    The same interface will be used for all versions to produce
+                    ring item objects which support the same interface across
+                    all versions.
+                   </para>
+                </listitem>
+            </itemizedlist>
+            <para>
+                Before continuing with the next chapter, which describes abstract
+                factories in detail, let's look at a simple example of using
+                a concrete factory to build a physics
+                item, as we did in the previous section:
+            </para>
+            <example>
+                <title>Using Factories to Make a Physics Item for NSCLDAQ-11</title>
+                <programlisting>
+#include &lt;v11/RingItemFactory.h&gt;    <co id='v11fact.include' />
+#include &lt;CPhysicsEventItem.h&gt;      <co id='v11fact.physics' />
+#include &lt;memory&gt;                   <co id='v11fact.memory' />
+...
+
+v11::RingItemFactory fact;               <co id='v11fact.instance' />
+std::unique_ptr&lt;::CPhysicsEventItem&gt; pItem(fact.makePhysicsEventItem()); <co id='v11fact.make' />
+
+pItem-&gt;setBodyHeader(someTimestamp, someSourceId); 
+uint16_t* pBody = reinterpret_cast&lt;uint16_t*&gt;(pItem-&gt;getBodyCursor); 
+...
+pItem-&gt;setBodyCursor(pBody);                   
+pItem-&gt;updateSize();                          
+...
+            </programlisting>
+            </example>
+            <calloutlist>
+                <callout arearefs='v11fact.include' >
+                    <para>
+                        In this example, we will, directly create a V11
+                        ring item factory.  Therefore we need the header
+                        for that class.  In the next chapter we'll seee how to
+                        select an appropriate ring item factory if we only know the
+                        correct version at run-time.
+                    </para>
+                </callout>
+                <callout arearefs='v11fact.physics' >
+                    <para>
+                        Note that we include the header for the abstract
+                        <classname>CPhysicsEventItem</classname>.  This is what
+                        factories create.  This is the base class for the version specific
+                        classes such as <classname>v11::CPhysicsEventItem</classname>.
+                    </para>
+                    <para>
+                        We choose this class so that, once we've instantiated the
+                        physics item using the appropriate factory, we no longer need
+                        to know the version of NSCLDAQ we're operating with.
+                    </para>
+                </callout>
+                <callout arearefs='v11fact.memory' >
+                    <para>
+                        This header, part of the C++ standard library, supplies, among other
+                        things, smart pointer classes which can help avoid memory leaks.
+                        Our factory classes produce dynamically allocated items.
+                        Using e.g. <classname>std::unique_ptr</classname> can ensure
+                        these objects are deleted.
+                    </para>
+                </callout>
+                <callout arearefs='v11fact.instance' >
+                    <para>
+                        This line of code creates an instance of the
+                        object factory for NSCLDAQ-11.  Since we use virtual
+                        methods to support a polymorphic base class/subclass
+                        class hierarchy, we need to have an object as virtual methods
+                        cannot be static.
+                    </para>
+                </callout>
+                <callout arearefs='v11fact.make' >
+                    <para>
+                        This line is a bit involved.  Let's look at it from the
+                        inside out.  We ask the <varname>fact</varname>
+                        object to create a new physics event item.  Since it is
+                        an instance of a <classname>v11::RingItemFactory</classname>,
+                        what well get is a pointer to a <classname>v11::CPhysicsEventItem</classname>
+                        object returned as a pointer to its base class
+                        <classname>::CPhysicsEventItem</classname>.
+                    </para>
+                    <para>
+                        We use this to initialize a
+                        <classname>std::unique_ptr&lt;::CPhysicsEventItem&gt;</classname>
+                        object named <varname>pItem</varname>.  Once the unique
+                        pointer is created it can be used exactly as if it were
+                        a <classname>::CPhysicsEventItem*</classname>.  When we call methods
+                        using this pointer like object, due to polymorphism the
+                        NSCLDAQ-11 version of those methods will get called.
+                    </para>
+                    <para>
+                        Once <varname>pItem</varname> goes out of scope, the item
+                        it 'points to' will be deleted.  This includes going out
+                        of scope due to an unhandled exception.
+                    </para>
+                    <para>
+                        Once <varname>pItem</varname> is created it can be used
+                        to fill in the body header and body of the item just as
+                        we did in the example in the previous section.  The result,
+                        since we used the V11 factory is a V11 Physics event item.
+                    </para>
+                    <para>
+                        Note that the code which fills in the item, which may be
+                        very far  from the code which selects the factory, does not
+                        need to know that we are making items for NSCLDAQ-11.
+                    </para>
+                    <para>
+                        You might wonder about the call to set the body header.  What
+                        would happen if we'd chosen the <classname>v10::RingItemFactory</classname>
+                        for our factory?  NSCLDAQ-10 items don't have body headers.
+                        The implementation of <methodname>setBodyHeader</methodname>
+                        for NSCLDAQ-10 item types is just a no-op which means that you
+                        would wind up with a perfectly good NSCLDAQ-10 ring item.
+                    </para>
+                </callout>
+            </calloutlist>
         </section>
     </chapter>
     <chapter id='ch.factories'>
        <title id='ch.factories.title'>Factories and the Abstract Factory Pattern</title>
        <para>
+        In the last section of the previous chapter, we touched on the role factories
+        play in the formatting library.  We'll look a bit deeper at the subject of
+        abstract factories, factories and and important set of functions
+        that allow you to select an appropriate factory at run time.
+       </para>
+       <para>
+        We've seen that in the format library:
+       </para>
+       <itemizedlist>
+        <listitem>
+           <para>
+              There is a factory base class that establishes the interfaces
+              that version specific factories must implement.  This is an
+              abstract base class called <classname>RingItemFactoryBase</classname>.
+           </para>
+        </listitem>
+        <listitem>
+           <para>
+              Each supported format version has a concrete instance of this
+              factory.  Normally these are called
+              <classname>v<replaceable>nn</replaceable>::RingItemFactory</classname>
+              where <replaceable>nn</replaceable> is the NSCLDAQ version for which
+              that factory creates items (e.g. <classname>v11::RingItemFactory</classname>
+              makes ring items for NSCLDAQ-11).
+           </para>
+           <para>
+            Each factory implements the base class interface. This means that
+            once you have a pointer or reference to a factory in your possession, you
+            can treat it as a generic <classname>RingItemFactoryBase</classname>
+            object and polymorphism will take care of the rest without your
+            code needing to be aware of the actual factory you are using.
+           </para>
+        </listitem>
+       </itemizedlist>
+       <para>
+        In addition to these concepts, the format factory implements a set of
+        functions that can be used to get a reference to an
+        <emphasis>appropriate</emphasis> factory object.  This can be done either
+        by passing a version designator or  passing a <classname>::CDataFormat</classname>
+        object by reference.  In NSCLDAQ-11 and later, these objects contain
+        information about the version of NSCLDAQ that produced them.  In an event
+        file or stream of online events, these indicate the format of the data
+        to follow.
+       </para>
+       <para>
+        In the next example, we'll produce the same physics event item we've been
+        producing in our earlier examples but we'll select the factory at runtime
+        using a version designator.  In the example, the version designator is
+        hard coded but could be computationally determined (e.g. passed into the
+        program form the command line)
+       </para>
+       <example>
+        <title>Using a Version Designator to Construct a Ring Item Factory:</title>
+        <programlisting>
+#include &lt;NSCLDAQFormatFactorySelector.h&gt;
+#include &lt;RingItemFactoryBase.h&gt;    <co id='select.headers' />
+#include &lt;CPhysicsEventItem.h&gt;
+#include &lt;memory&gt;
+..
+
+::RingItemFactoryBase&amp; fact(FormatSelector::selectFactory(FormatSelector::v11)); <co id='select.select' />
+std::unique_ptr&lt;::CPhysicsEventItem&gt; pItem(fact.makePhysicsEventItem());  <co id='select.makeitem' />
+                                                                  <co id='select.fillbody' />
+pItem-&gt;setBodyHeader(someTimestamp, someSourceId); 
+uint16_t* pBody = reinterpret_cast&lt;uint16_t*&gt;(pItem-&gt;getBodyCursor); 
+...
+pItem-&gt;setBodyCursor(pBody);                   
+pItem-&gt;updateSize();                          
+...
+
+        </programlisting>
+       </example>
+       <calloutlist>
+        <callout arearefs='select.headers' >
+            <para>
+                Includes the headers we need. Note that none of them are
+                version specific.  This is the value aded by using the
+                factory selector defined in
+                <filename>NSCLDAQFormatFactorySelector.h</filename>.
+                <filename>RingItemFactoryBase.h</filename> defines the abstract
+                base class that establishes the factory API.
+            </para>
+        </callout>
+        <callout arearefs='select.select' >
+            <para>
+                This call has a lot to unwrap.  Again let's start from the
+                inside and work our way out.  <methodname>FormatSelector::selectFactory</methodname>
+                is a family of functions that return references to factory objects.
+                This version is parameterized by an explicit version designator
+                <literal>FormatSelector::v11</literal> (version 11).
+            </para>
+            <para>
+                The selection functions maintain a memory of the factories they've
+                produced.  If, in a later section of code you ask for a factory
+                for the same version; you'll get a reference to the same factory
+                object.  This implies that the selection subsystem maintains ownership
+                of the factories it produces and your code must not delete factories
+                it receives.
+            </para>
+            <para>
+                The resulting reference is used to initialize a reference to a
+                <classname>::RingItemFactoryBase</classname> object.  Using a reference
+                maintains the association between virtual functions and the
+                implementations provided by the factory returned from
+                <methodname>FormatSelector::selectFactory</methodname>.
+                This calling methods on this reference will, actually, call methods on the
+                <classname>v11::RingItemFactory</classname> that
+                <methodname>FormatSelector::selectFactory</methodname> returned.
+            </para>
+        </callout>
+        <callout arearefs='select.makeitem' >
+            <para>
+                As before, we use the factory to make a physics event item.
+                The  pointer to the resulting dynamically allocated item
+                initializes a <classname>std::unique_ptr</classname> so that
+                the delete of that object is automatic when th smart pointer like
+                object goes out of scope.
+            </para>
+        </callout>
+        <callout arearefs='select.fillbody' >
+            <para>
+                The remainder of the code in this example is identical
+                to the code used to fill in the physics item bodies of the
+                previous examples in this document.
+            </para>
+        </callout>
+       </calloutlist>
+       <para>
+        The key point in this is that the only point in time where
+        we used knowledge of the DAQ version is when we called
+        <methodname>FormatSelector::selectFactory</methodname>
+        passing in the version format selector.
+       </para>
+       <para>
+        Beginning with NSCLDAQ-11, prior to the begining of each run and,
+        at the beginning of each event file a data format item is written which
+        indicates the format of the data that follows.  There is a format selector
+        item that can be passed a reference to an encapsulated data format item
+        to provide the correct format factory for that format item.
+       </para>
+       <para>
+        This does provide a bit of a chicken and egg problem...given a raw ring item,
+        how do you get a data format item.  In the code that follows, we'll start
+        with an undifferentiated <classname>::CRingItem</classname> and try to
+        see if it represents a ring format item.  We'll then use the fact that
+        we're guaranteed that ring format items look the same in all
+        versions of NSCLDAQ that support them.
+       </para>
+       <example>
+        <title>Using ring format items to select a format factory</title>
+        <programlisting>
+#include &lt;NSCLDAQFormatFactorySelector.h&gt;
+#include &lt;RingItemFactoryBase.h&gt; 
+#include &lt;CRingItem.h&gt;
+#include &lt;CRingFormatItem.h&gt;    <co id='fmt.formatitem' />
+#include &lt;memory&gt;
+#include &lt;DataFormat.h&gt;         <co id='fmt.dataformat' />
+
+static enum FormatSelector::SupportedVersions defaultVersion(FormatSelector::v10); <co id='fmt.defaultfmt' />
+...
+:RingItemFactoryBase* pFactory(0);
+
+std::unique_ptr&lt;::CRingItem&gt; item(getRingItem());  <co id='fmt.getitem' />
+if (item-&gt;type() == RING_FORMAT) {                    <co id='fmt.isformat' />
+    ::CRingFormatItem* pFormatItem =
+        reinterpret_cast&lt;::CRingFormatItem*&gt;(item.get()); <co id='fmt.cast' />
+    pFactory = &amp;(FormatSelector::selectFactory(*pFormatItem)); <co id='fmt.selectfromitem' />
+} else {
+    pFactory = &amp;(FormatSelector::selectFactory(defaultVersion)); <co id='fmt.selectdefault' />
+}
+
+::RingItemFactoryBase&amp; fact(*pFactory);               <co id='fmt.makereference' />
+
+...
+
+        </programlisting>
+       </example>
+       <para>
+        There's a lot to unpack in this fragment of code and some of it is a bit
+        sneaky.  Therefore let's look at this code very carefully.
+       </para>
+       <calloutlist>
+        <callout arearefs='fmt.formatitem' >
+          <para>
+            We'll need to use the definitions of the
+            <classname>CRingFormatItem</classname> so we include it's header here.
+          </para>
+        </callout>
+        <callout arearefs='fmt.dataformat' >
+            <para>
+                The <filename>DataFormat.h</filename> file provides
+                format definitions for each of the supported data formats.
+                In this case, we pull in the data format from the abstract
+                directory.  The main thing we want here is the ring item type
+                definitions which, for the most part, are stable across versions.
+            </para>
+        </callout>
+        <callout arearefs='fmt.defaultfmt' >
+            <para>
+                We store the default format type in a variable.  You might imagine
+                that processing in the omitted code could modify this.   Version
+                10 is a reasonable default because there isn't a data format item
+                for that version.
+            </para>
+        </callout>
+        <callout arearefs='fmt.getitem' >
+            <para>
+                This line just uses some function we dreamed out
+                <function>getRingItem</function> to return a pointer
+                to a dynamically allocated ring item gotten somehow.
+                We initialize a unique_ptr as usual to ensure destruction.
+            </para>
+        </callout>
+        <callout arearefs='fmt.isformat' >
+            <para>
+                Asks the item we got for its item type.  The type is checked
+                against <literal>RING_FORMAT</literal> which is defined in
+                <filename>DataFormat.h</filename>.  This is the type value
+                for items that contain ring item formatting information.
+            </para>
+        </callout>
+        <callout arearefs='fmt.cast' >
+            <para>
+                This line is a bit tricky.  It uses the fact that the specific
+                ring item classes just wrap data containing the raw ring item.
+                It further uses the fact that the format of a data format item
+                is fixed over all versions that support it.  The result is therefore
+                a pointer to the same wrapped object but treated as a
+                data format item that knows how to interrrogate the underlying
+                data to extract the format.
+            </para>
+        </callout>
+        <callout arearefs='fmt.selectfromitem' >
+            <para>
+                This version of <methodname>FormatSelector::selectFactory</methodname>
+                uses a reference to the format item to obtain and pass back
+                a reference to the factory implied by the data format item.
+                There's a bit of trickiness here as well.  We're passed back
+                a reference and that's, in the end, what we want, but references
+                can only be initialized.  They can't be assigned.
+                Therefore, we accept the factory as a pointer and store it away
+                in a pointer with a scope outside the if bodies.
+            </para>
+        </callout>
+        <callout arearefs='fmt.selectdefault' >
+            <para>
+                If the item was not a format item we just create the factory
+                corresponding to the default format type.
+            </para>
+        </callout>
+        <callout arearefs='fmt.makereference' >
+            <para>
+                When we get to this point in the program, the factory pointer has
+                a non null value.  We initialize the reference <varname>fact</varname>
+                to refer to what our factory pointer points to.   Once all this is done
+                we can continue processing data.
+            </para>
+        </callout>
+       </calloutlist>
+       <para>
+        The key take away from this example is that we can produce an appropriate
+        object factory without actually knowing the version of NSCLDAQ that
+        produced the data we're processing; if the streamof data we're processing
+        has a format item (comes from NSCLDAQ-11 or later).
        </para>
     </chapter>
     <chapter id='ch.reference'>
        <title id='ch.reference.title'>Reference pages</title>
        <para>
+        The reference pages here take into consideration both the organization
+        of the library and the order in which classes are likely to be used
+        in a program.  Thus we start with a section that has reference material
+        for the factory selector functions the abstract factory and the the abstract
+        format classes that determine the functionality all other format classes
+        have.
        </para>
+       <para>
+        Subsequent sections provide reference material for the version 10, version 11
+        and version 12 factories and format classes.
+       </para>
+       <section>
+        <title>Abstract Formatting</title>
+        <refentry>
+           <refmeta>
+              <refentrytitle>Format Selector</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>Format Selector</refname>
+              <refpurpose>Select Specific Format Factory</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;NSCLDAQFactorySelector.h&gt;
+
+namespace FormatSelector {
+    enum SupportedVersions {v10, v11, v12};
+
+    RingItemFactoryBase&amp; selectFactory(SupportedVersions version);
+    RingItemFactoryBase&amp; selectFactory(CDataFormatItem&amp; item);
+
+
+}
+
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    The definitions in the <literal>FormatSelector</literal>
+                    namespace provide mechnisms to select  specific format factory
+                    either from an explicit format specifier or from a data format item.
+                    Note that data format items appear in NSCLDAQ-11 and later.
+                  </para>
+                  <para>
+                    The format factories instantiated by these functions are cached
+                    for later lookup.  This implies that:
+                  </para>
+                  <orderedlist>
+                    <listitem>
+                       <para>
+                          Ownership of the factories continues to reside with this
+                          module.  Deleting a factory returned from this API
+                          will result in undefined, possibly fatal, behavior.
+                       </para>
+                    </listitem>
+                    <listitem>
+                       <para>
+                          Several attempts to get a factory reference for the same
+                          format version will return references to the same factory
+                          instance.
+                       </para>
+                    </listitem>
+                  </orderedlist>
+            </refsect1>
+            
+        </refentry>
+       </section>
     </chapter>
 </book>
