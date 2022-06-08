@@ -52,7 +52,7 @@ target_link_libraries(
 )
 
 target_compile_options(V12Format PRIVATE -g)
-target_link_options(V12Format PRIVATE -g)
+target_link_options(V12Format PRIVATE -g PUBLIC -Wl,-rpath=${NSCLDAQ_LIB})
 install(FILES
     ${v12headers}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v12

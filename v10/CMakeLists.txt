@@ -19,6 +19,9 @@ target_link_libraries(V10Format
   ${NSCLDAQ_LIB}/libDataFlow.so
   ${NSCLDAQ_LIB}/libException.so
 )
+target_link_options(V10Format
+  PUBLIC -Wl,-rpath=${NSCLDAQ_LIB}
+  )
 
 install(TARGETS
   V10Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib

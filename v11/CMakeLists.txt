@@ -41,7 +41,7 @@ target_link_libraries(V11Format
   ${NSCLDAQ_LIB}/libException.so
 )
 target_compile_options(V11Format PRIVATE -g)
-target_link_options(V11Format PRIVATE -g)
+target_link_options(V11Format PRIVATE -g PUBLIC -Wl,-rpath=${NSCLDAQ_LIB})
 install(FILES
     ${v11headers}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v11

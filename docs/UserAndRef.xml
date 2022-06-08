@@ -186,7 +186,7 @@
            <para>
               <link linkend='sec.factories' endterm='sec.factories.title' />
               The factory classes see, however
-              <link linkend='ch.factories' endterm='ch.factories' /> for more.
+              <link linkend='ch.factories' endterm='ch.factories.title' /> for more.
               
            </para>
         </listitem>
@@ -822,7 +822,1259 @@ namespace FormatSelector {
                     </listitem>
                   </orderedlist>
             </refsect1>
+            <refsect1>
+                <title>DATA TYPES</title>
+                <para>
+                    The <type>FormatSelector::SupportedVersions</type> enum
+                    is a type that is used as an NSCLDAQ version selector.
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>API</title>
+                <para>
+                    Note that while all functions live in the
+                    <literal>FormatSelector</literal> namespace
+                    this is not shown in the function list below for the sake
+                    of brevity.
+                </para>
+                <variablelist>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>::RingItemFactoryBase&amp;</type>
+                           <methodname>selectFactory</methodname>
+                           <methodparam>
+                               <type>SupportedVersions</type><parameter>version</parameter>
+                           </methodparam>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Returns a reference to a ring item factory that is
+                            suitable for creatig ring items for the NSCLDAQ
+                            version selected by <parameter>version</parameter>.
+                            The factory continues to be owned by the selection
+                            subsystem and must <emphasis>not</emphasis> be deleted
+                            by the caller.
+                           </para>
+                           <para>
+                            A cache of factories ensures that several attempts
+                            to obtain a factory for the same version will return
+                            references to the same factory.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>::RingItemFactoryBase&amp; </type>
+                           <methodname>selectFactory</methodname>
+                           <methodparam>
+                               <type>CDataFormatItem&amp;</type><parameter> item</parameter>
+                           </methodparam>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Given a reference to a data format item from any
+                            version of NSCLDAQ that can produce these, provides
+                            a factory for the version of NSCLDAQ indicated by that
+                            item.  This wraps the prior overload for
+                            <methodname>selectFactory</methodname> so everything
+                            described above about the returned reference holds for
+                            this one.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>
+                    If a version is selected which is somehow not supported,
+                    <classname>std::invalid_argument</classname> is thrown by
+                    the <methodname>selectFactoryMethods</methodname> above.
+                </para>
+            </refsect1>
             
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>RingItemFactoryBase</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>RingItemFactoryBase</refname>
+              <refpurpose>Provide interface for ring item factoires.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;RingItemFactoryBase.h&gt;
+
+class RingItemFactoryBase {
+public:
+    virtual CRingItem* makeRingItem(uint16_t type, size_t maxBody) = 0;
+    virtual CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+            size_t maxBody, uint32_t barrierType = 0 ) = 0;
+    virtual CRingItem* makeRingItem(const CRingItem&amp; rhs) = 0;
+    virtual CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
+
+
+    virtual CRingItem* getRingItem(CRingBuffer&amp; ringbuf) = 0;
+    virtual CRingItem* getRingItem(int fd) = 0;
+    virtual CRingItem* getRingItem(std::istream&amp; in) = 0;
+
+    virtual std::ostream&amp; putRingItem(const CRingItem* pItem, std::ostream&amp; out) = 0;
+    virtual void putRingItem(const CRingItem* pItem, int fd) = 0;
+    virtual void putRingItem(const CRingItem* pItem, CRingBuffer&amp; ringbuf) = 0;
+
+    virtual CAbnormalEndItem* makeAbnormalEndItem() = 0;
+    virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem&amp; rhs) = 0;
+
+    virtual CDataFormatItem* makeDataFormatItem() = 0;
+    virtual CDataFormatItem* makeDataFormatItem(const CRingItem&amp; rhs) = 0;
+
+    virtual CGlomParameters* makeGlomParameters(
+        uint64_t interval, bool isBuilding, uint16_t policy
+    )  = 0;
+    virtual CGlomParameters* makeGlomParameters(const CRingItem&amp; rhs) = 0;
+
+    virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) = 0;
+    virtual CPhysicsEventItem* makePhysicsEventItem(
+        uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
+    ) = 0;
+    virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem&amp; rhs) = 0;
+
+    virtual CRingFragmentItem* makeRingFragmentItem(
+        uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+        const void* payload, uint32_t barrier=0
+    ) = 0;
+    virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem&amp; rhs) = 0;
+
+
+    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+        uint64_t count, uint32_t timeoffset, time_t stamp,
+    int divisor=1
+    ) = 0;
+    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem&amp; rhs) = 0;
+
+    virtual CRingScalerItem* makeScalerItem(size_t numScalers) = 0;
+    virtual CRingScalerItem* makeScalerItem(
+        uint32_t startTime,
+        uint32_t stopTime,
+        time_t   timestamp,
+        std::vector&lt;uint32_t&gt; scalers,
+        bool                  isIncremental = true,
+        uint32_t              sid = 0,
+        uint32_t              timeOffsetDivisor = 1
+    ) = 0;
+    virtual CRingScalerItem* makeScalerItem(const CRingItem&amp; rhs) = 0;
+
+    virtual CRingTextItem* makeTextItem(
+        uint16_t type,
+                std::vector&lt;std::string&gt; theStrings
+    ) = 0;
+    virtual CRingTextItem* makeTextItem(
+        uint16_t type,
+                std::vector&lt;std::string&gt; theStrings,
+                uint32_t                 offsetTime,
+                time_t                   timestamp, uint32_t divisor=1
+    ) = 0;
+    virtual CRingTextItem* makeTextItem(const CRingItem&amp; rhs) = 0;
+
+    virtual CUnknownFragment* makeUnknownFragment(
+        uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+        uint32_t size, void* pPayload
+    ) = 0;
+    virtual CUnknownFragment* makeUnknownFragment(const CRingItem&amp; rhs) = 0;
+
+    virtual CRingStateChangeItem* makeStateChangeItem(
+        uint32_t itemType, uint32_t runNumber,
+        uint32_t timeOffset,
+        time_t   timestamp,
+        std::string title
+    ) = 0;
+    virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem&amp; rhs) = 0;
+
+};
+
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    The <classname>CRingItemFactoryBase</classname> class provides
+                    an abstract base class for the ring item factories implemented
+                    by version specific libraries.  Note that specific return classes
+                    defined as forward classes in the header and, therefore,
+                    you need to <literal>#include</literal> the specific ring item
+                    classes you need to actually use.
+                  </para>
+                  <para>
+                    All return values are  pointers to dynamically allocated
+                    objects.  These objects are owned by the caller and must be
+                    deleted by the caller when no longer needed.  The return pointer
+                    types are from the abstract library, however the actual return
+                    types from any version specific factory will be objects of
+                    the correct version's library.  
+                  </para>
+                  <para>
+                    Since storage management can be difficult, users are encouraged
+                    to use these methods to initialize smart pointer objects
+                    such as <classname>std::unique_ptr</classname> or
+                    <classname>std::shared_ptr</classname> to ensure that these
+                    objects are, in fact, properly managed.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <para>
+                    Note that all public methods are pure virtual and must be
+                    implemented by any concrete version specific factory.
+                </para>
+                <variablelist>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingItem*</type>
+                           <methodname> makeRingItem</methodname>
+                           <methodparam>
+                               <type>uint16_t </type><parameter>type</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>size_t </type><parameter>maxBody</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates an undifferentiated ring item.  The
+                            storage should be sufficient to hold
+                            <parameter>maxBody</parameter> bytes of data.
+                            The ring item header should be initialized such
+                            that its type is <parameter>type</parameter>.
+                           </para>
+                           <para>
+                            The precise initialization of the remainder of the
+                            ring item's storage is implementation dependent.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingItem* </type>
+                           <methodname>makeRingItem</methodname>
+                           <methodparam>
+                               <type>uint16_t </type><parameter>type</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint64_t </type><parameter>timestamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>sourceId</parameter>
+                           </methodparam>
+                            <methodparam>
+                                <type>size_t </type><parameter>maxBody</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>uint32_t </type><parameter>barrierType</parameter>
+                                <initializer>0</initializer>
+                            </methodparam>
+                             
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            As before but also provides the body header parameters:
+                            <parameter>timestamp</parameter>, which will be used
+                            as the event timestamp in any body header,
+                            <parameter>sourceId</parameter> which will be used
+                             as the item's source id and
+                             <parameter>barrierType</parameter> which is an optional
+                             parameter that specifies the barrier type.  This defaults
+                             to zero as that's the most common
+                           </para>
+                           <para>
+                            The implementation of this method shall be equivalent
+                            to:
+                           </para>
+                           <informalexample>
+                            <programlisting>
+std::auto_ptr&lt;::CRingItem&gt; pItem(fact.makeRingItem(type, maxbody));
+pItem->setBodyHeader(timestamp, sourceId, barrierType);
+                            </programlisting>
+                           </informalexample>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingItem*</type>
+                           <methodname> makeRingItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp; </type><parameter>rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Makes a new ring item that is a copy of the
+                            ring item that is referenced by the
+                            <parameter>rhs</parameter>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingItem* </type>
+                           <methodname>makeRingItem</methodname>
+                           <methodparam>
+                               <type>const RingItem* </type><parameter>pRawRing</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Copies the contents of <parameter>pRawRing</parameter>
+                            into local storage of a new ringitem object.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingItem* </type>
+                           <methodname>getRingItem</methodname>
+                           <methodparam>
+                               <type>CRingBuffer&amp; </type><parameter>ringbuf</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Givena reference to an NSCLDAQ
+                            <type>CRingBuffer</type> object that is created
+                            as a consumer; consumes a raw ring item from that
+                            ringbuffer encapsulating it in a
+                            <classname>CRingItem</classname>.
+                           </para>
+                           <para>
+                            Note that ringbuffers and ring items are such that
+                            the actual NSCLDAQ library version used does not matter much
+                            in the execution of this method.  
+                           </para>
+                           <para>
+                            If a complete ring item is not yet available for
+                            this consumer <parameter>ringbuf</parameter>,
+                            the calling program will block until one is.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingItem* </type>
+                           <methodname>getRingItem</methodname>
+                           <methodparam>
+                               <type>int </type><parameter>fd</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Consumes a ring item from the file descriptor
+                            <parameter>fd</parameter> and wraps it in a
+                            new <classname>CRingItem</classname> object.
+                            If the file descriptor is e.g. a pipe and no
+                            ring item is available, this will block.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingItem* </type>
+                           <methodname>getRingItem</methodname>
+                           <methodparam>
+                               <type>std::istream&amp; </type><parameter>in</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Consumes a raw ring item from the stream
+                            <parameter>in</parameter> wraps it up in a new
+                            <classname>CRingBuffer</classname> class, returning
+                            a pointer to that object.  If <parameter>in</parameter>
+                            is e.g. a pipe and no object is available, the program
+                            will block until one is seen.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual std::ostream&amp; </type>
+                           <methodname>putRingItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem*</type><parameter> pItem</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>std::ostream&amp; </type><parameter>out</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Puts the encapsulated ring item
+                            pointed to by <parameter>pItem</parameter> to the C++
+                            output stream <parameter>out</parameter>.  A reference
+                            to the stream after the output is returned.
+                           </para>
+                           <para>
+                            The ring itme is output in raw format.  This allows
+                            <methodname>getRingItem</methodname> to reconstruct
+                            the ring item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual void </type>
+                           <methodname>putRingItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem* </type><parameter>pItem</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>int </type><parameter>fd</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Outputs the ring item pointed to by
+                            <parameter>pItem</parameter> to whatever
+                            the file descriptor <parameter>fd</parameter>
+                            is open on.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual void </type>
+                           <methodname>putRingItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem* </type><parameter>pItem</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>CRingBuffer&amp;</type><parameter> ringbuf</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Puts the raw ring item encapsulated in
+                            <parameter>pItem</parameter> into the ring buffer
+                            refrenced by <parameter>ringbuf</parameter>.
+                            <parameter>ringbuf</parameter> must have been created
+                            
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CAbnormalEndItem* </type>
+                           <methodname>makeAbnormalEndItem()</methodname>
+                           <void />
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates an abnormal end ring item type.  This is
+                            used by versions of NSCLDAQ to flag a run that was not
+                            properly ended.  If this item type cannot be
+                            created <literal>nullptr</literal> must be returned.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CAbnormalEndItem* </type>
+                           <methodname>makeAbnormalEndItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp; </type><parameter>rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Given an undifferentiated ring item reference,
+                            <parameter>rhs</parameter>, creates the equivalent
+                            <classname>CAbnormalEndItem</classname>. Note that if
+                            this is not possible (e.g. because <parameter>rhs</parameter>
+                            is not an abnormal end item or because the version of
+                            NSCLDAQ format in the concrete implementation does not
+                            yet support <classname>CAbnormalEndItem</classname>s,
+                            <classname>std::bad_cast</classname> must be thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CDataFormatItem* </type>
+                           <methodname>makeDataFormatItem</methodname>
+                           <void />
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates and returns a pointer to a data format
+                            item for the format represented by the concrete
+                            factory.  If the version represented by the concrete
+                            factory does not support data format items,
+                            this method must return <literal>nullptr</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CDataFormatItem* </type>
+                           <methodname>makeDataFormatItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp;</type><parameter> rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Given an undifferentiated ring item;
+                            <parameter>rhs</parameter>, an equivalent
+                            <classname>CDataFormatItem</classname> object is
+                            created and a pointer to it returned.
+                            If <parameter>rhs</parameter> is not a data format
+                            item, or data format items are not supported by the
+                            concreate implementation the implementation must
+                            throw <classname>std::bad_cast</classname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CGlomParameters*</type>
+                           <methodname> makeGlomParameters</methodname>
+                           <methodparam>
+                               <type>uint64_t </type><parameter>interval</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>bool </type><parameter>isBuilding</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint16_t </type><parameter>policy</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates and returns a pointer to a
+                            <classname>CGlomParameters</classname> item described
+                            by its parameters.  If the underlying format does not
+                            support glom parameter items, <literal>nullptr</literal>
+                            must be returned.
+                           </para>
+                           <para>
+                            Glom is the component of the event builder that
+                            glues events together from a totally time ordered stream
+                            of event fragments.  If <parameter>isBuilding</parameter>
+                            is true, glom is building events and not running in the
+                            test mode in which it just emits fragments without
+                            bothering to build them.  When building, fragments
+                            are built if they all fit in the timestamp window
+                            defined by <parameter>interval</parameter>.  The units
+                            of this are dependent on the application and simply
+                            represent timestamp ticks.  
+                           </para>
+                           <para>
+                            <parameter>policy</parameter>
+                            is an integer that describes how output event timestamps
+                            are created from the fragment timestamps in an event.
+                            Constants in <filename>DataFormat.h</filename> describe
+                             the legal values for this parameter which are:
+                           </para>
+                           <itemizedlist>
+                            <listitem>
+                               <para>
+                                  <emphasis>GLOM_TIMESTAMP_FIRST</emphasis>  -
+                                  The event timestamp is taken from the timestamp
+                                  of its first, earliest, fragment.
+                               </para>
+                            </listitem>
+                            <listitem>
+                               <para>
+                                  <emphasis>GLOM_TIMESTAMP_LAST</emphasis>  -
+                                  The event timestamp is taken from the timestamp
+                                  of its last, latest, fragment.
+                               </para>
+                            </listitem>
+                            <listitem>
+                               <para>
+                                  <emphasis>GLOM_TIMESTAMP_AVERAGE</emphasis>  -
+                                  the timestamp is computed from the average of
+                                  all fragment timestamps in the event.
+                               </para>
+                            </listitem>
+                           </itemizedlist>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CGlomParameters* </type>
+                           <methodname>makeGlomParameters</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp; </type><parameter>rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            If <parameter>rhs</parameter> references a
+                            glom parameters item returns a newly created,
+                            equivalent <classname>CGomParameters</classname> object's
+                            pointer.   If <parameter>rhs</parameter> is not a glom
+                            parameters object or if the concrete implementation does
+                            not yet support items of that time,
+                            <classname>std::bad_cast</classname> must be thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CPhysicsEventItem* </type>
+                           <methodname>makePhysicsEventItem</methodname>
+                           <methodparam>
+                               <type>size_t </type><parameter>maxBody</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates a new physics event item. <parameter>maxBody</parameter>
+                            sets the maximum size event body that will be filled in.
+                            It is used to reserve space into which the ring item will
+                            be formatted.  The return value is a pointer to a newly
+                            created physics event item object.
+                           </para>
+                           <para>
+                            If the underlying format of the concrete factory
+                            supports body headers, this item will not be
+                            created with a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CPhysicsEventItem*</type>
+                           <methodname> makePhysicsEventItem</methodname>
+                           <methodparam>
+                               <type>uint64_t </type><parameter>timestamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t</type><parameter> source</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>barrier</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>size_t </type><parameter>maxBody</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Makes a physics event item with a body header
+                            (if supported by the concrete format).  IF body headers
+                            are not supported the implementation should just invoke
+                            the prior creational method.
+                           </para>
+                           <para>
+                            As before, <parameter>maxBody</parameter> determines
+                            the maximum body size of the item.  The remaining
+                            parameter determine the contents of the body header:
+                            <parameter>timestamp</parameter> is the Event/fragment
+                            timestamp, <parameter>source</parameter> is the Event/fragment
+                            source id and <parameter>barrier</parameter> is the event/fragment's
+                            barrier type.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CPhysicsEventItem* </type>
+                           <methodname>makePhysicsEventItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp;</type><parameter> rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Given <parameter>rhs</parameter> a reference to a
+                            ring item that actually contains a physics event,
+                            creates a new ring item of type <classname>CPHysicsEventItem</classname>
+                            that is a functional equivalent of <parameter>rhs</parameter>
+                            and returns a pointer to that item.
+                           </para>
+                           <para>
+                            If <parameter>rhs</parameter> is not, in fact,
+                            a physics event item, this method throws
+                            <classname>std::bad_cast</classname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingFragmentItem* </type>
+                           <methodname>makeRingFragmentItem</methodname>
+                           <methodparam>
+                               <type>   uint64_t </type><parameter>timestamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type> uint32_t </type><parameter>source</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>payloadSize</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>const void* </type><parameter>payload</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>barrier</parameter>
+                               <initializer>0</initializer>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            A <classname>CRingFragmentItem</classname> represents
+                            an event fragment whose payload is a ring item.
+                            The fragment itself looks like a ring item and has an
+                            obligatory body header. The body header is followed by
+                            a payload which, for this type is assumed to be another
+                            ring item.
+                           </para>
+                           <para>
+                            The contents of the obligatory body header are defined by
+                            <parameter>timestamp</parameter>, the fragment timestamp,
+                            <parameter>source</parameter>, the fragment source id and
+                            <parameter>barrier</parameter>, the optional barrier type.
+                            If not provided <parameter>barrier</parameter> defaults to
+                            zero which is no barrier.
+                           </para>
+                           <para>
+                            The payload is defined by
+                            <parameter>paylaodSize</parameter> which is the number
+                            of bytes in the payload and <parameter>payload</parameter>
+                            which points to the payload itself.
+                           </para>
+                           <para>
+                            The return value is a pointer to a new created
+                            <classname>CRingFragmentItem</classname>.
+                            If the concrete factory is of a format that does not
+                            support <classname>CRingFragmentItem</classname> object
+                            (does not implement the ring fragment raw ring item),
+                            a <literal>nullptr</literal> must be returned.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingFragmentItem* </type>
+                           <methodname>makeRingFragmentItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp; </type><parameter>rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            If <parameter>rhs</parameter> references a
+                            <classname>CRingItem</classname> whose contents are
+                            a fragment item, this method creates a new
+                            <classname>CRingFragmentItem</classname>, fills it with
+                            the contents of the <parameter>rhs</parameter> and
+                            returns a pointer to the new item.
+                           </para>
+                           <para>
+                            If <parameter>rhs</parameter> is not a ring fragment item
+                            or the version of NSCLDAQ used by the concrete factory
+                            does not support <classname>CRingFragmentItem</classname>s,
+                            <classname>std::bad_cast</classname> must be thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingPhysicsEventCountItem* </type>
+                           <methodname>makePhysicsEventCountItem</methodname>
+                           <methodparam>
+                               <type>uint64_t </type><parameter>count</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>timeoffset</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>time_t </type><parameter>stamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>int </type><parameter>divisor</parameter>
+                               <initializer>1</initializer>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            A physics event count item represents the number of
+                            event triggers on a data source. This can be used
+                            online analysis programs to know the fraction of the
+                            data they are able to analyze.
+                           </para>
+                           <para>
+                            <parameter>count</parameter> is the total number
+                            of triggers this run.  <parameter>timeoffset</parameter>
+                            is the time offset into the run at which the number
+                            of triggers represents.  <parameter>divisor</parameter>,
+                            if supplied indicates the number of timeoffset ticks
+                            in a second.  This allows for run offsets to be represented
+                            with sub-second resolution.  The <parameter>stamp</parameter>
+                            parameter represents the clock time at which the item was created.
+                           </para>
+                           <para>
+                            All versions of NSCLDAQ since version 10 (the lowest
+                            version we attempt to handle in this library) support
+                            event count items.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingPhysicsEventCountItem* </type>
+                           <methodname>makePhysicsEventCountItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp;</type><parameter> rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            If the contents of <parameter>rhs</parameter> are a
+                            physics event count raw item, this method creates a new
+                            <classname>CRingPhysicsEventCountItem</classname> object
+                            to wrap a copy of the item in <parameter>rhs</parameter> and
+                            returns a pointer to that object.
+                           </para>
+                           <para>
+                            If <parameter>rhs</parameter> is not encapsulating an
+                            event count item; <classname>std::bad_cast</classname>
+                            is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingScalerItem* </type>
+                           <methodname>makeScalerItem</methodname>
+                           <methodparam>
+                               <type>size_t </type><parameter>numScalers</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates a new scaler item and returns a pointer to it.
+                            Object methods can be used to modify the contents of the
+                            item.   The item is sized for <parameter>numScalers</parameter>
+                            32 bit scalers.  The clock timestamp for the item
+                            is its creation time. The counting interval is initialized
+                            to from zero to zero and the time divisor is initialized to
+                            1.
+                           </para>
+                           <para>
+                            For formats that support a body header, this item
+                            should be created with no body header.   A full
+                            body header can, of course, be added with
+                            the object's <methodname>setBodyHeader</methodname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingScalerItem* </type>
+                           <methodname>makeScalerItem</methodname>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>startTime</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>stopTime</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>time_t   </type><parameter>timestamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>std::vector&lt;uint32_t&gt; </type><parameter>scalers</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>bool </type><parameter>isIncremental </parameter>
+                               <initializer>true</initializer>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>sid</parameter>
+                               <initializer>0</initializer>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t</type><parameter>timeOffsetDivisor</parameter>
+                               <initializer>1</initializer>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Constructs a scaler item and returns a pointer to it.
+                            The <parameter>startTime</parameter> and
+                            <parameter>stopTime</parameter> parameters provide the
+                            offset into the run at which the counting interval started
+                            and ended.  The <parameter>divisor</parameter>
+                            provides the number of ticks per second for both of these
+                            parameters.
+                           </para>
+                           <para>
+                            <parameter>scalers</parameter> is the array of
+                            scaler values.  <parameter>isIncremental</parameter>
+                            indicates if the scalers were zeroed after the read.
+                           </para>
+                           <para>
+                            For versions that support an original source id,
+                            <parameter>sid</parameter> provides this value.
+                            This allows event built data to track the source id
+                            of the emitter of this item even as Glom rewrites the
+                            body header source id.
+                           </para>
+                           <para>
+                            See concrete implementations for information about
+                            how, if at all, the implementation fills in a body header
+                            for the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingScalerItem* </type>
+                           <methodname>makeScalerItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp; </type><parameter>rhs</parameter>
+                           </methodparam>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            If <parameter>rhs</parameter> encapsulates a raw
+                            scaler item a new <classname>CRingScalerItem</classname>
+                            is created and the data in <parameter>rhs</parameter>
+                            are copied into the new item.  A pointer to that new
+                            item is returned.
+                           </para>
+                           <para>
+                            If <parameter>rhs</parameter> does not represent
+                            scaler data, <classname>std::bad_cast</classname>
+                            is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingTextItem* </type>
+                           <methodname>makeTextItem</methodname>
+                           <methodparam>
+                               <type>uint16_t </type><parameter>type</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>std::vector&lt;std::string&gt; </type><parameter>theStrings</parameter>
+                           </methodparam>
+                             
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates a ring item that contains a set of strings.
+                            The <parameter>type</parameter> parameter contains
+                            the type of the ring item (type field of ring item header).
+                            The possible values for this are in <filename>DataFormat.h</filename>
+                            and can be:
+                           </para>
+                           <itemizedlist>
+                            <listitem>
+                               <para>
+                                  <emphasis>PACKET_TYPES</emphasis>  describes
+                                  the set of packet data types physics event bodies
+                                  may have.
+                               </para>
+                            </listitem>
+                            <listitem>
+                               <para>
+                                  <emphasis>MONITORED_VARIABLES</emphasis>
+                                  Contains a set of variable names and values as
+                                  Tcl scriptlets that would set those variables
+                                  to their values.
+                               </para>
+                            </listitem>
+                           </itemizedlist>
+                           <para>
+                            <parameter>theStrings</parameter> contains the
+                            strings to put in the payload section of the body.
+                           </para>
+                           <para>
+                            Timing information in the bodiesof this ring item type
+                            are initialized as follows:  The run offset time is zero,
+                            The clock timestamp is the creation time of the
+                            object and the offset divisor is <literal>1</literal>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingTextItem* </type>
+                           <methodname>makeTextItem</methodname>
+                           <methodparam>
+                               <type>    uint16_t </type><parameter>type</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>std::vector&lt;std::string&gt; </type><parameter>theStrings</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>offsetTime</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>time_t</type><parameter>timestamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>divisor</parameter>
+                               <initializer>1</initializer>
+                           </methodparam>
+                            
+                           
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates an item with a list of text strings encapsulates it
+                            in a <classname>CRingTextItem</classname> and returns a
+                            pointer to the resulting item.  As before,
+                            <parameter>type</parameter> is the ring item type
+                            and <parameter>theStrings</parameter> are the
+                            text strings to store in the ring item.
+                           </para>
+                           <para>
+                            Additional parameters provide time information.
+                            <parameter>offsetTime </parameter> is the offset into the
+                            run while <parameter>divisor</parameter> is the number
+                            of counts in <parameter>offsetTime</parameter> per second.
+                            <parameter>timestamp</parameter> is the clock time that will
+                            tag the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingTextItem* </type>
+                           <methodname>makeTextItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp;</type><parameter> rhs</parameter>
+                           </methodparam>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Given that <parameter>rhs</parameter> encapsulates a
+                            ring text item, this method creates a new
+                            <parameter>CRingTextItem</parameter>, copies the raw
+                            ring item encapsulated by <parameter>rhs</parameter>
+                            and returns a pointer to that new
+                            <classname>CRingTextItem</classname>.
+                           </para>
+                           <para>
+                            If the ring item type of <parameter>rhs</parameter>
+                            makes it clear that this is not a valid text item, a
+                            <classname>std::bad_cast</classname> will be thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CUnknownFragment* </type>
+                           <methodname>makeUnknownFragment</methodname>
+                           <methodparam>
+                               <type>uint64_t </type><parameter>timestamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>sourceid</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t</type><parameter> barrier</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>size</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>void* </type><parameter>pPayload</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            This method is the same as <methodname>makeRingFragmentItem</methodname>
+                            but the payload is not assumed to be a ring item.
+                            While ring fragment items have type
+                            <literal>EVB_FRAGMENT</literal>,  these have type
+                            <literal>EVB_UNKNOWN_PAYLOAD</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CUnknownFragment* </type>
+                           <methodname>makeUnknownFragment</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp; </type><parameter>rhs</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Again see <methodname>makeRingFragmentItem</methodname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingStateChangeItem* </type>
+                           <methodname>makeStateChangeItem</methodname>
+                           <methodparam>
+                               <type>uint32_t </type><parameter>itemType</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t</type><parameter> runNumber</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>uint32_t</type><parameter>timeOffset</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>time_t </type><parameter>timestamp</parameter>
+                           </methodparam>
+                           <methodparam>
+                               <type>std::string </type><parameter>title</parameter>
+                           </methodparam>
+                            
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Creates a new state change ring item wrapping it in a
+                            <classname>CRingStateChangeItem</classname> and returning a
+                            pointer to the new object.
+                           </para>
+                           <para>
+                            The <parameter>itemType</parameter> parameter provides
+                            the exact state change reason.  Its possible values are
+                            defined in <filename>DataFormat.h</filename> and are:
+                            <literal>BEGIN_RUN</literal>, <literal>PAUSE_RUN</literal>,
+                            <literal>RESUME_RUN</literal>, and <literal>END_RUN</literal>
+                            with obvious (I hope) meanings.
+                           </para>
+                           <para>
+                            <parameter>runNumber</parameter> provides the run number
+                            of the run having the transition, and <parameter>title</parameter>
+                            its title string.  <parameter>timeOffset</parameter>
+                            provides the time offset into the run while
+                            <parameter>timestamp</parameter> is intended
+                            to provide an absolute clock time at which the
+                            transtion occured.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual CRingStateChangeItem* </type>
+                           <methodname>makeStateChangeItem</methodname>
+                           <methodparam>
+                               <type>const CRingItem&amp;</type><parameter> rhs</parameter>
+                           </methodparam>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            If <parameter>rhs</parameter> is a <classname>CRingItem</classname>
+                            that is wrapping a state change raw ring item, this
+                            method creates a new <classname>CRingStateChangeItem</classname>,
+                            wraps a copy of the raw ring item in <parameter>rhs</parameter>
+                            and returns a pointer to the new item to the caller.
+                            If <parameter>rhs</parameter> is not a valid
+                            state change item, <classname>std::bad_cast</classname>
+                            is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>                
+                </variablelist>
+                             
+            </refsect1>
         </refentry>
        </section>
     </chapter>
