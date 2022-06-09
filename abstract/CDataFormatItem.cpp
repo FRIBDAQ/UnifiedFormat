@@ -133,13 +133,13 @@ CDataFormatItem::toString() const
 void*
 CDataFormatItem:: getBodyHeader() const
 {
-    throw std::logic_error("Data format itemd don't have body headers");
+  return nullptr;
 }
 void
 CDataFormatItem::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType)
 {
-    throw std::logic_error("Data format itemd don't have body headers");
+
 }
 /*----------------------------------------------------------------------------
  * Private utilities.

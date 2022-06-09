@@ -85,16 +85,16 @@ CAbnormalEndItem::toString() const
 
 /**
  * getBodyHeader()
- *  throws a logic error because we don't have a body header/
+ *   @return nullptr
  */
 void*
 CAbnormalEndItem::getBodyHeader() const
 {
-    throw std::logic_error("Abnormal end items don't have body headers");
+  return nullptr;
 }
 /**
  * setBodyHeader
- *    throws a logic error.
+ *    no-op
  */
 void
 CAbnormalEndItem::setBodyHeader(
@@ -102,5 +102,5 @@ CAbnormalEndItem::setBodyHeader(
     uint32_t barrierType
 )
 {
-    throw std::logic_error("Abnormal end items don't have body headers");
+
 }
