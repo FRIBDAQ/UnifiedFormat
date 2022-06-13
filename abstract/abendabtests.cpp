@@ -28,7 +28,6 @@ class abendabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(abendabtest);
     CPPUNIT_TEST(typeName);
     CPPUNIT_TEST(getbodyheader);
-    CPPUNIT_TEST(setbodyheader);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -43,7 +42,6 @@ public:
 protected:
     void typeName();
     void getbodyheader();
-    void setbodyheader();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(abendabtest);
@@ -58,10 +56,5 @@ void abendabtest::typeName()
 void abendabtest::getbodyheader()
 {
     CAbnormalEndItem item;
-    CPPUNIT_ASSERT_THROW(item.getBodyHeader(), std::logic_error);
-}
-void abendabtest::setbodyheader()
-{
-    CAbnormalEndItem item;
-    CPPUNIT_ASSERT_THROW(item.setBodyHeader(0x1234, 1, 0), std::logic_error);
+    ASSERT(item.getBodyHeader() == nullptr);
 }

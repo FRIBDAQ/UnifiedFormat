@@ -3142,6 +3142,683 @@ public:
                 </variablelist>
             </refsect1>
         </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CPhysicsEventItem (abstract)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CPhysicsEventItem (abstract)</refname>
+              <refpurpose>Encapsulate the data from a physics trigger.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CPHysicsEventItem.h&gt;
+
+class CPhysicsEventItem : public CRingItem
+{
+public:
+    CPhysicsEventItem(size_t maxBody=8192);
+  
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
+    
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+  
+};
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    <classname>CPHysicsEventItem</classname> is a ring item that
+                    encapsulates data from a physics trigger.  As such, the body
+                    of the ring item has no defined format but can be in whatever
+                    format best suits the data from the trigger.
+                  </para>
+                  <para>
+                    Note that event built data has a defined format that
+                    describes how fragments appear in the event however, again,
+                    the fragment payloads do not have a defined format.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CPhysicsEventItem</methodname>
+                        <methodparam>
+                            <type>size_t </type><parameter>maxBody</parameter>
+                            <initializer>8192</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs an item for a single physics trigger.
+                            Note that the storage size is statically allocated
+                            with <parameter>maxBody</parameter> bytes of payload
+                            data.  The ring item header type field is initialized
+                            to <literal>PHYSICS_EVENT</literal>.
+                           </para>
+                           <para>
+                            Upon creating the item normally, if a body header
+                            is required, <methodname>setBodyHeader</methodname>
+                            is invoked.  <methodname>getBodyCursor</methodname>
+                            is then used get a pointer into the object at where
+                            the physics data should be put.  After incrementing
+                            this pointer by an appopriate amount,
+                            calls to <methodname>setBodyCursor</methodname>,
+                            folowed by <methodname>updateSize</methodname>
+                            are required to set the size field of the
+                            ring item header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that represents the ring item type:
+                            <literal>Event</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that represents the contents of the
+                            event.  This is used, e.g., by the
+                            <command>dumper</command> command to render human
+                            readable data.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void*</type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the body header for the event.
+                            If the event has no body header,
+                            <literal>nullptr</literal> is returned. Note that
+                            the base class <methodname>hasBodyHeader</methodname>
+                            can be called to determine if the ring item type has
+                            a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type> uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType </parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Inserts a new or modifies an existing body header of the event.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingFragmentItem (abstract)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingFragmentItem (abstract)</refname>
+              <refpurpose>Ring item to encapsulate event builder fragments.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CRingFragmentItem.h&gt;
+
+class CRingFragmentItem : public CRingItem
+{
+ 
+
+public:
+  CRingFragmentItem(uint64_t timestamp, 
+		    uint32_t source, 
+		    uint32_t payloadSize, 
+		    const void* pBody,
+		    uint32_t barrier=0);
+
+  virtual uint64_t     timestamp() const;
+  virtual uint32_t     source() const;
+  virtual size_t       payloadSize() const;
+  virtual void*        payloadPointer();
+  virtual uint32_t     barrierType() const;
+
+  virtual std::string typeName() const;
+  virtual std::string toString() const;
+  
+  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0) ;
+  
+  virtual void* getBodyHeader() const;
+  virtual bool hasBodyHeader() const;
+
+
+};
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    The event builder sort stage can output a set of fragments
+                    encapsulated in a ring item. The fragments look like
+                    a ringitem header, a body header and an arbitrary payload.
+                    The <classname>CRingFragmentItem</classname> represents
+                    the items where the payload are established to be ring items
+                    (note that the sort stage of the event builder is format
+                    agnositic).
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingFragmentItem</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>timestamp</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>source</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>payloadSize</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>const void* </type><parameter>pBody</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>barrier</parameter>
+                            <initializer>0</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs the item.  The <parameter>timestamp</parameter>,
+                            <parameter>sourcde</parameter> and optional
+                            <parameter>barrier</parameter> parameters fill in
+                            the body header.  The default value of 0
+                            for the <parameter>barrier</parameter> represents a
+                            non-barrier event.
+                           </para>
+                           <para>
+                            The payload of the fragment is <parameter>payloadSize</parameter>
+                            bytes taken from the data pointed to by <parameter>pBody</parameter>.
+                           </para>
+                           <para>
+                            For this item, type, <parameter>pBody</parameter>
+                            is expected to point to a ring item whose
+                            header size field is the same as the
+                            <parameter>payloadSize</parameter> parameter.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint64_t     </type>
+                          <methodname>timestamp</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the timestamp from the item's body header.
+                            Note that by definition, fragment items have
+                            a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t     </type>
+                          <methodname>source</methodname>
+                          <void /><modifier> const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the source id from the item's body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual size_t  </type>
+                          <methodname>payloadSize</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the size of the payload. Note that it is
+                            acceptable, and normal for this to be computed by the
+                            implementation from the ring item size and the body
+                            header size
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void*        </type>
+                          <methodname>payloadPointer</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the payload data.  The pointer
+                            allows the data to be edited as well as simply
+                            inspected.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t     </type>
+                          <methodname>barrierType</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the item's body header barrier type field.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that describes the type of the
+                            ring item: <literal>Event fragment</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string representation of the  contents of
+                            the ring item. This is used e.g. by
+                            <command>dumper</command>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>irtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType </parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Modifies the contents of the item's body header
+                            (this type always has  a body header).
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the object's body header.
+                            Note that the actual shape of the body header
+                            depends on the actual data format version.  Normally
+                            each data version has an associated
+                            <filename>DataFormat.h</filename> header which, among other
+                            things defines a <type>BodyHeader</type> type
+                            within a namespace specific to the format.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool</type>
+                          <methodname> hasBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns <literal>true</literal> as this type of ring item
+                            always has a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingPhysicsEventCountItem (abstract)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingPhysicsEventCountItem (abstract)</refname>
+              <refpurpose>Ring Item with trigger counts.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CRingPhysicsEventCount.h&gt;
+
+class CRingPhysicsEventCountItem : public CRingItem
+{
+
+public:
+  CRingPhysicsEventCountItem();
+  CRingPhysicsEventCountItem(uint64_t count,
+			     uint32_t timeOffset, unsigned divisor = 1);
+  CRingPhysicsEventCountItem(uint64_t count, 
+			     uint32_t timeoffset, 
+			     time_t stamp, uint32_t sid, unsigned divisor = 1);
+
+  virtual uint32_t getTimeOffset() const;
+  virtual void     setTimeOffset(uint32_t offset);
+  virtual float    computeElapsedTime() const;
+  virtual uint32_t getTimeDivisor() const;
+
+  virtual time_t   getTimestamp() const;
+  virtual void     setTimestamp(time_t stamp);
+
+  virtual uint64_t getEventCount() const;
+  virtual void     setEventCount(uint64_t count);
+  
+  virtual uint32_t getOriginalSourceId() const;
+
+  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+  virtual void* getBodyHeader() const; 
+
+  virtual std::string typeName() const;	// Textual type of item.
+  virtual std::string toString() const; // Provide string dump of the item.
+
+};
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    Online analysis software often samples data in order to
+                    avoid being the throughput bottleneck. It is useful for such
+                    software to be able to compute the fraction of the actual
+                    data it has analyzed.  This ring item provides the number
+                    of physics triggers (<classname>CPHysicsEventItem</classname>
+                    objects) that have been emitted by a readout (or the event builder)
+                    at some point in time. By counting the number of physics
+                    triggers processe and dividing by the number of actual
+                    triggers, the fraction of data analyzed  can be computed.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <void />
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs an event count item with a count of zero,
+                            run time offset of zero and timestamp of the time
+                            the constructor was invoked.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>count</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>timeOffset</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>unsigned </type><parameter>divisor</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates an event count item where the trigger
+                            count is initialized to <parameter>count</parameter>.
+                            The run offset is given by <parameter>timeOffset</parameter>
+                            with <parameter>divisor</parameter> ticks per second.
+                            The clock time is set to the construction time of
+                            the object.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>count</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>timeoffset</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>time_t </type><parameter>stamp</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>sid</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type> unsigned </type><parameter>divisor</parameter>
+                            <initializer>1</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Full construction of a physics event count item
+                            with a prototypical body header.  The additional
+                            parameter from the previous constructor are
+                            <parameter>stamp</parameter>, which provides
+                            the clock time at which the item was constructed and
+                            <parameter>sid</parameter> which provides the source
+                            id for the original source id field (if any) of the
+                            item.  
+                           </para>
+                           <para>
+                            The original source id allows analysis programs to
+                            track the originating data source for this item.
+                            Note that the constructor does not produce a
+                            body  header but one can be added with
+                            <methodname>setBodyHeader</methodname>.
+                            
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeOffset</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the raw time offset into the run at which
+                            this item was created.  Note that
+                            <methodname>computeElapsedTime</methodname> is the
+                            preferred method to get the elapsed run time.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setTimeOffset</methodname>
+                          <methodparam>
+                              <type>uint32_t</type><parameter> offset</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the object's raw run time offset.  This
+                            offset is uncorrected by the offset divisor.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float    </type>
+                          <methodname>computeElapsedTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Computes the elapsed time in the run at which this
+                            was emitted from the raw offset and the divisor.
+                            Units are seconds.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeDivisor</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the number of ticks in a second in the
+                            elapsed time raw value.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type> virtual time_t   </type>
+                          <methodname>getTimestamp</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Return the clock time associated with the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void     </type>
+                         <methodname>setTimestamp</methodname>
+                         <methodparam>
+                             <type>time_t </type><parameter>stamp</parameter>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Sets the clock time associated with the item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint64_t </type>
+                         <methodname>getEventCount</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Return the number of triggers documented by this
+                            item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void     </type>
+                         <methodname>setEventCount</methodname>
+                         <methodparam>
+                             <type>uint64_t </type><parameter>count</parameter>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            sets the item's trigger count.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint32_t </type>
+                         <methodname>getOriginalSourceId</methodname>
+                         <void /><modifier> const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns the source id of the data source that emitted
+                            this object.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term>
+                        <methodsynopsis>
+                           <type>irtual std::string </type>
+                           <methodname>typeName</methodname>
+                           <void /><modifier>const</modifier>
+                        </methodsynopsis>
+                      </term>
+                      <listitem>
+                          <para>
+                            Returns a string indicating the type of ring item
+                            this object is:  <literal>Trigger count</literal>
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>

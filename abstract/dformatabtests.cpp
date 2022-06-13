@@ -32,7 +32,6 @@ class dformatabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(minor);
     CPPUNIT_TEST(type_name);
     CPPUNIT_TEST(getbodyheader);
-    CPPUNIT_TEST(setbodyheader);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -49,7 +48,7 @@ protected:
     void minor();
     void type_name();
     void getbodyheader();
-    void setbodyheader();
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(dformatabtest);
@@ -73,10 +72,5 @@ void dformatabtest::type_name()
 void dformatabtest::getbodyheader()
 {
     CDataFormatItem item;
-    CPPUNIT_ASSERT_THROW(item.getBodyHeader(), std::logic_error);
-}
-void dformatabtest::setbodyheader()
-{
-    CDataFormatItem item;
-    CPPUNIT_ASSERT_THROW(item.setBodyHeader(12345, 1, 0), std::logic_error);
+    ASSERT(item.getBodyHeader() == nullptr);
 }

@@ -92,7 +92,7 @@ CRingPhysicsEventCountItem::~CRingPhysicsEventCountItem()
 
 /*!
     \return uint32_t
-    \retval The curren value of the time offset.
+    \retval The current value of the time offset.
 */
 uint32_t
 CRingPhysicsEventCountItem::getTimeOffset() const
@@ -224,16 +224,16 @@ CRingPhysicsEventCountItem::setBodyHeader(
     uint64_t timestamp, uint32_t sourceId, uint32_t barrierType 
 )
 {
-  throw std::logic_error("abstract CRingPhysicsEventCountItem has no body header");
+  
 }
 /**
  * getBodyHeader
- *    @throw std::logic_error - we don't have a body header.
+ 
  */
 void*
 CRingPhysicsEventCountItem::getBodyHeader() const
 {
-  throw std::logic_error("abstract CRingPhysicsEventCountItem has no body header");
+  return nullptr;
 }
 
 /**

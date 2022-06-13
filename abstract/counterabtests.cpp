@@ -47,7 +47,6 @@ class counterabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(originalsid);
     
     CPPUNIT_TEST(bodyhdr_1);
-    CPPUNIT_TEST(bodyhdr_2);
     CPPUNIT_TEST(type_name);
     CPPUNIT_TEST_SUITE_END();
     
@@ -78,7 +77,7 @@ protected:
     void originalsid();
     
     void bodyhdr_1();
-    void bodyhdr_2();
+    
     
     void type_name();
 };
@@ -238,23 +237,13 @@ void counterabtest::originalsid()
     
     EQ(uint32_t(12), item.getOriginalSourceId());
 }
-// setbodyheader throws.
 
+// Get body header null.
 void counterabtest::bodyhdr_1()
 {
     CRingPhysicsEventCountItem item;
-    CPPUNIT_ASSERT_THROW(
-        item.setBodyHeader(1234, 2, 0),
-        std::logic_error
-    );
-}
-// Get body header throws.
-void counterabtest::bodyhdr_2()
-{
-    CRingPhysicsEventCountItem item;
-    CPPUNIT_ASSERT_THROW(
-        item.getBodyHeader(),
-        std::logic_error
+    ASSERT(
+        item.getBodyHeader() == nullptr
     );
 }
 // typeName is 'Trigger count'

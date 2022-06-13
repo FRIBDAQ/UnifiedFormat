@@ -38,7 +38,7 @@ class glomabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(tspolicy_3);
     CPPUNIT_TEST(name);
     CPPUNIT_TEST(getbodyheader);
-    CPPUNIT_TEST(setbodyheader);
+    
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -59,7 +59,7 @@ protected:
     void tspolicy_3();
     void name();
     void getbodyheader();
-    void setbodyheader();
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(glomabtest);
@@ -108,10 +108,5 @@ void glomabtest::name()
 void glomabtest::getbodyheader()
 {
     CGlomParameters p(100, true, CGlomParameters::average);
-    CPPUNIT_ASSERT_THROW(p.getBodyHeader(), std::logic_error);
-}
-void glomabtest::setbodyheader()
-{
-    CGlomParameters p(100, true, CGlomParameters::average);
-    CPPUNIT_ASSERT_THROW(p.setBodyHeader(1245, 0, 0), std::logic_error);
+    ASSERT(p.getBodyHeader() == nullptr);
 }
