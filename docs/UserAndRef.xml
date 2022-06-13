@@ -2890,10 +2890,255 @@ public:
                       </methodsynopsis></term>
                       <listitem>
                           <para>
-                            No-op since these items don't have body heaers.
+                            No-op since these items don't have body headers.
                        </para>
                     </listitem>
                    </varlistentry>                    
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CGlomParameters (abstract)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CGlomParameters (abstract)</refname>
+              <refpurpose>Document event building parameters</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CGlomParameters.h&gt;
+
+class CGlomParameters : public CRingItem
+{
+public:
+    
+    typedef enum _TimestampPolicy {
+        first = 0, last = 1, average = 2
+    } TimestampPolicy;
+    
+public:
+    CGlomParameters(uint64_t interval, bool isBuilding, TimestampPolicy policy);
+    
+    virtual uint64_t coincidenceTicks() const;
+    virtual bool     isBuilding() const;
+    virtual TimestampPolicy timestampPolicy() const;
+
+    virtual std::string typeName() const;  
+    virtual std::string toString() const;
+        
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+    
+
+};
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    NSCLDAQ versions that support event building use this ring item
+                    type to allow the event builder to document its event builder
+                    settings.  The most important of these is the actual event
+                    building coincidence interval.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <para>
+                    The following public methods are provided.
+                </para>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CGlomParameters</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>interval</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>bool </type><parameter>isBuilding</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>TimestampPolicy </type><parameter>policy</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Fully parameterized construction.  <parameter>interval</parameter>
+                            is the coincidence interval used to build events from
+                            the sorted fragments.  If <parameter>isBuilding</parameter>
+                            is false, the output stream is just a stream of single
+                            fragment events, regardless of the coincidence interval.
+                            This is intended for use in testing only.
+                            <para>policy</para> is the policy used to derive
+                            timestamps of the output event stream from the
+                            fragments that compose them.
+                            See <literal>DATA TYPES and CONSTANTS</literal>
+                            for valid values and their meanings.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint64_t </type>
+                          <methodname>coincidenceTicks</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the coincidence interval stored in the object.
+                            The units of this value are timestamp ticks.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool     </type>
+                          <methodname>isBuilding</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the state of the object's building flag.
+                            If true, the data are event built. If not the
+                            event builder was run in a test mode where
+                            each event output consists of a single fragment.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual TimestampPolicy </type>
+                          <methodname>timestampPolicy</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the timestamp policy used to derive the
+                            timestamp of output events.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that identifies the ring item type:
+                            <literal>Glom Parameters</literal>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a stringified representation of the object.
+                            Intended for use in e.g. <command>dumper</command>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the object's body header.
+                            Since glom parameter items dont, at present,
+                            have body headers, expect a
+                            <literal>nullptr</literal> to be returned.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term></term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t sourceId</type><parameter></parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis>
+                       <listitem>
+                           <para>
+                            Sets/adds a body header to the item.  Since
+                            glom parameter items don't have a body header,
+                            this is a no-op.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>DATA TYPES and CONSTANTS</title>
+                <para>
+                    The <classname>CGlomParameters</classname> class provides
+                    a single data type:  <type>TimestampPolicy</type>.  THe
+                    event builder in NSCLDAQ supports hierarchical event building.
+                    This means that the output of an event builder can be input
+                    for a subsequent event builder in the data acquisition
+                    data flow.
+                </para>
+                <para>
+                    This allows detector systems which require an event builder
+                    of their own to be run together with other detector systems
+                    by simply providing a second level event builder to glue together
+                    events from each detector subsystem into coincident events.
+                </para>
+                <para>
+                    This ability for hierarchical event building requires that
+                    output events are also given a timestamp.  The
+                    <type>TimestampPolicy</type> data type provides a type that
+                    specifies how this output timestamp is determined.  It
+                    can have the following values:
+                </para>
+                <variablelist>
+                    <varlistentry>
+                       <term><literal>first</literal></term>
+                       <listitem>
+                           <para>
+                            The output timestamp is taken from the earliest (first)
+                            fragment's timestamp.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><literal>last</literal></term>
+                       <listitem>
+                           <para>
+                            The output timestamp is taken from the latest (last)
+                            fragment's timestamp.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><literal>average</literal></term>
+                       <listitem>
+                           <para>
+                            The output timestamp is the average of all timestamps
+                            of the fragments that make up the event.
+                           </para>
+                        </listitem>
+                    </varlistentry>
                 </variablelist>
             </refsect1>
         </refentry>

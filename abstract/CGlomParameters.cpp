@@ -191,12 +191,12 @@ CGlomParameters::toString() const
 void*
 CGlomParameters::getBodyHeader() const
 {
-    throw std::logic_error("Glom Parameter items don't have body headers.");
+    return nullptr;
 }
 void
 CGlomParameters::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType)
 {
-    throw std::logic_error("Glom Parameter items don't have body headers.");
+    
     
 }
