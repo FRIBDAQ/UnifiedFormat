@@ -49,7 +49,7 @@ class abschangetest : public CppUnit::TestFixture {
     CPPUNIT_TEST(stamp_2);
     
     CPPUNIT_TEST(bodyhdr_1);
-    CPPUNIT_TEST(bodyhdr_2);
+    
     
     CPPUNIT_TEST(typenames);
     CPPUNIT_TEST_SUITE_END();
@@ -269,20 +269,8 @@ void abschangetest::bodyhdr_1()
     CRingStateChangeItem item(
         END_RUN, 12, 100, now, "This is my title"
     );
-    CPPUNIT_ASSERT_THROW(
-        item.getBodyHeader(),
-        std::logic_error
-    );
-}
-void abschangetest::bodyhdr_2()
-{
-    time_t now = time(nullptr);
-    CRingStateChangeItem item(
-        END_RUN, 12, 100, now, "This is my title"
-    );
-    CPPUNIT_ASSERT_THROW(
-        item.setBodyHeader(1245, 1, 1),
-        std::logic_error
+    ASSERT(
+        item.getBodyHeader() == nullptr
     );
 }
 

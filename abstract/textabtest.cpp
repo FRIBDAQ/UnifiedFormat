@@ -52,7 +52,6 @@ class textabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST(typename_2);
     
     CPPUNIT_TEST(bodyhdr_1);
-    CPPUNIT_TEST(bodyhdr_2);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -86,7 +85,6 @@ protected:
     void typename_2();
     
     void bodyhdr_1();
-    void bodyhdr_2();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(textabtest);
@@ -320,22 +318,7 @@ void textabtest::bodyhdr_1()
     time_t now = time(nullptr);
     CRingTextItem item(MONITORED_VARIABLES, strs, 10, now );
     
-    CPPUNIT_ASSERT_THROW(
-        item.getBodyHeader(),
-        std::logic_error
-    );
-}
-void textabtest::bodyhdr_2()
-{
-    std::vector<std::string> strs={
-        "one string", "two string", "three string", "four"
-        "five string", "six string" , "seven string", "more"
-    };
-    time_t now = time(nullptr);
-    CRingTextItem item(MONITORED_VARIABLES, strs, 10, now );
-    
-    CPPUNIT_ASSERT_THROW(
-        item.setBodyHeader(123456778, 1, 0),
-        std::logic_error
+    ASSERT(
+        item.getBodyHeader() == nullptr
     );
 }

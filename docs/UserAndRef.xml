@@ -4339,6 +4339,500 @@ public:
                 </variablelist>
             </refsect1>
         </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingStateChangeItem (abstract)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingStateChangeItem (abstract)</refname>
+              <refpurpose>Encapsulate run state change items.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CRingStateChangeItem.h&gt;
+
+class CRingStateChangeItem : public CRingItem
+{
+
+
+public:
+  CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
+  CRingStateChangeItem(uint16_t reason,
+		       uint32_t runNumber,
+		       uint32_t timeOffset,
+		       time_t   timestamp,
+		       std::string title) ;
+  
+
+  virtual void setRunNumber(uint32_t run);
+  virtual uint32_t getRunNumber() const;
+
+  virtual void setElapsedTime(uint32_t offset);
+  virtual uint32_t getElapsedTime() const;
+  virtual uint32_t getTimeDivisor() const;
+  virtual float    computeElapsedTime() const;
+
+  virtual void setTitle(std::string title) ;
+  virtual std::string getTitle() const;
+
+  virtual void setTimestamp(time_t stamp);
+  virtual time_t getTimestamp() const;
+  virtual uint32_t getOriginalSourceId() const;
+
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+  virtual std::string typeName() const;
+  virtual std::string toString() const;
+
+};
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    When the data acquisition system changes state, in a way that
+                    can affect data taking, readers produce a state change item
+                    so that this information can be documented in the data flow
+                    and recorded to disk in the associated event file.
+                  </para>
+                  <para>
+                    Thd <classname>CRingStateChange</classname> item encapsulates
+                    such ring items.  Note that as of NSCLDAQ version 12, there
+                    are four possible state change items, <literal>BEGIN_RUN</literal>,
+                    <literal>PAUSE_RUN</literal>, <literal>RESUME_RUN</literal>
+                    and <literal>END_RUN</literal>.  Note that not all readers
+                    support pausing a run and the paused state will likely be
+                    deprecated and phased out.
+                  </para>
+                  <para>
+                    The definitions for these ring items types are in the
+                    <filename>DataFormat.h</filename> header for the appropriate
+                    data format or the abstract version of this file.  These
+                    defintions should be considered stable.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingStateChangeItem</methodname>
+                        <methodparam>
+                            <type>uint16_t </type><parameter>reason </parameter>
+                            <initializer>BEGIN_RUN</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates a state change item for the specified state
+                            change type.  The offset time is set to zero, which is
+                            appropriate for a begin run, the clock time stamp is
+                            set to the current time.  The run number is also set
+                            to zero.  The title is set to an empty string.
+                            Other version specific initialization may occur.
+                           </para>
+                           <para>
+                            If the format supports body headers and they are optionsal,
+                            this construction will create an item without a body
+                            header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname> CRingStateChangeItem</methodname>
+                        <methodparam>
+                            <type>uint16_t </type><parameter>reason</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>runNumber</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t timeOffset</type><parameter></parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>time_t   </type><parameter>timestamp</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>std::string </type><parameter>title</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Full construction of a state change item.  The
+                            <parameter>reason</parameter> is the type of state change
+                            item as listed in <literal>DESCRIPTION</literal>.
+                            <parameter>runNumber</parameter> us the number of the
+                            run undergoing the transition.  <parameter>timeOffset</parameter>
+                            is the offset into the run at which the transition occured.
+                            This should always be <literal>0</literal> for
+                            <literal>BEGIN_RUN</literal> transitions.
+                            
+                           </para>
+                           <para>
+                            <parameter>timestamp</parameter> is the clock time
+                            at which the transition occured.   This is the output
+                            of the unix <function>time</function> function.
+                           </para>
+                           <para>
+                            Finally, <parameter>title</parameter> is the run's title.
+                            This should be the same string for all transitions
+                            within a run.   Note that there is a maximum
+                            length to titles defined in
+                            <filename>DataFormat.h</filename> with the symble
+                            <literal>TITLE_MAXSIZE</literal>. Title strings longer
+                            than that should be silently truncated by the
+                            version's implementation.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setRunNumber</methodname>
+                          <methodparam>
+                              <type>uint32_t</type><parameter> run</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Modifies the item's run number.   This is most often
+                            used when the minimal constructor is used to
+                            create the item.  In that case, various methods
+                            are used to fill in actual values of the fields.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getRunNumber</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Return the run number from the state change ring item
+                            encapsulated in the object.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setElapsedTime</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>offset</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the raw time offset of the state change item.
+                            The offset says when in the timespan of the run
+                            the state change occured.  It is zero at the beginning
+                            of the run.  No attempt is made to synchronize this time
+                            offset between several data sources.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getElapsedTime</methodname>
+                          <void />
+                          <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the raw time offset stored in the event.  This
+                            is the time offset in to the run at which the state change
+                            occured. Note that the time divisor (see below) represents
+                            the numbver of ticks in the offset in a second.
+                           </para>
+                           <para>
+                            It's usually preferrable to get the offset in seconds
+                            using <methodname>computeElapedTime</methodname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeDivisor</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the time divisor.  This value represents the
+                            number of ticks of time offset in a second.
+                            Note that at present, all constructors initialize
+                            this to <literal>1</literal> and there is no mechanism
+                            to modify the divisor.  Later releases may provide
+                            such a mechanism.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float </type>
+                          <methodname>computeElapsedTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Computes the time offset stored in the item in
+                            seconds.  This is the preferred method to get the
+                            time offset in the presence of the capability
+                            for divisors that are greater than 1.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setTitle</methodname>
+                          <methodparam>
+                              <type>std::string </type><parameter>title</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the title of the run for the state transition
+                            item.  The state transition items that belong to the
+                            same run should have the same title.  Note that
+                            there is a maximum title length and implementations
+                            should silently truncate any title longer than that.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>getTitle</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the value of the title string for the
+                            transition object.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setTimestamp</methodname>
+                          <methodparam>
+                              <type>time_t </type><parameter>stamp</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets a clock times associted with the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual time_t </type>
+                          <methodname>getTimestamp</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Return the clock time associated with the
+                            item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                            <methodsynopsis>
+                               <type>virtual uint32_t</type>
+                               <methodname> getOriginalSourceId</methodname>
+                               <void /><modifier>const</modifier>
+                            </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Returns the original source id of the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the object's body header.
+                            If the object has no body header
+                            <literal>nullptr</literal> is returned.  The
+                            actual format of the body header
+                            <emphasis>may</emphasis> vary from version to version.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType </parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            IF the version supports it, either add or modify an
+                            existing body header in the object.  If the version
+                            does not support body headers, the method should do
+                            nothing.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that identifies the type of the object.
+                            Note that the type is a fine grained concept.
+                            For examle, if the type is
+                            <literal>BEGIN_RUN</literal>,
+                            this method returns <literal>Begin Run</literal>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string</type>
+                          <methodname>toString</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that describes the contents of the
+                            item.  This is used by e.g.
+                            <command>dumper</command> to emit formatted
+                            ring items.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingTextItem (abstract)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingTextItem (abstract)</refname>
+              <refpurpose>Encapsulate a ring item of text strings</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CRingTextItem.h&gt;
+
+
+class CRingTextItem : public CRingItem
+{
+public:
+
+  CRingTextItem(uint16_t type, size_t maxsize);
+  CRingTextItem(uint16_t type,
+		std::vector&lt;std::string&gt; theStrings);
+  CRingTextItem(uint16_t type,
+		std::vector&lt;std::string&gt; theStrings,
+		uint32_t                 offsetTime,
+		time_t                   timestamp, uint32_t divisor=1) ;
+  
+  virtual std::vector&lt;std::string&gt;  getStrings() const;
+
+  virtual void     setTimeOffset(uint32_t offset);
+  virtual uint32_t getTimeOffset() const;
+  virtual float    computeElapsedTime() const;
+  virtual uint32_t getTimeDivisor() const;
+
+  virtual void     setTimestamp(time_t stamp);
+  virtual time_t   getTimestamp() const;
+  virtual uint32_t getOriginalSourceId() const;
+  
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(
+        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
+  );
+  virtual std::string typeName() const;
+  virtual std::string toString() const;
+  
+};
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    Several types of ring items contain lists of strings.
+                    The strings are stored as a block of null terminated strings.
+                    A field in the ring item contains the number of strings.k
+                  </para>
+                  <para>
+                    The following item types (defined in <filename>DataFormat.h</filename>)
+                    are valid text item types:
+                 </para>
+                  <variablelist>
+                    <varlistentry>
+                       <term><literal>PACKET_TYPES</literal></term>
+                       <listitem>
+                           <para>
+                            The SBS readout framework can use this to provide
+                            a dictionary of packet types that can be seen
+                            within a <literal>PHYSICS_EVENT</literal>
+                            item body.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><literal>MOINTORED_VARIABLES</literal></term>
+                       <listitem>
+                           <para>
+                            The readout frameworks based on the Tcl command
+                            language support monitoring a set of internal
+                            variables.  This coupled with an EPICS client
+                            provides the means to incorporate EPICS data in
+                            event files.  Other possible uses for this
+                            can be conceived.
+                           </para>
+                           <para>
+                            The strings in this case are a set of script commands
+                            that, when run, restore the Tcl variables monitored to
+                            their values at that time in the run.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                  </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    
+                </variablelist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>

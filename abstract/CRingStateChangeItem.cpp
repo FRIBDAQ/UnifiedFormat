@@ -256,7 +256,7 @@ CRingStateChangeItem::getOriginalSourceId() const
 void*
 CRingStateChangeItem::getBodyHeader() const
 {
-  throw std::logic_error("Abstract run state change items have no body header");
+  return nullptr;
 }
 /**
  * setBodyHeader
@@ -268,7 +268,7 @@ CRingStateChangeItem::setBodyHeader(
   uint32_t barrierType 
 )
 {
-  throw std::logic_error("Abstract state changie items have no body header.");
+  
 }
 
 /**

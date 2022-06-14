@@ -212,7 +212,7 @@ CRingTextItem::getOriginalSourceId() const
 void*
 CRingTextItem::getBodyHeader() const
 {
-  throw std::logic_error("Abstract CRingTextItems don't have body headers");
+  return nullptr;
 }
 /**
  *  same for attempts to set the body header.
@@ -222,7 +222,7 @@ CRingTextItem::setBodyHeader(
   uint64_t timestamp, uint32_t sid, uint32_t barrierType
 )
 {
-  throw std::logic_error("Abstract ring text items dont' have body headers");
+  
 }
 
 /**
