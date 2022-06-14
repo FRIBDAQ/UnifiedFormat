@@ -4829,8 +4829,300 @@ public:
             <refsect1>
                 <title>METHODS</title>
                 <variablelist>
-                    
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingTextItem</methodname>
+                        <methodparam>
+                            <type>uint16_t </type><parameter>type</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>size_t </type><parameter>maxsize</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructor.  <parameter>type</parameter> is the item
+                            type and <parameter>maxsize</parameter> sets a
+                            limit on the ring item size.  Note that if you
+                            already know the set of strings to put in the item,
+                            it's better to use a consructor that takes them
+                             as a parameter as then the actual maximum size
+                             can be computed.
+                           </para>
+                           <para>
+                            The string count for the item is initialized to zero.
+                            The run offset is also initialized to zero as is the
+                            original source id.  The clock time is initialized to the
+                            current time.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname> CRingTextItem(</methodname>
+                        <methodparam>
+                            <type>uint16_t </type><parameter>type</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>std::vector&lt;std::string&gt; </type><parameter>theStrings</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            In this constructor, <parameter>theStrings</parameter>
+                            is used to compute the required item size.  The
+                            strings are set into the item's string pool
+                            as null terminated strings and the string count
+                            is set to <literal>theStrings.size()</literal>.
+                            The offset, original source id, and clock time are
+                            initialized as in the previous constructor.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingTextItem</methodname>
+                        <methodparam>
+                            <type>uint16_t </type><parameter>type</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>std::vector&lt;std::string&gt;</type><parameter> theStrings</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t  </type><parameter>offsetTime</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>time_t </type><parameter>timestamp</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>divisor</parameter>
+                            <initializer>1</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Fully parameterized constructor.  This constructor
+                            adds <parameter>offsetTime</parameter> to set the
+                            time  offset in the run at which the item was emitted,
+                            <parameter>timestamp</parameter> which allows the
+                            clock time the item was emitted to be expclicitly
+                            specified and <parameter>divisor</parameter>
+                            (optional, defaults to 1) which indicates the number
+                            of ticks of <parameter>offsetTime</parameter> in
+                            a second.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::vector&lt;std::string&gt;</type>
+                          <methodname> getStrings</methodname>
+                          <void /><modifier> const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a vector that contains the text strings in the
+                            object's payload.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setTimeOffset</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>offset</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Set the offset into the run at which this object was
+                            emitted.  Note that this, together with the time divisor
+                            determine the number of seconds into the run the
+                            object was emitted.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeOffset</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the raw time offset. Note that calling
+                            <methodname>computeElapsedTime</methodname>
+                            is the perferred method to call to get the run time
+                            offset in seconds.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float</type>
+                          <methodname>computeElapsedTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Return the elapsed time in the run at which this
+                            item was emitted, in seconds.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeDivisor</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Return the number of offset ticks per second.  
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setTimestamp</methodname>
+                          <methodparam>
+                              <type>time_t </type><parameter>stamp</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the clock time at which the item was emitted.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual time_t  </type>
+                          <methodname> getTimestamp</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the clock time associated with the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getOriginalSourceId</methodname>
+                          <void /><modifier> const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            return the item's original source id.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>irtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            If the item has a body header, this returns a pointer
+                            to it.  Otherwise, <literal>nullptr</literal>
+                            is returned.  Note that the structure of the body
+                            header depends on the format version.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sid</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            If the item has a body header it is modified as indicated
+                            by the parameters.  IF not, one is created and filled in
+                            as indicated by the parameters.  If the data format
+                            does not support body headers, this method should
+                            be a no-op.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type> virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that identifies the item type.  This
+                            will be one of <literal>Packet types</literal> or
+                            <literal>Monitored Variables</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that describes the contents of
+                            the item in human readable form.
+                           </para>
+                        </listitem>
+                    </varlistentry>
                 </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CUnknownFragment (abstract)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CUnknownFragment (abstract)</refname>
+              <refpurpose></refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CUnknownFragment.h&gt;
+
+class CUnknownFragment : public CRingFragmentItem
+{
+    
+public:
+    CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+                     uint32_t size, void* pPayload);
+
+    std::string typeName() const;
+    
+};
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                       This is identical to <classname>CRingFragmentItem</classname>
+                       however the payload is known not to be a ring item.
+                       The type is <literal>EVB_UNKNOWN_PAYLOAD</literal>
+                  </para>
             </refsect1>
         </refentry>
        </section>
