@@ -5485,6 +5485,10 @@ if (item->type() == v10::INCREMENTAL_SCALERS ||
                             <parameter>ringbuf</parameter> and wraps it in a new
                             <type>v10::CRingBuffer</type>.
                            </para>
+                           <para>
+                            <parameter>ringbuf</parameter> must be attached to
+                            the ring buffer in consumer mode.
+                           </para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
@@ -5533,20 +5537,196 @@ if (item->type() == v10::INCREMENTAL_SCALERS ||
                        <listitem>
                            <para>
                             Puts the wrapped ring item pointed to by <parameter>pItem</parameter>
-                            in the <classname>std::ostream</classname> referenced by <paramter>out</paramter>.
+                            in the <classname>std::ostream</classname> referenced by <parameter>out</parameter>.
                             The raw binary of the ring item is output which allows it to be read in using
                              <methodname>getRingItem</methodname> at some later date.
                            </para>
                            <para>
                             The <parameter>out</parameter> stream must be open
                             for write and in binary mode.  Note any actual ring item
-                            type can be used for the <paramter>pItem</paramter>
+                            type can be used for the <parameter>pItem</parameter>
                             since they all ultimately descend from
                             <classname>::CRingItem</classname>.
                            </para>
+                           <para>
+                            The method, like most C++ stream I/O methods, returns
+                            a reference to <parameter>out</parameter> following the
+                            put.
+                           </para>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>putRingItem</methodname>
+                          <methodparam>
+                              <type>const ::CRingItem*</type><parameter> pItem</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>int </type><parameter>fd</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Writes the ring item pointed to by
+                            <parameter>pItem</parameter> to the file descriptor
+                            <parameter>fd</parameter>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>putRingItem</methodname>
+                          <methodparam>
+                              <type>const ::CRingItem* </type><parameter>pItem</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>CRingBuffer&amp;</type><parameter>ringbuf</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Writes the ring item pointed to by
+                            <parameter>pItem</parameter> to the ringbuffer
+                            referenced by <parameter>ringbuf</parameter>.
+                            <parameter>ringbuf</parameter> must be attached
+                            to the ring buffer in producer mode.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type> virtual ::CAbnormalEndItem* </type>
+                          <methodname>makeAbnormalEndItem</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates a new abnormal end run item.  Note that this item
+                            type was added to the NSCLDAQ ring item set
+                            <emphasis>after</emphasis> version 10. This method
+                            therefore always returns a <literal>nullptr</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual ::CAbnormalEndItem* </type>
+                          <methodname>makeAbnormalEndItem</methodname>
+                          <methodparam>
+                              <type>const CRingItem&amp;</type><parameter>rhs</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Normally, if <parameter>rhs</parameter> references
+                            an abnormal end item, this will create a new copy
+                            of that item with the specific type, a pointer
+                            to <classname>v10::CAbnormalEndItem</classname>.
+                            However, since the abnormal end ring item type
+                            was introduced <emphasis>after</emphasis> version 10,
+                            this always throws <classname>std::bad_cast</classname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual ::CDataFormatItem* </type>
+                          <methodname>makeDataFormatItem</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Normally, this creates  a new data format item.
+                            This ring item type, however was introduced
+                            <emphasis>after</emphasis> NSCLDAQ version 10.
+                            This method therefore retuns a
+                            <literal>nullptr</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual ::CDataFormatItem* </type>
+                          <methodname>makeDataFormatItem</methodname>
+                          <methodparam>
+                              <type>const CRingItem&amp;</type><parameter>rhs</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Normally, if <parameter>rhs</parameter>
+                            references a data format item, this method will
+                            produce a duplicate item and return a pointer to it.
+                            However, since the data format ring item type
+                            was introduced <emphasis>after</emphasis> version 10,
+                            this method always throws a
+                            <classname>std::bad_cast</classname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual ::CGlomParameters*</type>
+                          <methodname> makeGlomParameters</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>interval</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>bool </type><parameter>isBuilding</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint16_t </type><parameter>policy</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Normally this would produce an event builder (glom)
+                            parameter documentation ring item. However, since
+                            this item type was introduced <emphasis>after</emphasis>
+                            version 10, this will always return <literal>nullptr</literal>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                          <term><methodsynopsis>
+                             <type>::CGlomParameters*</type>
+                             <methodname>makeGlomParameters</methodname>
+                             <methodparam>
+                                 <type>const ::CRingItem&amp; </type><parameter>rhs</parameter>
+                             </methodparam>
+                          </methodsynopsis></term>
+                          <listitem>
+                              <para>
+                                Normally creates a glom parameters item from
+                                the contents of <parameter>rhs</parameter>, if it
+                                is a glom parameters item. However, since the
+                                glom parameters item type was introduced
+                                <emphasis>after</emphasis> version 10, this
+                                always throws <classname>std::bad_cast</classname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual ::CPhysicsEventItem* </type>
+                          <methodname>makePhysicsEventItem</methodname>
+                          <methodparam>
+                              <type>size_t </type><parameter>maxBody</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates and returns a pointer to a physics event item
+                            (<classname>v10::CPhysicsEventItem</classname>). The
+                            capacity of the item will be sufficient for the item
+                            to have a body of <parameter>maxBody</parameter>.
+                           </para>
+                        </listitem>
+                    </varlistentry>   
                 </variablelist>
+                
             </refsect1>
         </refentry>
        </section>
