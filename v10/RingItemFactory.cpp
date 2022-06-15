@@ -254,12 +254,12 @@ namespace v10 {
  // Attempts to create them from scratch return nullptr.
  // Attempts to create from another CRingItem throw std::bad_cast
  
- CAbnormalEndItem*
+ ::CAbnormalEndItem*
  RingItemFactory::makeAbnormalEndItem()
  {
     return nullptr;
  }
-  CAbnormalEndItem*
+  ::CAbnormalEndItem*
   RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
   {
     throw std::bad_cast();
@@ -267,12 +267,12 @@ namespace v10 {
   
   // Data format items Not supported in v10:
   
-  CDataFormatItem*
+  ::CDataFormatItem*
   RingItemFactory::makeDataFormatItem()
   {
     return nullptr;
   }
-  CDataFormatItem*
+  ::CDataFormatItem*
   RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
   {
     throw std::bad_cast();
@@ -280,14 +280,14 @@ namespace v10 {
   //////////////////////////////////////////////////////////////////
   // Glom parameters items - don't exist on V10.
   
-  CGlomParameters*
+  ::CGlomParameters*
   RingItemFactory::makeGlomParameters(
         uint64_t interval, bool isBuilding, uint16_t policy
   )
   {
     return nullptr;
   }
-  CGlomParameters*
+  ::CGlomParameters*
   RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
   {
     throw std::bad_cast();
@@ -346,7 +346,7 @@ namespace v10 {
   ///////////////////////////////////////////////////////////////
   // Ring Fragment items are not supported in v10 so:
   
-  CRingFragmentItem*
+  ::CRingFragmentItem*
   RingItemFactory::makeRingFragmentItem(
             uint64_t timestamp, uint32_t source, uint32_t payloadSize,
             const void* payload, uint32_t barrie
@@ -355,7 +355,7 @@ namespace v10 {
      return nullptr;
   }
   
-  CRingFragmentItem*
+  ::CRingFragmentItem*
   RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
   {
      throw std::bad_cast();
