@@ -5126,5 +5126,429 @@ public:
             </refsect1>
         </refentry>
        </section>
+       <section>
+        <title>NSCLDAQ version 10 format</title>
+        <para>
+            Version 10 of NSCLDAQ is the earliest version of NSCLDAQ that used
+            ringbuffers and ring items for data flow.  As  such, its data
+            format is the most primitive.  Version 10 does not support body headers.
+            Event building in NSCLDAQ 10  motivated the addition of body headers
+            in later versions.  
+        </para>
+        <para>
+            The version 10 headers are in the v10 subdirectory of the installation
+            headers.  Furthermore all classes and definitions live in the
+            <literal>v10</literal> namespace.  The <filename>v10/DataFormat.h</filename>
+            header provides formatting data and structs for the NSCLDAQ version
+            10 internals.
+        </para>
+        <refentry>
+           <refmeta>
+              <refentrytitle>RingItemFactory (version 10)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>RingItemFactory (verson 10)</refname>
+              <refpurpose>Generate v10 ring item objects.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v10/RingItemFactory.h&gt;
+
+namespace v10 {
+    
+    class RingItemFactory : public RingItemFactoryBase {
+    public:
+        
+        ::CRingItem* makeRingItem(uint16_t type, size_t maxBody);
+        ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+                size_t maxBody, uint32_t barrierType = 0 );
+        ::CRingItem* makeRingItem(const ::CRingItem&amp; rhs);
+        ::CRingItem* makeRingItem(const RingItem* pRawRing);
+        
+        virtual CRingItem* getRingItem(CRingBuffer&amp; ringbuf) ;
+        virtual CRingItem* getRingItem(int fd) ;
+        virtual CRingItem* getRingItem(std::istream&amp; in);
+        
+        virtual std::ostream&amp; putRingItem(const CRingItem* pItem, std::ostream&amp; out) ;
+        virtual void putRingItem(const CRingItem* pItem, int fd) ;
+        virtual void putRingItem(const CRingItem* pItem, CRingBuffer&amp; ringbuf) ;
+        
+        
+        virtual CAbnormalEndItem* makeAbnormalEndItem() ;
+        virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem&amp; rhs) ;
+        
+    
+        virtual CDataFormatItem* makeDataFormatItem() ;
+        virtual CDataFormatItem* makeDataFormatItem(const CRingItem&amp; rhs);
+        
+        
+        virtual CGlomParameters* makeGlomParameters(
+            uint64_t interval, bool isBuilding, uint16_t policy
+        );
+        virtual CGlomParameters* makeGlomParameters(const CRingItem&amp; rhs) ;
+        
+        
+        virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
+        virtual CPhysicsEventItem* makePhysicsEventItem(
+            uint64_t timestamp, uint32_t source, uint32_t barrier,
+            size_t maxBody
+        ) ;
+        virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem&amp; rhs) ;
+        
+        
+        virtual CRingFragmentItem* makeRingFragmentItem(
+            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+            const void* payload, uint32_t barrier=0
+        ) ;
+        virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem&amp; rhs) ;
+    
+        
+        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            uint64_t count, uint32_t timeoffset, time_t stamp,
+            int divisor=1
+        );
+        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem&amp; rhs);
+        
+        
+        virtual CRingScalerItem* makeScalerItem(size_t numScalers);
+        virtual CRingScalerItem* makeScalerItem(
+            uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector&lt;uint32_t&gt; scalers,
+            bool                  isIncremental = true,
+            uint32_t              sid = 0,
+            uint32_t              timeOffsetDivisor = 1
+        );
+        virtual CRingScalerItem* makeScalerItem(const CRingItem&amp; rhs);
+        
+        
+        virtual CRingTextItem* makeTextItem(
+            uint16_t type,
+            std::vector&lt;std::string&gt; theStrings
+        );
+        virtual CRingTextItem* makeTextItem(
+            uint16_t type,
+            std::vector&lt;std::string&gt; theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp, uint32_t divisor=1
+        );
+        virtual CRingTextItem* makeTextItem(const CRingItem&amp; rhs);
+        
+        
+        virtual CUnknownFragment* makeUnknownFragment(
+            uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+            uint32_t size, void* pPayload
+        );
+        virtual CUnknownFragment* makeUnknownFragment(const CRingItem&amp; rhs);
+        
+        virtual CRingStateChangeItem* makeStateChangeItem(
+            uint32_t itemType, uint32_t runNumber,
+            uint32_t timeOffset,
+            time_t   timestamp,
+            std::string title
+        );
+        virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem&amp; rhs);
+    };
+        
+
+}             
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    <classname>v10::RingItemFactory</classname> is a factory class
+                    that creates ring items for NSCLDAQ version 10.  The classes
+                    in this format class hierarchy are all in the
+                    <literal>v10</literal> namespace.   They derive directly
+                    from the corresponding classes in the abstract format items
+                    described in the previous section.
+                  </para>
+                  <para>
+                    Note that this allows return values to be pointer to those
+                    classes.
+                  </para>
+                  <para>
+                    Since all items are dynamically created via <function>new</function>,
+                    we recommend that you use these factory methods to initialize
+                    smart pointers.  For example, if you read a ring item
+                    from an event file you might have a code fragment that looks
+                    like the following
+                  </para>
+                  <example>
+                    <title>Using smart pointers with the v10 factory object</title>
+                    <programlisting>
+#include &lt;v10/RingItemFactory.h&gt;
+#include &lt;v10/DataFormat.h&gt;
+#include &lt;CRingItem.h&gt;                 <co id='v10fact.includes' />
+#include &lt;CRingScalerItem.h&gt;
+#include &lt;memory&gt;
+#include &lt;fstream&gt;
+
+...
+std::ifstream in("run-0012-00.evt", ios::in | ios::binary); <co id='v10fact.open' />
+...
+
+v10::RingItemFactory fact;
+std::unique_ptr&lt;CRingItem&gt; item(fact.getRingItem(in));  <co id='v10fact.read' />
+
+if (item->type() == v10::INCREMENTAL_SCALERS ||
+    item->type() == v10::TIMESTAMPED_NONINCR_SCALERS)) {
+    std::unique_ptr&lt;CRingScalerItem&gt; scaler(fact.makeScalerItem(*item)); <co id='v10fact.make' />
+    processScalers(scaler);                                <co id='v10fact.procscaler' />
+}
+
+...
+
+                    </programlisting>
+                  </example>
+                  <calloutlist>
+                    <callout arearefs='v10fact.includes' >
+                        <para>
+                            The headers we need include the data format header
+                            which supplies the ring item types, the
+                            factory the base <classname>CRingItem</classname>
+                            and <classname>CRingScalerItem</classname>
+                            definitions so that the compiler knows the
+                            virtual method interfaces.
+                        </para>
+                        <para>
+                            The file stream header and memory header are needed
+                            to get data from the stream and to store pointers
+                            into a smart pointer object to ensure the objects
+                            we create get destroyed.
+                        </para>
+                    </callout>
+                    <callout arearefs='v10fact.open' >
+                        <para>
+                            When opening a stream on an event file we must not only
+                            specify we're going to read it but that we'll also
+                            want the stream opened in binary mode to prevent any
+                            character based translations that  otherwise might occur.
+                        </para>
+                    </callout>
+                    <callout arearefs='v10fact.read' >
+                        <para>
+                            The factories provide a method to read a ring item
+                            from a stream and wrap it with a <classname>CRingItem</classname>
+                            base class.  This line does that and stores the pointer
+                            to the resulting, dynamically created object in a
+                            <classname>std::unique_ptr</classname> so that we don't
+                            have to worry about deallocating the object later in
+                            the code.
+                        </para>
+                    </callout>
+                    <callout arearefs='v10fact.make' >
+                        <para>
+                            After determining that <varname>item</varname>
+                            'points' to a scaler item, we use the
+                            <methodname>makeScalerItem</methodname> factory
+                            method to take a copy of the data and wrap it in a
+                            version 10 scaler item.  The pointer to this is
+                            also stored in a <classname>std::unique_ptr</classname>
+                            object.
+                        </para>
+                    </callout>
+                    <callout arearefs='v10fact.procscaler' >
+                        <para>
+                            The <function>processScaler</function> call just
+                            represents some arbitrary processing.  While
+                            <varname>item</varname> is valid after the
+                            if block exits, the <classname>scaler</classname>
+                            object is freed when that block exits so all
+                            processing of the scaler must be done prior
+                            to exiting that block.
+                        </para>
+
+                    </callout>
+                  </calloutlist>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>::CRingItem* </type>
+                          <methodname>makeRingItem</methodname>
+                          <methodparam>
+                              <type>uint16_t </type><parameter>type</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>size_t </type><parameter>maxBody</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates a new ring item that is undifferentiated,
+                            that is it implements no type specific methods.
+                            <parameter>type</parameter> is put in the ring item
+                            header's type field.  Storage capacity sufficient for
+                            a body of up to <parameter>maxBody</parameter>
+                            bytes of data are reserved though you'll need to
+                            communicate the size of the item (normally via
+                            the object's <methodname>setBodyCursor</methodname>
+                            and <methodname>updateSize</methodname> methods) to
+                            actually fill in the header's size field.
+                           </para>
+                           <para>
+                            The returned value is a pointer to a
+                            <classname>v10::CRingItem</classname> object
+                            (cast to <classname>::CRingItem</classname>).
+                            The caller is responsible for deleting the object
+                            when it is no longer needed (e.g. by initializing a smart
+                            pointer object with it).
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>::CRingItem* </type>
+                          <methodname>makeRingItem</methodname>
+                          <methodparam>
+                              <type>uint16_t </type><parameter>type</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>size_t </type><parameter>maxBody</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t</type><parameter> barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates an undifferentiateded ring item that is parameterized
+                            for a body header.  Since version 10 does not support
+                            body headers, the remaining parameters are silently
+                            ignored.  This method, however allows the V10 factory
+                            to be treated interchangeably with e.g. the V11
+                            factory once it has been created.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>::CRingItem* </type>
+                          <methodname>makeRingItem</methodname>
+                          <methodparam>
+                              <type>const ::CRingItem&amp; </type><parameter>rhs</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Makes a ring item by copying the contents of another
+                            ring item.  Note that the results are not well defined
+                            if the <parameter>rhs</parameter> item comes from
+                            a different ring item format than this factory
+                            (e.g. is a version 12 ring item).
+                           </para>
+                           <para>
+                            In practice this is not a problem unless you are writing
+                            a format converter.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>::CRingItem* </type>
+                          <methodname>makeRingItem</methodname>
+                          <methodparam>
+                              <type>const RingItem* </type><parameter>pRawRing</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Wraps a raw ring item in a <classname>v10::CRingItem</classname>
+                            object and returns a pointer to that object.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual CRingItem* </type>
+                          <methodname>getRingItem</methodname>
+                          <methodparam>
+                              <type>CRingBuffer&amp;</type><parameter>ringbuf</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Reads a ring item from the ringbuffer
+                            <parameter>ringbuf</parameter> and wraps it in a new
+                            <type>v10::CRingBuffer</type>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual CRingItem* </type>
+                          <methodname>getRingItem</methodname>
+                          <methodparam>
+                              <type>int</type><parameter> fd</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Reads a ring item from the entity open on the linux
+                            file descriptor <parameter>fd</parameter> and wraps it
+                            into a new <type>v10::CRingBuffer</type>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual CRingItem* </type>
+                          <methodname>getRingItem</methodname>
+                          <methodparam>
+                              <type>std::istream&amp; </type><parameter>in</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Reads a ring item from the C++ <classname>istream</classname>
+                            referenced by <parameter>in</parameter> and wraps it in a
+                            <classname>v10::CRingItem</classname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::ostream&amp;</type>
+                          <methodname> putRingItem</methodname>
+                          <methodparam>
+                              <type>const CRingItem*</type><parameter> pItem</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>std::ostream&amp; </type><parameter>out</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Puts the wrapped ring item pointed to by <parameter>pItem</parameter>
+                            in the <classname>std::ostream</classname> referenced by <paramter>out</paramter>.
+                            The raw binary of the ring item is output which allows it to be read in using
+                             <methodname>getRingItem</methodname> at some later date.
+                           </para>
+                           <para>
+                            The <parameter>out</parameter> stream must be open
+                            for write and in binary mode.  Note any actual ring item
+                            type can be used for the <paramter>pItem</paramter>
+                            since they all ultimately descend from
+                            <classname>::CRingItem</classname>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+       </section>
     </chapter>
 </book>
