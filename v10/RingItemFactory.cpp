@@ -22,6 +22,7 @@
 #include "RingItemFactory.h"
 #include "DataFormat.h"
 #include "CRingItem.h"
+#include "CRingFragmentItem.h"
 #include "CPhysicsEventItem.h"
 #include "CRingPhysicsEventCountItem.h"
 #include "CRingScalerItem.h"
@@ -344,21 +345,33 @@ namespace v10 {
        return result;
   }
   ///////////////////////////////////////////////////////////////
-  // Ring Fragment items are not supported in v10 so:
+ 
   
   ::CRingFragmentItem*
   RingItemFactory::makeRingFragmentItem(
             uint64_t timestamp, uint32_t source, uint32_t payloadSize,
-            const void* payload, uint32_t barrie
+            const void* payload, uint32_t barrier
   )
   {
-     return nullptr;
+     return new v10::CRingFragmentItem(
+       timestamp, source, payloadSize, payload, barrier
+     );
   }
   
   ::CRingFragmentItem*
   RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
   {
-     throw std::bad_cast();
+     if (rhs.type() == v10::EVB_FRAGMENT || rhs.type() == v10::EVB_UNKNOWN_PAYLOAD) {
+      const v10::EventBuilderFragment* pSrc =
+       reinterpret_cast<const v10::EventBuilderFragment*>(rhs.getItemPointer());
+      return new v10::CRingFragmentItem(
+           pSrc->s_timestamp, pSrc->s_sourceId,
+           pSrc->s_payloadSize, pSrc->s_body,
+           pSrc->s_barrierType 
+       );
+     } else {
+      throw std::bad_cast();
+     }
   }
   /////////////////////////////////////////////////////////////////
   // CRingPhysicsEventCountItems.

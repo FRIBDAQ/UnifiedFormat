@@ -43,6 +43,8 @@
 #include "CRingScalerItem.h"
 #include "CRingTextItem.h"
 #include "CRingStateChangeItem.h"
+#include "CRingFragmentItem.h"
+#include <memory>
 
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
@@ -95,6 +97,7 @@ class v10factorytest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST(frag_1);
     CPPUNIT_TEST(frag_2);
+    CPPUNIT_TEST(frag_3);
     
     CPPUNIT_TEST(count_1);
     CPPUNIT_TEST(count_2);
@@ -160,6 +163,7 @@ protected:
     
     void frag_1();
     void frag_2();
+    void frag_3();
     
     void count_1();
     void count_2();
@@ -746,10 +750,20 @@ v10factorytest::phys_4()
 void
 v10factorytest::frag_1()
 {
-    auto ptr =m_pFactory->makeRingFragmentItem(
-        1243, 1, 100, nullptr
-    );
-    ASSERT(ptr == nullptr);
+    uint8_t data[100];
+    for (int i =0; i < 100; i++) data[i] = i;
+    std::unique_ptr<::CRingFragmentItem> ptr(m_pFactory->makeRingFragmentItem(
+        1243, 1, sizeof(data), data
+    ));
+    EQ(uint64_t(1243), ptr->timestamp());
+    EQ(uint32_t(1), ptr->source());
+    EQ(uint32_t(0), ptr->barrierType());
+    EQ(sizeof(data), ptr->payloadSize());
+    
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(ptr->payloadPointer());
+    EQ(0, memcmp(data, p, sizeof(data)));
+    
+    
 }
 // bad cast to make from another item:
 void
@@ -772,6 +786,20 @@ v10factorytest::frag_2()
         std::bad_cast
     );
     delete pItem;
+}
+void v10factorytest::frag_3()
+{
+    uint8_t data[100];
+    for (int i =0; i < 100; i++) data[i] = i;
+    std::unique_ptr<::CRingFragmentItem> pOriginal(m_pFactory->makeRingFragmentItem(
+        1243, 1, sizeof(data), data
+    ));
+
+    std::unique_ptr<::CRingFragmentItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeRingFragmentItem(*pOriginal))
+    );
+    EQ(0, memcmp(pOriginal->getItemPointer(), pItem->getItemPointer(), pOriginal->size()));
 }
 // Made from parameters:L
 void v10factorytest::count_1()

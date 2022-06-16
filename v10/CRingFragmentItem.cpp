@@ -112,12 +112,12 @@ CRingFragmentItem::payloadSize() const
  *
  * @return const void*
  */
-const void*
-CRingFragmentItem::payloadPointer() const
+void*
+CRingFragmentItem::payloadPointer()
 {
-	const v10::EventBuilderFragment* p =
-		reinterpret_cast<const v10::EventBuilderFragment*>(getItemPointer());
-  return reinterpret_cast<const void*>(p->s_body);
+	v10::EventBuilderFragment* p =
+		reinterpret_cast<v10::EventBuilderFragment*>(getItemPointer());
+  return reinterpret_cast<void*>(p->s_body);
 }
 /**
  * return the barrier type:
@@ -202,7 +202,8 @@ CRingFragmentItem::toString() const
   out << "- - - - - -  Payload - - - - - - -\n";
   
     out << std::hex << std::endl;
-    const uint8_t* p = reinterpret_cast<const uint8_t*>(payloadPointer());
+		auto pThis = const_cast<v10::CRingFragmentItem*>(this);
+    uint8_t* p = reinterpret_cast<uint8_t*>(pThis->payloadPointer());
     for (int i = 0; i < payloadSize(); i++) {
       out << *p++ << ' ';
       if (((i % perLine) == 0) && (i != 0)) {
