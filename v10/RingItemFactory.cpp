@@ -364,14 +364,20 @@ namespace v10 {
      if (rhs.type() == v10::EVB_FRAGMENT || rhs.type() == v10::EVB_UNKNOWN_PAYLOAD) {
       const v10::EventBuilderFragment* pSrc =
        reinterpret_cast<const v10::EventBuilderFragment*>(rhs.getItemPointer());
-      return new v10::CRingFragmentItem(
+      auto result =  new v10::CRingFragmentItem(
            pSrc->s_timestamp, pSrc->s_sourceId,
            pSrc->s_payloadSize, pSrc->s_body,
            pSrc->s_barrierType 
        );
+       // Force the type to be that of rhs:
+       
+       v10::pRingItemHeader pHeader = reinterpret_cast<v10::pRingItemHeader>(result->getItemPointer());
+       pHeader->s_type = rhs.type();
+       return result;
      } else {
       throw std::bad_cast();
      }
+     
   }
   /////////////////////////////////////////////////////////////////
   // CRingPhysicsEventCountItems.
