@@ -18,9 +18,11 @@ target_link_libraries(V10Format
   ${NSCLDAQ_LIB}/libdaqshm.so
   ${NSCLDAQ_LIB}/libDataFlow.so
   ${NSCLDAQ_LIB}/libException.so
-)
+  )
+target_compile_options(V10Format PRIVATE -g)
 target_link_options(V10Format
   PUBLIC -Wl,-rpath=${NSCLDAQ_LIB}
+  PRIVATE -g
   )
 
 install(TARGETS
@@ -43,5 +45,7 @@ target_include_directories(v10unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC}
 )
+target_compile_options(v10unittests PRIVATE -g)
+target_link_options(v10unittests PRIVATE -g)
 
 add_test(NAME v10Format COMMAND v10unittests)
