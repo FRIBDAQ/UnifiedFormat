@@ -5827,7 +5827,7 @@ if (item->type() == v10::INCREMENTAL_SCALERS ||
                        </methodsynopsis></term>
                        <listitem>
                            <para>
-                            If <parmaeter>rhs</parmaeter> is a ring fragment item returns a fragment
+                            If <parameter>rhs</parameter> is a ring fragment item returns a fragment
                             item that is functionally equivalent to <parameter>rhs</parameter>.
                             If <parameter>rhs</parameter> is not a fragment item,
                             throws a <classname>std::bad_cast</classname>
@@ -6396,6 +6396,1053 @@ namespace v10 {
                            <para>
                             Returns a string that describes the contents of the
                             ring item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingFragmentItem (version 10)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingFragmentItem (version 10)</refname>
+              <refpurpose>Event builder fragment</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v10/CRingFragmentItem.h&gt;
+
+namespace v10 {
+
+
+    class CRingFragmentItem : public ::CRingFragmentItem
+    {
+     
+      // Implemented canonical items:
+    
+    public:
+      CRingFragmentItem(uint64_t timestamp, 
+                uint32_t source, 
+                uint32_t payloadSize, 
+                const void* pBody,
+                uint32_t barrier=0);
+      
+      virtual uint64_t     timestamp() const;
+      virtual uint32_t     source() const;
+      virtual size_t       payloadSize()   const;
+      virtual void*  payloadPointer();
+      virtual uint32_t     barrierType() const;
+ 
+      virtual bool hasBodyHeader() const;
+      virtual void* getBodyHeader() const;
+      virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                             uint32_t barrierType = 0) ;
+      
+      virtual std::string typeName() const;
+      virtual std::string toString() const;
+ 
+    };
+}
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    Ring fragment items are event builder fragments wrapped in
+                    a ring item.  Event builder fragments have a header that contains
+                    the timestamp, source id and barrier type from the fragment
+                    and the fragment data itself.  The fragment data is referred
+                    to in the class documentation as the <firstterm>payload</firstterm>.
+                  </para>
+                  <para>
+                    The payload  is assumed to be a ring item for items with this
+                    item type by default.  If one edits the item type to be
+                    <literal>v10::EVB_UNKNOWN_PAYLOAD</literal>, no such
+                    assumption can be made.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingFragmentItem</methodname>
+                            <methodparam>
+                                <type>uint64_t </type><parameter>timestamp</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>uint32_t </type><parameter>source</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>uint32_t </type><parameter>payloadSize</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>const void*</type><parameter> pBody</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>uint32_t </type><parameter>barrier</parameter>
+                                <initializer>0</initializer>
+                            </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            <parameter>timestamp</parameter> is the fragment
+                            timestamp that will be put in the header.
+                            <parameter>source</parameter> is the source id of the
+                            fragment that also will be put in the header.
+                           </para>
+                           <para>
+                            <parameter>payloadSize</parameter> and <parameter>pBody</parameter>
+                            specify the number of bytes of payload and the source
+                            of the data that will be put in the payload part of the
+                            ring item.
+                           </para>
+                           <para>
+                            If the optional <parameter>barrier</parameter>
+                            parameter is specified it provides a barrier type to
+                            be put in the header.  Otherwise a barrier type of
+                            zero is used which is no barrier.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint64_t     </type>
+                          <methodname>timestamp</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the timestamp from the item's body header.
+                            Note that by definition, fragment items have
+                            a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t     </type>
+                          <methodname>source</methodname>
+                          <void /><modifier> const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the source id from the item's body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual size_t  </type>
+                          <methodname>payloadSize</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the size of the payload. Note that it is
+                            acceptable, and normal for this to be computed by the
+                            implementation from the ring item size and the body
+                            header size
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void*        </type>
+                          <methodname>payloadPointer</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the payload data.  The pointer
+                            allows the data to be edited as well as simply
+                            inspected.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t     </type>
+                          <methodname>barrierType</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the item's body header barrier type field.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that describes the type of the
+                            ring item: <literal>Event fragment</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string representation of the  contents of
+                            the ring item. This is used e.g. by
+                            <command>dumper</command>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>irtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType </parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                           Does nothing.  V10 ring items never have a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a <literal>nullptr</literal>.
+                            V10 ring items never have a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool</type>
+                          <methodname> hasBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns <literal>false</literal>.  v10 Ring items
+                            never have a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingPhysicsEventCountItem (v10)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingPhysicsEventCountItem (v10)</refname>
+              <refpurpose>Encapsulate trigger count ring item.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v10/RingPhysicsEventCountItem.h&gt;
+
+namespace v10 {
+
+class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
+{
+public:
+  CRingPhysicsEventCountItem();
+  CRingPhysicsEventCountItem(uint64_t count,
+			     uint32_t timeOffset);
+  CRingPhysicsEventCountItem(uint64_t count, 
+			     uint32_t timeoffset, 
+			     time_t stamp);
+  
+  virtual uint32_t getTimeOffset() const;
+  virtual void     setTimeOffset(uint32_t offset);
+  virtual float    computeElapsedTime() const;
+  virtual uint32_t getTimeDivisor() const;
+  
+
+  virtual time_t   getTimestamp() const;
+  virtual void     setTimestamp(time_t stamp);
+
+  virtual uint64_t getEventCount() const;
+  virtual void     setEventCount(uint64_t count);
+
+  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+  virtual void* getBodyHeader() const; 
+
+  virtual std::string typeName() const;	// Textual type of item.
+  virtual std::string toString() const; // Provide string dump of the item.
+
+};
+
+}
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    NSCLDAQ uses event count items to encapsulate the
+                    number of triggers that have been processed to date in a run.
+                    This can be used by sampling on-line analysis programs to
+                    determine the fraction of data actually analyzed.
+                    Specifically, the number of items processed by the analysis program
+                    divided by the number of triggers is the fraction of data.
+                  </para>
+                  <para>
+                    Note that the glom stage of the event builder emits event
+                    count items that treat each built event as a trigger.
+                    Those items have a body header that provides the source id
+                    the event builder has been told to emit.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <void />
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs an event count item with a count of zero,
+                            run time offset of zero and timestamp of the time
+                            the constructor was invoked.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>count</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>timeOffset</parameter>
+                        </methodparam>
+                        
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates an event count item where the trigger
+                            count is initialized to <parameter>count</parameter>.
+                            The run offset is given by <parameter>timeOffset</parameter>.
+                            Version 10 does not have the concept of a timestamp
+                            divisor. Therefore, <parameter>timeOffset</parameter>
+                            must be in units of seconds.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>count</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>timeoffset</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>time_t </type><parameter>stamp</parameter>
+                        </methodparam>
+                        
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Full construction of a physics event count item
+                            with a prototypical body header.  The additional
+                            parameter from the previous constructor are
+                            <parameter>stamp</parameter>, which provides
+                            the clock time at which the item was constructed.
+                           </para>
+                           <para>
+                            In comparing this constructor with those from
+                            other versions, note that v10 does not support
+                            body headers.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeOffset</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the raw time offset into the run at which
+                            this item was created.  Note that
+                            <methodname>computeElapsedTime</methodname> is the
+                            preferred method to get the elapsed run time.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setTimeOffset</methodname>
+                          <methodparam>
+                              <type>uint32_t</type><parameter> offset</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the object's raw run time offset.  This
+                            offset is uncorrected by the offset divisor.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float    </type>
+                          <methodname>computeElapsedTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Computes the elapsed time in the run at which this
+                            was emitted from the raw offset and the divisor.
+                            Units are seconds.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeDivisor</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the number of ticks in a second in the
+                            elapsed time raw value.  For version 10, this will
+                            always return <literal>1</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type> virtual time_t   </type>
+                          <methodname>getTimestamp</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Return the clock time associated with the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void     </type>
+                         <methodname>setTimestamp</methodname>
+                         <methodparam>
+                             <type>time_t </type><parameter>stamp</parameter>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Sets the clock time associated with the item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint64_t </type>
+                         <methodname>getEventCount</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Return the number of triggers documented by this
+                            item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void     </type>
+                         <methodname>setEventCount</methodname>
+                         <methodparam>
+                             <type>uint64_t </type><parameter>count</parameter>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            sets the item's trigger count.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   
+                   <varlistentry>
+                      <term>
+                        <methodsynopsis>
+                           <type>irtual std::string </type>
+                           <methodname>typeName</methodname>
+                           <void /><modifier>const</modifier>
+                        </methodsynopsis>
+                      </term>
+                      <listitem>
+                          <para>
+                            Returns a string indicating the type of ring item
+                            this object is:  <literal>Trigger count</literal>
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual std::string </type>
+                         <methodname>toString</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Return  a string that describes the contents of the
+                            item.  This is used by, e.g. <command>dumper</command>
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void </type>
+                         <methodname>setBodyHeader</methodname>
+                         <methodparam>
+                             <type>uint64_t </type><parameter>timestamp</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>sourceId</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>barrierType </parameter>
+                             <initializer>0</initializer>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            This is a no-op for version 10 as that format
+                            does not suport body headers.
+                          </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void* </type>
+                         <methodname>getBodyHeader</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns 
+                            <literal>nullptr</literal> as version 10 does not
+                            support body headers.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingScalerItem (v10)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingScalerItem</refname>
+              <refpurpose>Encapsulate a scaler counts ring item.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v10/CRingScalerItem.h&gt;
+
+namespace v10 {
+class CRingScalerItem : public ::CRingScalerItem
+{
+
+public:
+  CRingScalerItem(size_t numScalers);
+  CRingScalerItem(uint32_t startTime,
+		  uint32_t stopTime,
+		  time_t   timestamp,
+		  std::vector&lt;uint32_t&gt; scalers,
+      bool                  isIncremental = true,
+      uint32_t              sid = 0,
+      uint32_t              timeOffsetDivisor = 1);
+  
+  
+  virtual void     setStartTime(uint32_t startTime);
+  virtual uint32_t getStartTime() const;
+  virtual float    computeStartTime() const;
+
+  virtual void     setEndTime(uint32_t endTime);
+  virtual uint32_t getEndTime() const;
+  virtual float    computeEndTime() const;
+
+  virtual uint32_t getTimeDivisor() const;
+
+
+  virtual void     setTimestamp(time_t stamp);
+  virtual time_t   getTimestamp() const;
+  virtual bool isIncremental() const;
+  
+  virtual void     setScaler(uint32_t channel, uint32_t value);
+  virtual uint32_t getScaler(uint32_t channel) const;
+  virtual std::vector&lt;uint32_t&gt; getScalers() const;
+
+  virtual uint32_t getScalerCount() const;
+  virtual uint32_t getOriginalSourceId() const;
+
+
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(
+      uint64_t timestamp, uint32_t sourceId,
+      uint32_t barrierType = 0
+  );
+  virtual std::string typeName() const;
+  virtual std::string toString() const;
+
+};
+   
+}
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    This encapsulates a scaler ring item.  Scaler ring items contain
+                    periodically read scalers.   In V10, there are two types of
+                    underlying scaler ring items that, in V11 are coalesced into
+                    a single type.
+                  </para>
+                  <para>
+                    Scaler items of type <literal>v10::INCREMENTAL_SCALERS</literal>
+                    are scalers that have a run offset resolution of one second
+                    and are cleared as they are read.  Thus each scaler counter
+                    represents the new counts since the last read.
+                  </para>
+                  <para>
+                  <literal>v10::</literal>>
+                    In the original S800 readout system, it was necessary
+                    to introduce a second type: <literal>v10::TIMESTAMPED_NONINCR_SCALERS</literal>.
+                    These scalers are read cumulatively and therefore analysis software
+                    must be prepared to handle rollovers.  In addition,
+                    subsecond time resolution was possible and therefore,
+                    these items have a time offset divisor.
+                  </para>
+                  <para>
+                    The constructors of <classname>v10::CRingScalerItem</classname>
+                    use the <parameter>isIncremental</parameter>  flag in the
+                    full constructor to determine which underlying item type
+                    is desired.  Simple constructors always construct a
+                    <literal>v10::INCREMENTAL_SCALERS</literal> item.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>
+                    METHODS
+                </title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingScalerItem</methodname>
+                        <methodparam>
+                            <type>size_t </type><parameter>numScalers</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs a scaler item large enough to hold
+                            <parameter>numScalers</parameter> 32 bit scaler counters.
+                            The start/stop time offsets are both set to
+                            <literal>0</literal> as are the scaler values.
+                            This constructor unconditionally  produces a
+                            <literal>v10::INCREMENTAL_SCALERS</literal> which
+                            has no time offset divisor.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingScalerItem</methodname>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>startTime</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>stopTime,</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>time_t   </type><parameter>timestamp</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>std::vector&lt;uint32_t&gt; </type><parameter>scalers,</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>bool </type><parameter>isIncremental</parameter>
+                            <initializer>true</initializer>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>sid</parameter>
+                            <initializer>0</initializer>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t  </type><parameter>timeOffsetDivisor</parameter>
+                            <initializer>1</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Fully constructs a scaler item.  The scaler values
+                            are passed in via the <parameter>scalers</parameter>
+                            parameter.  The size of that vector determines
+                            the number of scalers the item will hold.
+                           </para>
+                           <para>
+                            The interval start and stop offsets are given
+                            by <parameter>startTime</parameter> and
+                            <parameter>stopTime</parameter> respecively.
+                            The optional <parameter>timeOffsetDivisor</parameter>
+                            parameter provides the number of ticks in these
+                            offset values per second providing support for
+                            sub-second time resolution.  This is only used
+                            if the scalers are non-incremental.  If scalers
+                            are incremental, the time offsets must always be
+                            in seconds.
+                           </para>
+                           <para>
+                            THe clock time is provided by
+                            <parameter>timestamp</parameter>.
+                           </para>
+                           <para>
+                            If <parameter>isIncremental</parameter> is false,
+                            the counts are assumed to accumulate for the length
+                            of the run.  Otherwise the counts in the scalers are
+                            assumed to represent the counts over the interval
+                            defined by <parameter>startTime</parameter>
+                            through <parameter>stopTime</parameter>.
+                            This parameter determines the scaler item type.
+                            If <literal>true</literal>, a
+                            <literal>v10::INCREMENTAL_SCALERS</literal>
+                            item is created.
+                            If <literal>false</literal>, a
+                            <literal>v10::TIMESTAMPED_NONINCR_SCALERS</literal>
+                            item is created.
+                           </para>
+                           <para>
+                            The
+                            <parameter>sid</parameter> parameter is ignored
+                            as source ids only were not yet introduced in any
+                            of the v10 ring items.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setStartTime</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>startTime</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the offset into the run at which the scaler counting
+                            interval began.
+        
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t</type>
+                          <methodname> getStartTime() </methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the offset into the run at which the
+                            scaler counting began.  See next method, however.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float    </type>
+                          <methodname>computeStartTime</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Uses the scaler interval start offset and the
+                            counting divisor to compute the start time offset
+                            in seconds.  Note that for
+                            <literal>v10::INCREMENTAL_SCALERS</literal>
+                            items the divisor is always treated as
+                            <literal>1</literal>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setEndTime</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>endTime</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the offset into the run of the end of the
+                            scaler counting interval
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getEndTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the offset into the run at which the scaler
+                            counting interval ended.  See, however the next
+                            method.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float    </type>
+                          <methodname>computeEndTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Using the end offset and the offset divisor computes
+                            and returns the number of seconds into the run at
+                            which the scaler counting interval ended.
+                            Note that for <literal>v10::INCREMENTAL_SCALERS</literal>
+                            the divisor is always treated as <literal>1</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeDivisor</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the number of ticks in the start and end
+                            time offsets that correspond to a second.
+                            For <literal>v10::INCREMENTAL_SCALERS</literal>
+                            items, this is always <literal>1</literal>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setTimestamp</methodname>
+                          <methodparam>
+                              <type>time_t </type><parameter>stamp</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the clock time associated with the item
+                            to be <parameter>stamp</parameter>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual time_t   </type>
+                          <methodname>getTimestamp</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the clock time associated with the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool </type>
+                          <methodname>isIncremental</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            If the scalers are cleared after each read, this
+                            returns <literal>true</literal>, if they are allowed
+                            to accumulate across counting intervales, this returns
+                            <literal>false</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setScaler</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>channel</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>value</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the counts for the scaler  selected by
+                            <parameter>channel</parameter> to
+                            <parameter>value</parameter>. If <parameter>channel</parameter>
+                            is out of range an <classname>std::out_of_range</classname>
+                            exception is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getScaler</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>channel</parameter>
+                          </methodparam>
+                          <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returs the value of the scaler selected by
+                            <parameter>channel</parameter>.  If
+                            <parameter>channel</parameter> is out of range a
+                            <classname>std::out_of_range</classname>
+                            exception is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::vector&lt;uint32_t&gt; </type>
+                          <methodname>getScalers</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a vector containing the values of the scaler
+                            counts in the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getScalerCount</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the number of scalers in the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type> virtual uint32_t </type>
+                          <methodname>getOriginalSourceId</methodname>
+                          <void /><modifier> const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the original source id field from the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns  <literal>nullptr</literal> since the
+                            v10 ring items don't have body headers.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>   uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Does nothing as the v10 ring items don't have body
+                            headers.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that identifies the type of the item:
+                            <literal>Scaler</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string tha details the contents of the
+                            item.  This is used by e.g. <command>dumper</command>
+                            to produce a formated dump of a stream of ring items.
                            </para>
                         </listitem>
                     </varlistentry>
