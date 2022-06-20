@@ -44,6 +44,7 @@
 #include "CRingTextItem.h"
 #include "CRingStateChangeItem.h"
 #include "CRingFragmentItem.h"
+#include <CUnknownFragment.h>
 #include <memory>
 
 // A comment about all the try catch blocks:
@@ -1366,7 +1367,7 @@ void v10factorytest::unknown_1()
     auto p = m_pFactory->makeUnknownFragment(
         12345, 1, 0, 0, nullptr
     );
-    ASSERT(p == nullptr);
+    EQ(v10::EVB_UNKNOWN_PAYLOAD, p->type());
 }
 void v10factorytest::unknown_2()
 {

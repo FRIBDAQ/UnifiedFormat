@@ -593,7 +593,8 @@ namespace v10 {
         
      }
      ///////////////////////////////////////////////////////////
-     // Unknown fragments are not supported in v10:
+     // Unknown fragments are not supported as a separate class in v10
+     // but editing the type gets you there.
      
      ::CUnknownFragment*
      RingItemFactory::makeUnknownFragment(
@@ -601,12 +602,20 @@ namespace v10 {
          uint32_t size, void* pPayload
      )
      {
-         return nullptr;
+         // Make a ring fragment item and edit the type:
+         
+         auto pResult = makeRingFragmentItem(
+            timestamp, sourceid, size, pPayload, barrier
+         );
+         v10::pRingItemHeader pHeader =
+            reinterpret_cast<v10::pRingItemHeader>(pResult->getItemPointer());
+         pHeader->s_type = v10::EVB_UNKNOWN_PAYLOAD;
+         return reinterpret_cast<::CUnknownFragment*>(pResult);
      }
      ::CUnknownFragment*
      RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
      {
-        throw std::bad_cast();
+        return reinterpret_cast<::CUnknownFragment*>(makeRingFragmentItem(rhs));
      }
      
      //////////////////////////////////////////////////////////
