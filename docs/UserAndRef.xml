@@ -2115,9 +2115,9 @@ public:
       virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType = 0) = 0;
       virtual void setBodyCursor(void* pNewCursor);
-      virtual void updateSize();            /* Set the header size given the cursor. */
-      virtual std::string typeName() const; // Textual type of item.
-      virtual std::string toString() const; // Provide string dump of the item.
+      virtual void updateSize();          
+      virtual std::string typeName() const; 
+      virtual std::string toString() const; 
       virtual void* appendBodyData(const void* pSrc, uint32_t nBytes);
 
 
@@ -9292,20 +9292,7 @@ p-&gt;setBodyCursor(pCursor);      // For whomever is filling the item body.
 
 
 namespace v11 {
-/*!  
-  This class is a base class for objects that encapsulate ring buffer items
-  (as defined in DataFormat.h).  One interesting wrinkle is used to optimize.
-  Most items will be small.  For bunches of small items, data allocation/free can
-  dominate the performance over the transfer of data into smaller items.
-  Therefore, each object will have a 'reasonably size' local, static storage
-  for data.  If the requested body size fits in this local static storage, it will
-  be used rather than doing an extra memory allocation on construction and free on
-  destruction.  
 
-  The body is meant to be filled in by getting the cursor, referencing/incrementing
-  it and then storing the cursor back.
-
-*/
 class CRingItem : public ::CRingItem
 {
   
@@ -10376,6 +10363,163 @@ public:
                            <para>
                             The output timestamp is the average of all timestamps
                             of the fragments that make up the event.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CPhysicsEventItem (v11)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CPhysicsEventItem (v11)</refname>
+              <refpurpose>Encapsulate a physics event.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v11/CPhysicsEventItem&gt;
+
+
+namespace v11 {
+
+class CPhysicsEventItem : public ::CPhysicsEventItem
+{
+public:
+  CPhysicsEventItem(size_t maxBody=8192);
+  CPhysicsEventItem(                                 // Our factory can use this.
+       uint64_t timestamp, uint32_t source, uint32_t barrier,
+       size_t maxBody=8192
+   );
+  virtual size_t getBodySize()    const;
+  virtual const void*  getBodyPointer() const;
+  virtual void* getBodyPointer();
+  virtual bool hasBodyHeader() const;
+  virtual uint64_t getEventTimestamp() const;
+  virtual uint32_t getSourceId() const;
+  virtual uint32_t getBarrierType() const;
+
+  virtual std::string typeName() const;	// Textual type of item.
+  virtual std::string toString() const; // Provide string dump of the item.
+
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(
+        uint64_t timestamp, uint32_t sourceId,
+        uint32_t barrierType = 0
+  );
+
+ 
+ 
+};
+}
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    Ring item to encapsulate the application
+                    specific physics event data ring item.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CPhysicsEventItem</methodname>
+                        <methodparam>
+                            <type>size_t </type><parameter>maxBody</parameter>
+                            <initializer>8192</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs an item for a single physics trigger.
+                            Note that the storage size is statically allocated
+                            with <parameter>maxBody</parameter> bytes of payload
+                            data.  The ring item header type field is initialized
+                            to <literal>PHYSICS_EVENT</literal>.
+                           </para>
+                           <para>
+                            Upon creating the item, if a body header
+                            is required, <methodname>setBodyHeader</methodname>
+                            is invoked.  <methodname>getBodyCursor</methodname>
+                            is then used get a pointer into the object at where
+                            the physics data should be put.  After incrementing
+                            this pointer by an appopriate amount,
+                            calls to <methodname>setBodyCursor</methodname>,
+                            folowed by <methodname>updateSize</methodname>
+                            are required to set the size field of the
+                            ring item header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that represents the ring item type:
+                            <literal>Event</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that represents the contents of the
+                            event.  This is used, e.g., by the
+                            <command>dumper</command> command to render human
+                            readable data.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void*</type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the body header for the event.
+                            If the event has no body header,
+                            <literal>nullptr</literal> is returned. Note that
+                            the base class <methodname>hasBodyHeader</methodname>
+                            can be called to determine if the ring item type has
+                            a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type> uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType </parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Inserts a new or modifies an existing body header of the event.
                            </para>
                         </listitem>
                     </varlistentry>
