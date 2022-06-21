@@ -9954,6 +9954,166 @@ public:
             </refsect1>
                      
         </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CDataFormatItem (v11)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CDataFormatItem (v11)</refname>
+              <refpurpose>Provide the format version of subsequent data</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v11/CDataFormatITem.h&gt;
+
+namespace v11 {
+
+/
+class CDataFormatItem : public ::CDataFormatItem
+{
+    // Canonical methods:
+public:
+    CDataFormatItem();
+    virtual ~CDataFormatItem();
+    
+    virtual uint16_t getMajor() const;
+    virtual uint16_t getMinor() const;
+    
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+    
+    virtual bool hasBodyHeader() const;
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+    
+    
+    
+};
+}
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    At the beginning of a run acquired in NSCLDAQ-11,
+                    A data format item is emitted specifying that the
+                    data format is that of NSCLDAQ-11.  These items, in
+                    addition to a ring item header and an indicator that there
+                    is no body header, contain a major and minor version number.
+                  </para>
+                  <para>
+                    In practice the minor version number is 0 and is not important
+                    for decoding ring items.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                   <varlistentry>
+                      <term><constructorsynopsis>
+                          <methodname>CDataFormatItem</methodname>
+                        <void />
+                      </constructorsynopsis></term>
+                      <listitem>
+                          <para>
+                            The constructor fills in the item with the
+                            major and minor vesions that define the data
+                            format.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint16_t </type>
+                         <methodname>getMajor </methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns the major version of the data format.  In
+                            practice, this is sufficient to establish the data
+                            format.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint16_t </type>
+                         <methodname>getMinor</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns the minor version of the data format.  In practice
+                            this is seldom necessary.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual std::string </type>
+                         <methodname>typeName</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Return the string:
+                            <literal>Ring Item format version</literal>
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual std::string </type>
+                         <methodname>toString</methodname>
+                         <void /> <modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns a human readable string that describes the
+                            contents of the ring item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void* </type>
+                         <methodname>getBodyHeader</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns <literal>nullptr</literal> since these items
+                            never have a body header.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void </type>
+                         <methodname>setBodyHeader</methodname>
+                         <methodparam>
+                             <type>uint64_t </type><parameter>timestamp</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>sourceId</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>barrierType </parameter>
+                             <initializer>0</initializer>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            No-op since these items don't have body headers.
+                       </para>
+                    </listitem>
+                   </varlistentry>                    
+                </variablelist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
