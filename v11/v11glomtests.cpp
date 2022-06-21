@@ -95,8 +95,7 @@ void v11glomtest::bodyhdr_1()
 void v11glomtest::bodyhdr_2()
 {
     v11::CGlomParameters item(100, true, CGlomParameters::last);
-    CPPUNIT_ASSERT_THROW(
-        item.setBodyHeader(200, 1, 1),
-        std::logic_error
+    CPPUNIT_ASSERT_NO_THROW(
+        item.setBodyHeader(200, 1, 1)
     );
 }

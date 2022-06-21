@@ -186,7 +186,7 @@ void
 CGlomParameters::setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                          uint32_t barrierType)
 {
-    throw std::logic_error("v11::CGlomParameters cannot have body headers");
+    
 }
 
 }
