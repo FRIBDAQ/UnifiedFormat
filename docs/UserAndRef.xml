@@ -12446,6 +12446,58 @@ public:
                 </variablelist>
             </refsect1>
         </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CUnknownFragment (v11)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CUnknownFragment (v11)</refname>
+              <refpurpose>Event buider fragments with non ringitem payloads.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v11/CUnknownFragment.h&gt;
+
+namespace v11 {
+
+class CUnknownFragment : public ::CUnknownFragment
+{
+    
+public:
+    CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+                     uint32_t size, void* pPayload);
+    virtual const void*  getBodyPointer() const;
+    virtual void* getBodyPointer();
+    virtual bool hasBodyHeader() const;
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0) ;
+    
+
+    std::string typeName() const;
+    virtual std::string toString() const;
+    
+};
+
+}
+
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    The way to think about this item is as a
+                    <classname>CRingFragmentItem</classname> whose payload
+                    is not know to be a ring item itself.  It has all of the
+                    same methods with all the same meanings as tha class, however
+                    the item type is
+                    <literal>v11::EVB_UNKNOWN_PAYLOAD</literal>.
+                  </para>
+                  
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
