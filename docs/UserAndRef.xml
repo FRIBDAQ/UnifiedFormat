@@ -10792,6 +10792,364 @@ public:
                 </variablelist>
             </refsect1>
         </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CRingPhysicsEventCountItem (v11)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CRingPhysicsEventCountItem (v11)</refname>
+              <refpurpose>Encapsulate trigger count ring item.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v11/CRingPhysicsEventCountItem.h&gt;
+
+namespace v11 {
+
+class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
+{
+
+public:
+  CRingPhysicsEventCountItem();
+  CRingPhysicsEventCountItem(uint64_t count,
+			     uint32_t timeOffset, unsigned divisor);
+  CRingPhysicsEventCountItem(uint64_t count,
+			     uint32_t timeOffset, time_t stamp, unsigned divisor);
+  CRingPhysicsEventCountItem(uint64_t count, 
+			     uint32_t timeoffset, 
+			     time_t stamp, uint64_t timestamp, uint32_t sid, unsigned divisor = 1,
+           uint32_t barrier=0);
+  virtual uint32_t getTimeOffset() const;
+  virtual void     setTimeOffset(uint32_t offset);
+  virtual float    computeElapsedTime() const;
+  virtual uint32_t getTimeDivisor() const;
+
+  virtual time_t   getTimestamp() const;
+  virtual void     setTimestamp(time_t stamp);
+
+  virtual uint64_t getEventCount() const;
+  virtual void     setEventCount(uint64_t count);
+
+  virtual uint32_t getOriginalSourceId() const;
+  
+  virtual void*     getBodyPointer() ;
+  virtual const void* getBodyPointer() const;
+  virtual size_t  getBodySize() const;
+  virtual bool hasBodyHeader() const;
+  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+  virtual void* getBodyHeader() const; 
+
+
+  virtual std::string typeName() const;	
+  virtual std::string toString() const; 
+
+
+};
+}                                      // v
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    Periodically the NSCLDAQ readout frameworks emit ring items
+                    that document the number of triggers that have resulted in
+                    data.  Similarly, the glom stage of the event builder outputs
+                    ring items that document the number of events it has built.
+                    These are intended to be used by online software that may,
+                    for performance reasons, have to sample data from the
+                    online data flow.
+                  </para>
+                  <para>
+                    A legitimate question users may ask of such program is
+                    "What fraction of the data has it analyzed this run?"
+                    Trigger count ring items allow this question to be answered,
+                    such programs can simply count the number of physics event
+                    ring items they've processed and, when they see a trigger
+                    count ring item, divide that by the number of triggers.
+                  </para>
+                  <para>
+                    The <classname>CRingPhysicsEventCountItem</classname>
+                    class provides a class that, when instantiated, can encapsulate
+                    a trigger count ring item.
+                  </para>
+                  <para>
+                    Note that <classname>CRingPhysicsEventCountItem</classname>
+                    objects may have body headers.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <void />
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs an event count item with a count of zero,
+                            run time offset of zero and timestamp of the time
+                            the constructor was invoked.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>count</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>timeOffset</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>unsigned </type><parameter>divisor</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Creates an event count item where the trigger
+                            count is initialized to <parameter>count</parameter>.
+                            The run offset is given by <parameter>timeOffset</parameter>
+                            with <parameter>divisor</parameter> ticks per second.
+                            The clock time is set to the construction time of
+                            the object.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingPhysicsEventCountItem</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>count</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>timeoffset</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>time_t </type><parameter>stamp</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>sid</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type> unsigned </type><parameter>divisor</parameter>
+                            <initializer>1</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Full construction of a physics event count item
+                            with a prototypical body header.  The additional
+                            parameter from the previous constructor are
+                            <parameter>stamp</parameter>, which provides
+                            the clock time at which the item was constructed and
+                            <parameter>sid</parameter> which provides the source
+                            id for the original source id field (if any) of the
+                            item.  
+                           </para>
+                           <para>
+                            The original source id allows analysis programs to
+                            track the originating data source for this item.
+                            Note that the constructor does not produce a
+                            body  header but one can be added with
+                            <methodname>setBodyHeader</methodname>.
+                            
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeOffset</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the raw time offset into the run at which
+                            this item was created.  Note that
+                            <methodname>computeElapsedTime</methodname> is the
+                            preferred method to get the elapsed run time.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setTimeOffset</methodname>
+                          <methodparam>
+                              <type>uint32_t</type><parameter> offset</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the object's raw run time offset.  This
+                            offset is uncorrected by the offset divisor.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float    </type>
+                          <methodname>computeElapsedTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Computes the elapsed time in the run at which this
+                            was emitted from the raw offset and the divisor.
+                            Units are seconds.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeDivisor</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the number of ticks in a second in the
+                            elapsed time raw value.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type> virtual time_t   </type>
+                          <methodname>getTimestamp</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Return the clock time associated with the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void     </type>
+                         <methodname>setTimestamp</methodname>
+                         <methodparam>
+                             <type>time_t </type><parameter>stamp</parameter>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Sets the clock time associated with the item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint64_t </type>
+                         <methodname>getEventCount</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Return the number of triggers documented by this
+                            item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void     </type>
+                         <methodname>setEventCount</methodname>
+                         <methodparam>
+                             <type>uint64_t </type><parameter>count</parameter>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            sets the item's trigger count.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint32_t </type>
+                         <methodname>getOriginalSourceId</methodname>
+                         <void /><modifier> const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns the source id of the data source that emitted
+                            this object.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term>
+                        <methodsynopsis>
+                           <type>irtual std::string </type>
+                           <methodname>typeName</methodname>
+                           <void /><modifier>const</modifier>
+                        </methodsynopsis>
+                      </term>
+                      <listitem>
+                          <para>
+                            Returns a string indicating the type of ring item
+                            this object is:  <literal>Trigger count</literal>
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual std::string </type>
+                         <methodname>toString</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Return  a string that describes the contents of the
+                            item.  This is used by, e.g. <command>dumper</command>
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void </type>
+                         <methodname>setBodyHeader</methodname>
+                         <methodparam>
+                             <type>uint64_t </type><parameter>timestamp</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>sourceId</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>barrierType </parameter>
+                             <initializer>0</initializer>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Adds a new body header or modifies the contents of the
+                            existing body header.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void* </type>
+                         <methodname>getBodyHeader</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns a pointer to the body header or
+                            <literal>nullptr</literal> if the object has no
+                            body header.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
