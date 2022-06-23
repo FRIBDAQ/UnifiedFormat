@@ -13655,6 +13655,597 @@ if (pThis-&gt;v12::CRingItem::hasBodyHeader()) {
                     This is not for the faint at heart.
                   </para>
             </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term>
+                        <constructorsynopsis>
+                            <methodname>CRingItem</methodname>
+                            <methodparam>
+                                <type>uint16_t</type><parameter>type</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>size_t </type><parameter>maxBody</parameter>
+                                <initializer>CRingItemStaticBufferSize - 10</initializer>
+                            </methodparam>
+                        </constructorsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Constructor.  <parameter>type</parameter> will be stored
+                            in the ring item header's type field.  Note that
+                            the header form is common for all formats.
+                            The <parameter>type</parameter> is 16 bit wide because in
+                            the original design it was also used to determine the
+                            byte order of the originator.  Specifically, if the
+                            'low order' 16 bits of a type field were zero, the
+                            byte order of the originator was the opposite of the
+                            consumer.  Now that little-endianess has won the
+                            byte order wars and big-endinaness only appears
+                            vestigially in network byte ordering,  We define
+                            the byte ordering of Ring items to be little-endian.
+                           </para>
+                           <para>
+                            <parameter>maxBody</parameter> determines the maximum
+                            number of bytes the internal storage for the ring item
+                            can hold in the body (the part following the header).
+                            Note that the design of <classname>CRingItem</classname>
+                            includes a decently sized static block of data.
+                            If this value indicates the data will fit in that
+                            block, no dynamic memory allocation is required and
+                            that block is used.  If this value indicates that
+                            the data won't fit, a block is dynamically allocated
+                            and used.  The intent is to minimize the costly
+                            set of dynamic memory allocations/deallocations
+                            needed if all <classname>CRingItem</classname>
+                            constructions dynamically allocated the needed
+                            data.
+                           </para>
+                           <para>
+                            The default value for <parameter>maxBody</parameter>
+                            allows callers to use the static buffer and is
+                            defined in <filename>CRingItem.h</filename>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <constructorsynopsis>
+                            <methodname>CRingItem</methodname>
+                            <methodparam>
+                                <type>v11::pRingItem </type><parameter>pItem</parameter>
+                            </methodparam>
+                        </constructorsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Wraps a <classname>CRingItem</classname> object
+                            around a raw ring item.  The type
+                            <type>pRingItem</type> is defined in
+                            <filename>DataFormat.h</filename>.
+                           </para>
+                           <para>
+                            <parameter>pItem</parameter> is used to size
+                            the ring item and copied into the data storage
+                            region of the item.  The body cursor is set to point
+                            after the ring item data.  This allows the
+                            item to be mutated (via <methodname>getBodyPointer</methodname>)
+                            and to be extended (via <methodname>getBodyCursor</methodname>,
+                            <methodname>setBodyCursor</methodname>, and <methodname>updateSize</methodname>).
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual size_t </type>
+                           <methodname>getStorageSize</methodname>
+                           <void />
+                           <modifier>const</modifier>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Returns the capacity of the block of data that is being used
+                            to store the ring item.   Can be used to determine
+                            if sufficient storage has been allocated to
+                            hold the desired ring item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual size_t </type>
+                           <methodname>getBodySize</methodname>
+                           <void />
+                           <modifier>const</modifier>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Returns the current size, in bytes,
+                            of the ring item body.
+                            This computes the number of bytes between the
+                            pointers returned by
+                            <methodname>getBodyCursor</methodname> and the
+                            <methodname>geBodyPointer</methodname>.  For it to be
+                            accurate, <methodname>getBodyCursor</methodname>
+                            must be updated (via <methodname>setBodyCursor</methodname>)
+                            to point past the body of the ring item as it is
+                            so far.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual const void*  </type>
+                           <methodname>getBodyPointer</methodname>
+                           <void /><modifier>const</modifier>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the body of the item. Since
+                            the pointer is const, this is intended to allow
+                            read access.  Note that the concept of a ring item
+                            <firstterm>body</firstterm> is not that straightforward.
+                            V11 support returns either a pointer after the items' body
+                            header or after the word that indcates there
+                            is no body header -- that is a pointer to the payload
+                            section of the ring item data.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type> virtual void* </type>
+                           <methodname>getBodyPointer</methodname>
+                           <void />
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Same as above except that the pointer can be used
+                            to modify the body contents.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>void*  </type>
+                          <methodname>getBodyCursor</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the body cursor of the item. When a ring item
+                            is created, a pointer, called the body cursor is
+                            created which points to the first free byte of memory
+                            into which data can be appended to the ring item.
+                            As data are appended to the ring item, the
+                            object's body cursor should be updated with
+                            <methodname>setBodyCursor</methodname>, at some point,
+                            when the ring item has been completely built,
+                            <methodname>updateSize</methodname> should be called
+                            to compute the ring item's size and store it in the
+                            size field of the ring item's header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>pRingItem  </type>
+                          <methodname>getItemPointer</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the ring item as encapsulated
+                            by this class.  Note that <type>pRingItem</type>
+                            is defined in <filename>v11/DataFormat.h</filename>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>const RingItem*  </type>
+                          <methodname>getItemPointer</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Same as above but the pointer only allows read access
+                            to the contents of the ring item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>uint32_t </type>
+                          <methodname>type</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the full 32 bit type field of the
+                            ring item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>uint32_t </type>
+                          <methodname>size</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the size field of the header. Note that unless
+                            <methodname>updateSize</methodname> has been called,
+                            this value is not a reliable measure of the number
+                            of bytes that make up the ring item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool </type>
+                          <methodname>mustSwap</methodname>
+                          <void /> <modifier> const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns <literal>false</literal>.  All data is
+                            now specified be little endian as are all computing
+                            systems processing that data.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool </type>
+                          <methodname>hasBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns <literal>true</literal> if the ring item
+                            has a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the body header of the item
+                            if it has one.  If it does not returns a
+                            <literal>nullptr</literal>. 
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                           <type>virtual uint64_t </type>
+                           <methodname>getEventTimestamp</methodname>
+                           <void /> <modifier>const</modifier>
+                        </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Returns the event/fragment timestamp stored
+                            in the body header of the ring item.  If the ring
+                            item has no body header,
+                            <classname>std::logic_error</classname> is thrown.
+                            You can use e.g. <methodname>hasBodyHeader</methodname>
+                            to test for the presence of a body header in the
+                            item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getSourceId</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Retrieves the source id from the ring item's body header.
+                            If the ring item does not have a body header,
+                            <classname>std::logic_error</classname> is throw
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getBarrierType</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the barrier type field from the item's
+                            body header.   If the ring item does not have a body
+                            header, <classname>std::logic_error</classname>
+                            is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>
+                        <methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis>
+                       
+                       </term>
+                       <listitem>
+                           <para>
+                            If the item does not have a body header (yet),
+                            data are moved to reserve space for it just following
+                            the ring item header.  The body header is filled
+                            in with data from the parameters
+                            <parameter>timestamp</parameter>,
+                            <parameter>sourceId</parameter> and
+                            <parameter>barrierType</parameter>
+                           </para>
+                           <para>
+                            If the item already has a body header, its contents
+                            are modified in accordance with the parameters.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyCursor</methodname>
+                          <methodparam>
+                              <type>void* </type><parameter>pNewCursor</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Updates the internal body cursor of the object
+                            with <parameter>pNewCursor</parameter>.  If coupled
+                            with a call to <methodname>updateSize</methodname>,
+                            this causes the size field of the ring item header
+                            to be computed and updated.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void</type>
+                          <methodname>updateSize</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Treating the current body cursor value as a pointer
+                            to the byte following the current contents of the
+                            ring item, the size of the ring item is computed
+                            and stored in the size field of the ring item
+                            header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /> <modifier>() const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            The base class returns the string:
+                            <literal>Unknown</literal> followed by the parenthesized
+                            numeric
+                            type from the ring item header in hexadecimal.
+                            Derived classes are
+                            expected to return a text string which indicates the
+                            type of the ring item. 
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a human readable stringified dump
+                            of the body of the item.  In this case this is just
+                            a byte by byte dump.  Derived classes are expected
+                            to return something a bit more meaningful.  The
+                            NSCLDAQ dumper, e.g. uses this string to
+                            dump items it encounters.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>appendBodyData</methodname>
+                          <methodparam>
+                              <type>const void* </type><parameter>pSrc</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>nBytes
+                              </parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Appends the <parameter>nBytes</parameter> bytes
+                            of data pointed to by <parameter>pSrc</parameter>
+                            to the ring item.  The data are placed where
+                            the current body cursor is pointing.  The body cursor
+                            is updated and the size recomputed.
+                           </para>
+                           <para>
+                            This is equivalent to the following code fragment:
+                           </para>
+                           <informalexample>
+                            <programlisting>
+  uint8_t* p = reinterpret_cast&lt;uint8_t*&gt;(getBodyCursor());
+  memcpy(p, pSrc, nBytes);
+  p += nBytes;
+  setBodyCursor(p);
+  updateSize();
+  return p;
+
+                            </programlisting>
+                           </informalexample>
+                           <para>
+                            The ring item object must have the capacity for the
+                            additional bytes of data.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CAbnormalEndItem (v12)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CAbnormalEndItem (v12)</refname>
+              <refpurpose>Encapsulate abnormal end run item.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;CAbnormalEndItem.h&gt;
+
+namespace v12 {
+class CAbnormalEndItem : public ::CAbnormalEndItem
+{
+    CAbnormalEndItem();
+    virtual void* getBodyHeader() const;
+    virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+};
+
+}
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    Abnormal end runs are sent through the data flow to indicate
+                    that a readout failed and that the run must be ended in an
+                    incorrect manner.  The item itself only consists of a ring
+                    item header (defined in <filename>v12/DataFormat.h</filename>),
+                    and a uint32_t containing <literal>sizeof(uint32_t)</literal>
+                    indicating there is no body header in the item.
+                  </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CAbnormalEndItem</methodname>
+                        <void />
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns <literal>nullptr</literal>
+                            since these items don't have body headers.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void  </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Since the <classname>CAbnormalEndItem</classname>
+                            never has a body header, this is a no-op.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the string
+                            <literal>Abnormal End</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the string
+                            <literal>Abnormal End\n</literal> where the
+                            <literal>\n</literal> should be interpreted to mean
+                            a new line.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
         </refentry>
        </section>
     </chapter>
