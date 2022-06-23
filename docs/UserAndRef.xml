@@ -14681,7 +14681,7 @@ public:
                        <term><literal>average</literal></term>
                        <listitem>
                            <para>
-                            The output timestamp is the average of all timestamps
+                            The output time stamp is the average of all timestamps
                             of the fragments that make up the event.
                            </para>
                         </listitem>
@@ -14689,7 +14689,177 @@ public:
                 </variablelist>
             </refsect1>
         </refentry>
-        
+        <refentry>
+           <refmeta>
+              <refentrytitle>CPhysicsEventItem  (v12)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CPhysicsEventItem  (v12)</refname>
+              <refpurpose>Encapsulate physics event data.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v12/CPhysicsEventItem&gt;
+
+namespace v12 {
+
+
+
+class CPhysicsEventItem : public ::CPhysicsEventItem
+{
+public:
+    CPhysicsEventItem(size_t maxBody=8192);
+    CPhysicsEventItem(uint64_t ts, uint32_t sid, uint32_t barrierType, size_t maxBody=8192);
+    virtual ~CPhysicsEventItem();
+  
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
+    
+    size_t        getBodySize() const;
+    virtual void* getBodyPointer();
+    virtual const void* getBodyPointer() const;
+    virtual bool  hasBodyHeader() const;
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(
+        uint64_t tstamp, uint32_t sourceId, uint32_t barrierType
+    );
+    virtual uint64_t getEventTimestamp() const;
+    virtual uint32_t getSourceId() const;
+    virtual uint32_t getBarrierType() const;
+ 
+  
+};
+
+}
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    This class contains the data taken in response to a trigger.
+                    We leave the concept of trigger delibrarately vague.
+                    The format of the body of the item is not defined as it
+                    is completely application dependent. 
+                  </para>
+                  <para>
+                    Normally, one wil instantiate an object in response to a trigger.
+                    <methodname>getBodyCursor</methodname> is then used to determine
+                    Where data can be stored.  After the data are stored
+                    <methodname>setBodyCursor</methodname> should be updated
+                    to reflect the new insertion position.
+                    <methodname>updateSize</methodname> is then called to
+                    set the size of the ring item in the ring item header.
+                  </para>
+                  <para>
+                    <classname>CPhysicsEventItem</classname> objects may or may not
+                    have body headers.  However if event bulidng is done;
+                    the body header should be set either at construction time or
+                    via a call to <methodname>setBodyHeader</methodname>.
+                    </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CPhysicsEventItem</methodname>
+                        <methodparam>
+                            <type>size_t </type><parameter>maxBody</parameter>
+                            <initializer>8192</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs an item for a single physics trigger.
+                            Note that the storage size is statically allocated
+                            with <parameter>maxBody</parameter> bytes of payload
+                            data.  The ring item header type field is initialized
+                            to <literal>PHYSICS_EVENT</literal>.
+                           </para>
+                           <para>
+                            Upon creating the item, if a body header
+                            is required, <methodname>setBodyHeader</methodname>
+                            is invoked.  <methodname>getBodyCursor</methodname>
+                            is then used get a pointer into the object at where
+                            the physics data should be put.  After incrementing
+                            this pointer by an appopriate amount,
+                            calls to <methodname>setBodyCursor</methodname>,
+                            folowed by <methodname>updateSize</methodname>
+                            are required to set the size field of the
+                            ring item header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that represents the ring item type:
+                            <literal>Event</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that represents the contents of the
+                            event.  This is used, e.g., by the
+                            <command>dumper</command> command to render human
+                            readable data.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void*</type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the body header for the event.
+                            If the event has no body header,
+                            <literal>nullptr</literal> is returned. Note that
+                            the base class <methodname>hasBodyHeader</methodname>
+                            can be called to determine if the ring item type has
+                            a body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type> uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType </parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Inserts a new or modifies an existing body header of the event.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
