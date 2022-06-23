@@ -14247,6 +14247,449 @@ class CAbnormalEndItem : public ::CAbnormalEndItem
                 </variablelist>
             </refsect1>
         </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CDataFormatItem (v12)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CDataFormatItem (v12)</refname>
+              <refpurpose>Document the version of NSCLDAQ format that follows</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v12/CDataFormatItem.h&gt;
+namespace v12 {
+class CDataFormatItem : public ::CDataFormatItem
+{
+    // Canonical methods:
+public:
+    CDataFormatItem();
+    
+    virtual uint16_t getMajor() const;
+    virtual uint16_t getMinor() const;
+
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+    
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+    
+    
+};
+}                                // v12 namespace
+
+                    </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    Data format items are emitted by data generators to document
+                    the format of data they are inserting into the event stream.
+                    These ring items are relatively minimal, having a header,
+                    a uint32_t containing <literal>sizeof(uint32_t)</literal>
+                    and a pair of uint16_t's containing the major and minor
+                    versions of the version.
+                  </para>
+                  <para>
+                    In practice, the minor version is unimportant
+                 </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                   <varlistentry>
+                      <term><constructorsynopsis>
+                          <methodname>CDataFormatItem</methodname>
+                        <void />
+                      </constructorsynopsis></term>
+                      <listitem>
+                          <para>
+                            The constructor fills in the item with the
+                            major and minor vesions that define the data
+                            format.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint16_t </type>
+                         <methodname>getMajor </methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns the major version of the data format.  In
+                            practice, this is sufficient to establish the data
+                            format.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual uint16_t </type>
+                         <methodname>getMinor</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns the minor version of the data format.  In practice
+                            this is seldom necessary.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual std::string </type>
+                         <methodname>typeName</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Return the string:
+                            <literal>Ring Item format version</literal>
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual std::string </type>
+                         <methodname>toString</methodname>
+                         <void /> <modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns a human readable string that describes the
+                            contents of the ring item.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void* </type>
+                         <methodname>getBodyHeader</methodname>
+                         <void /><modifier>const</modifier>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            Returns <literal>nullptr</literal> since these items
+                            never have a body header.
+                       </para>
+                    </listitem>
+                   </varlistentry>
+                   <varlistentry>
+                      <term><methodsynopsis>
+                         <type>virtual void </type>
+                         <methodname>setBodyHeader</methodname>
+                         <methodparam>
+                             <type>uint64_t </type><parameter>timestamp</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>sourceId</parameter>
+                         </methodparam>
+                         <methodparam>
+                             <type>uint32_t </type><parameter>barrierType </parameter>
+                             <initializer>0</initializer>
+                         </methodparam>
+                      </methodsynopsis></term>
+                      <listitem>
+                          <para>
+                            No-op since these items don't have body headers.
+                       </para>
+                    </listitem>
+                   </varlistentry>                    
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+           <refmeta>
+              <refentrytitle>CGLomParameters (v12)</refentrytitle>
+              <manvolnum>3format</manvolnum>
+           </refmeta>
+           <refnamediv>
+              <refname>CGLomParameters (v12)</refname>
+              <refpurpose>Document event builder parameters.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;v12/CGlomParameters.h&gt;
+
+namespace v12 {
+
+
+class CGlomParameters : public ::CGlomParameters
+{
+    
+    // Canonicals:
+    
+public:
+    CGlomParameters(uint64_t interval, bool isBuilding, TimestampPolicy policy);
+   virtual uint64_t coincidenceTicks() const;
+   virtual bool     isBuilding() const;
+   virtual TimestampPolicy timestampPolicy() const;
+   virtual std::string typeName() const;
+   virtual std::string toString() const;
+   virtual void* getBodyHeader() const;
+   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                         uint32_t barrierType = 0);
+
+};
+
+
+}                   // v12 namespac.
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                     <title>DESCRIPTION</title>
+                  <para>
+                    <classname>v12::CGlomParameters</classname>
+                    items are written by the glom stage of the event builder
+                    pipeline.  They describe the parameters glom is using to
+                    buid events from the ordered stream of fragments it receives
+                    on <literal>stdin</literal>.
+                  </para>
+                  <para>
+                    Three parameters determine how glom operates:
+                  </para>
+                  <variablelist>
+                    <varlistentry>
+                       <term>build flag</term>
+                       <listitem>
+                           <para>
+                            If true (normal) glom builds events, if not,
+                            then for diagnostic purposes, glom creates events
+                            out of single fragments.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>coincidence interval</term>
+                       <listitem>
+                           <para>
+                            If the build flag is set, this is the number
+                            of timestamp ticks that define a n event.
+                            Glom operates by accepting a 'first fragment' to begin
+                            an event and then accepting additional fragments until
+                            the timestamp differnence with the first fragment is
+                            greater than the coincidence interval.  At that point
+                            the accumulated fragments constitute and event and that
+                            fragment becomes a new first fragment for the next event.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term>timestamp policy.</term>
+                       <listitem>
+                           <para>
+                            Determines how the timestamp for output events are determined
+                            from the fragments that make up the event.  There are
+                            three policies:  earliest - timestamps are taken from
+                            the first fragment's timestamp, latest - timetamps are
+                            taken from the last fragment's timestamps, and
+                            average - the output timestamp is the average of all
+                            timestamps in the fragment.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                  </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CGlomParameters</methodname>
+                        <methodparam>
+                            <type>uint64_t </type><parameter>interval</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>bool </type><parameter>isBuilding</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>TimestampPolicy </type><parameter>policy</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Fully parameterized construction.  <parameter>interval</parameter>
+                            is the coincidence interval used to build events from
+                            the sorted fragments.  If <parameter>isBuilding</parameter>
+                            is false, the output stream is just a stream of single
+                            fragment events, regardless of the coincidence interval.
+                            This is intended for use in testing only.
+                            <parameter>>policy</parameter> is the policy used to derive
+                            timestamps of the output event stream from the
+                            fragments that compose them.
+                            See <literal>DATA TYPES and CONSTANTS</literal>
+                            for valid values and their meanings.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint64_t </type>
+                          <methodname>coincidenceTicks</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the coincidence interval stored in the object.
+                            The units of this value are timestamp ticks.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool     </type>
+                          <methodname>isBuilding</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the state of the object's building flag.
+                            If true, the data are event built. If not the
+                            event builder was run in a test mode where
+                            each event output consists of a single fragment.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual TimestampPolicy </type>
+                          <methodname>timestampPolicy</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the timestamp policy used to derive the
+                            timestamp of output events.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that identifies the ring item type:
+                            <literal>Glom Parameters</literal>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a stringified representation of the object.
+                            Intended for use in e.g. <command>dumper</command>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the object's body header.
+                            Since glom parameter items dont, at present,
+                            have body headers, expect a
+                            <literal>nullptr</literal> to be returned.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t sourceId</type><parameter></parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis>
+                       </term>
+                       <listitem>
+                           <para>
+                            Sets/adds a body header to the item.  Since
+                            glom parameter items don't have a body header,
+                            this is a no-op.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>DATA TYPES and CONSTANTS</title>
+                <para>
+                    The <classname>CGlomParameters</classname> class provides
+                    a single data type:  <type>TimestampPolicy</type>.  THe
+                    event builder in NSCLDAQ supports hierarchical event building.
+                    This means that the output of an event builder can be input
+                    for a subsequent event builder in the data acquisition
+                    data flow.
+                </para>
+                <para>
+                    This allows detector systems which require an event builder
+                    of their own to be run together with other detector systems
+                    by simply providing a second level event builder to glue together
+                    events from each detector subsystem into coincident events.
+                </para>
+                <para>
+                    This ability for hierarchical event building requires that
+                    output events are also given a timestamp.  The
+                    <type>TimestampPolicy</type> data type provides a type that
+                    specifies how this output timestamp is determined.  It
+                    can have the following values:
+                </para>
+                <variablelist>
+                    <varlistentry>
+                       <term><literal>first</literal></term>
+                       <listitem>
+                           <para>
+                            The output timestamp is taken from the earliest (first)
+                            fragment's timestamp.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><literal>last</literal></term>
+                       <listitem>
+                           <para>
+                            The output timestamp is taken from the latest (last)
+                            fragment's timestamp.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><literal>average</literal></term>
+                       <listitem>
+                           <para>
+                            The output timestamp is the average of all timestamps
+                            of the fragments that make up the event.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        
        </section>
     </chapter>
 </book>
