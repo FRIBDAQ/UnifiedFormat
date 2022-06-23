@@ -14941,202 +14941,203 @@ public:
                     This is a rarely, if ever, used class/object.
                   </para>
             </refsect1>
-        </refentry>
-        <refsect1>
-                <title>METHODS</title>
-                <variablelist>
-                    <varlistentry>
-                       <term><constructorsynopsis>
-                           <methodname>CRingFragmentItem</methodname>
-                        <methodparam>
-                            <type>uint64_t </type><parameter>timestamp</parameter>
-                        </methodparam>
-                        <methodparam>
-                            <type>uint32_t </type><parameter>source</parameter>
-                        </methodparam>
-                        <methodparam>
-                            <type>uint32_t </type><parameter>payloadSize</parameter>
-                        </methodparam>
-                        <methodparam>
-                            <type>const void* </type><parameter>pBody</parameter>
-                        </methodparam>
-                        <methodparam>
-                            <type>uint32_t </type><parameter>barrier</parameter>
-                            <initializer>0</initializer>
-                        </methodparam>
-                       </constructorsynopsis></term>
-                       <listitem>
-                           <para>
-                            Constructs the item.  The <parameter>timestamp</parameter>,
-                            <parameter>sourcde</parameter> and optional
-                            <parameter>barrier</parameter> parameters fill in
-                            the body header.  The default value of 0
-                            for the <parameter>barrier</parameter> represents a
-                            non-barrier event.
-                           </para>
-                           <para>
-                            The payload of the fragment is <parameter>payloadSize</parameter>
-                            bytes taken from the data pointed to by <parameter>pBody</parameter>.
-                           </para>
-                           <para>
-                            For this item, type, <parameter>pBody</parameter>
-                            is expected to point to an event builder fragment
-                            that contains a ring item  Note that it is possible,
-                            though it has not yet been done, for the orderer
-                            to operate on Non-NSCLDAQ data (non ring items),
-                            see <classname>CUnknonwnFragment</classname>.
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual uint64_t     </type>
-                          <methodname>timestamp</methodname>
-                          <void /><modifier>const</modifier>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns the timestamp from the item's body header.
-                            Note that by definition, fragment items have
-                            a body header.
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual uint32_t     </type>
-                          <methodname>source</methodname>
-                          <void /><modifier> const</modifier>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns the source id from the item's body header.
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual size_t  </type>
-                          <methodname>payloadSize</methodname>
-                          <void /><modifier>const</modifier>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns the size of the payload. Note that it is
-                            acceptable, and normal for this to be computed by the
-                            implementation from the ring item size and the body
-                            header size
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual void*        </type>
-                          <methodname>payloadPointer</methodname>
-                          <void />
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns a pointer to the payload data.  The pointer
-                            allows the data to be edited as well as simply
-                            inspected.
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual uint32_t     </type>
-                          <methodname>barrierType</methodname>
-                          <void />
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns the item's body header barrier type field.
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual std::string </type>
-                          <methodname>typeName</methodname>
-                          <void /><modifier>const</modifier>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns a string that describes the type of the
-                            ring item: <literal>Event fragment</literal>
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual std::string </type>
-                          <methodname>toString</methodname>
-                          <void /><modifier>const</modifier>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns a string representation of the  contents of
-                            the ring item. This is used e.g. by
-                            <command>dumper</command>
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual void </type>
-                          <methodname>setBodyHeader</methodname>
-                          <methodparam>
-                              <type>uint64_t </type><parameter>timestamp</parameter>
-                          </methodparam>
-                          <methodparam>
-                              <type>uint32_t </type><parameter>sourceId</parameter>
-                          </methodparam>
-                          <methodparam>
-                              <type>uint32_t </type><parameter>barrierType </parameter>
-                              <initializer>0</initializer>
-                          </methodparam>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Modifies the contents of the item's body header
-                            (this type always has  a body header).
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual void* </type>
-                          <methodname>getBodyHeader</methodname>
-                          <void /><modifier>const</modifier>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns a pointer to the object's body header.
-                            Note that the actual shape of the body header
-                            depends on the actual data format version.  
-                            The <filename>v12/DataFormat.h</filename> header
-                            describes the body header to expect from v12
-                            data in its definition of the
-                            <type>v12::BodyHeader</type> type.
-                           </para>
-                        </listitem>
-                    </varlistentry>
-                    <varlistentry>
-                       <term><methodsynopsis>
-                          <type>virtual bool</type>
-                          <methodname> hasBodyHeader</methodname>
-                          <void /><modifier>const</modifier>
-                       </methodsynopsis></term>
-                       <listitem>
-                           <para>
-                            Returns <literal>true</literal> as this type of ring item
-                            always has a body header.
-                           </para>
-                       </listitem>
-                    </varlistentry>
-                </variablelist>
-            </refsect1>
+        
+            <refsect1>
+                    <title>METHODS</title>
+                    <variablelist>
+                        <varlistentry>
+                           <term><constructorsynopsis>
+                               <methodname>CRingFragmentItem</methodname>
+                            <methodparam>
+                                <type>uint64_t </type><parameter>timestamp</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>uint32_t </type><parameter>source</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>uint32_t </type><parameter>payloadSize</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>const void* </type><parameter>pBody</parameter>
+                            </methodparam>
+                            <methodparam>
+                                <type>uint32_t </type><parameter>barrier</parameter>
+                                <initializer>0</initializer>
+                            </methodparam>
+                           </constructorsynopsis></term>
+                           <listitem>
+                               <para>
+                                Constructs the item.  The <parameter>timestamp</parameter>,
+                                <parameter>sourcde</parameter> and optional
+                                <parameter>barrier</parameter> parameters fill in
+                                the body header.  The default value of 0
+                                for the <parameter>barrier</parameter> represents a
+                                non-barrier event.
+                               </para>
+                               <para>
+                                The payload of the fragment is <parameter>payloadSize</parameter>
+                                bytes taken from the data pointed to by <parameter>pBody</parameter>.
+                               </para>
+                               <para>
+                                For this item, type, <parameter>pBody</parameter>
+                                is expected to point to an event builder fragment
+                                that contains a ring item  Note that it is possible,
+                                though it has not yet been done, for the orderer
+                                to operate on Non-NSCLDAQ data (non ring items),
+                                see <classname>CUnknonwnFragment</classname>.
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual uint64_t     </type>
+                              <methodname>timestamp</methodname>
+                              <void /><modifier>const</modifier>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns the timestamp from the item's body header.
+                                Note that by definition, fragment items have
+                                a body header.
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual uint32_t     </type>
+                              <methodname>source</methodname>
+                              <void /><modifier> const</modifier>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns the source id from the item's body header.
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual size_t  </type>
+                              <methodname>payloadSize</methodname>
+                              <void /><modifier>const</modifier>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns the size of the payload. Note that it is
+                                acceptable, and normal for this to be computed by the
+                                implementation from the ring item size and the body
+                                header size
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual void*        </type>
+                              <methodname>payloadPointer</methodname>
+                              <void />
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns a pointer to the payload data.  The pointer
+                                allows the data to be edited as well as simply
+                                inspected.
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual uint32_t     </type>
+                              <methodname>barrierType</methodname>
+                              <void />
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns the item's body header barrier type field.
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual std::string </type>
+                              <methodname>typeName</methodname>
+                              <void /><modifier>const</modifier>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns a string that describes the type of the
+                                ring item: <literal>Event fragment</literal>
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual std::string </type>
+                              <methodname>toString</methodname>
+                              <void /><modifier>const</modifier>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns a string representation of the  contents of
+                                the ring item. This is used e.g. by
+                                <command>dumper</command>
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual void </type>
+                              <methodname>setBodyHeader</methodname>
+                              <methodparam>
+                                  <type>uint64_t </type><parameter>timestamp</parameter>
+                              </methodparam>
+                              <methodparam>
+                                  <type>uint32_t </type><parameter>sourceId</parameter>
+                              </methodparam>
+                              <methodparam>
+                                  <type>uint32_t </type><parameter>barrierType </parameter>
+                                  <initializer>0</initializer>
+                              </methodparam>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Modifies the contents of the item's body header
+                                (this type always has  a body header).
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual void* </type>
+                              <methodname>getBodyHeader</methodname>
+                              <void /><modifier>const</modifier>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns a pointer to the object's body header.
+                                Note that the actual shape of the body header
+                                depends on the actual data format version.  
+                                The <filename>v12/DataFormat.h</filename> header
+                                describes the body header to expect from v12
+                                data in its definition of the
+                                <type>v12::BodyHeader</type> type.
+                               </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                           <term><methodsynopsis>
+                              <type>virtual bool</type>
+                              <methodname> hasBodyHeader</methodname>
+                              <void /><modifier>const</modifier>
+                           </methodsynopsis></term>
+                           <listitem>
+                               <para>
+                                Returns <literal>true</literal> as this type of ring item
+                                always has a body header.
+                               </para>
+                           </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </refsect1>
+            </refentry>
        </section>
        
     </chapter>
