@@ -11351,13 +11351,12 @@ public:
                             through <parameter>stopTime</parameter>.
                            </para>
                            <para>
-                            Beginning with the 12.0 data format, the
-                            scaler bodies contain a field to retain the source id
-                            of the data source the originally created the item.
-                            This is important because event builders overwrite
-                            the source id of scaler items.  This field is
-                            initialized with the value of the
-                            <parameter>sid</parameter> parameter.
+                            The <parameter>sid</parameter> is used to initialize
+                            the source id field of the body header for this item.
+                            The timestamp is initialized to a value that asks the
+                            event builder to assign a timestap to the item.
+                            The barrier type of the body header is set to
+                            <literal>0</literal> (no barrier).
                            </para>
                         </listitem>
                     </varlistentry>
@@ -15203,7 +15202,7 @@ public:
                     </programlisting>
                 </refsynopsisdiv>
                 <refsect1>
-                         <title></title>
+                         <title>DESCRIPTION</title>
                       <para>
                     Periodically the NSCLDAQ readout frameworks emit ring items
                     that document the number of triggers that have resulted in
@@ -15502,7 +15501,477 @@ public:
                 </variablelist>
             </refsect1>
             </refentry>
-            
+            <refentry>
+               <refmeta>
+                  <refentrytitle>CRingScalerItem (v12)</refentrytitle>
+                  <manvolnum>3format</manvolnum>
+               </refmeta>
+               <refnamediv>
+                  <refname>CRingScalerItem (v12)</refname>
+                  <refpurpose>Encapsulate scaler data</refpurpose>
+                </refnamediv>
+                <refsynopsisdiv>
+                    <programlisting>
+#include &lt;v12/CRingScalerItem.h&gt;
+
+
+namespace v12 {
+
+class CRingScalerItem : public ::CRingScalerItem
+{
+
+  // Constructors and canonicals.:
+
+public:
+  CRingScalerItem(size_t numScalers);
+  CRingScalerItem(uint32_t startTime,
+		  uint32_t stopTime,
+		  time_t   timestamp,
+		  std::vector&lt;uint32_t&gt; scalers,
+                  bool                  isIncremental = true,
+                  uint32_t              timeOffsetDivisor = 1);
+  CRingScalerItem(uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
+                  uint32_t startTime,
+		  uint32_t stopTime,
+		  time_t   timestamp,
+		  std::vector&lt;uint32_t&gt; scalers,
+                  uint32_t timeDivisor = 1, bool incremental=true);
+
+  virtual void     setStartTime(uint32_t startTime);
+  virtual uint32_t getStartTime() const;
+  virtual float    computeStartTime() const;
+  
+  virtual void     setEndTime(uint32_t endTime);
+  virtual uint32_t getEndTime() const;
+  virtual float    computeEndTime() const;
+
+  virtual uint32_t getTimeDivisor() const;
+
+  virtual void     setTimestamp(time_t stamp);
+  virtual time_t   getTimestamp() const;
+  
+  virtual bool isIncremental() const;
+
+  virtual void     setScaler(uint32_t channel, uint32_t value) ;
+  virtual uint32_t getScaler(uint32_t channel) const ;
+  virtual std::vector&lt;uint32_t&gt; getScalers() const;
+
+  virtual uint32_t getScalerCount() const;
+  virtual uint32_t getOriginalSourceId() const;
+
+  virtual std::string typeName() const;
+  virtual std::string toString() const;
+  
+  virtual size_t getBodySize()    const;
+  virtual const void*  getBodyPointer() const;
+  virtual void*  getBodyPointer();
+
+  virtual bool hasBodyHeader() const;
+  virtual void* getBodyHeader() const;
+  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                     uint32_t barrierType = 0);
+  virtual uint64_t getEventTimestamp() const;
+  virtual uint32_t getSourceId() const;
+  virtual uint32_t getBarrierType() const;
+
+};
+   
+}         
+
+                    </programlisting>
+                </refsynopsisdiv>
+                <refsect1>
+                         <title>DESCRIPTION</title>
+                      <para>
+                        Encapsulates data from NSCLDAQ readout framework periodic
+                        scaler reads.  In NSCLDAQ-12, these items also include
+                        information about the original data source id.  This allows
+                        downstream analysis to properly analyze these data or for
+                        these data to be properly analyzed from file.
+                      </para>
+                      
+                </refsect1>
+                <refsect1>
+                    <title>METHODS</title>
+                    <variablelist>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingScalerItem</methodname>
+                        <methodparam>
+                            <type>size_t </type><parameter>numScalers</parameter>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Constructs a scaler item large enough to hold
+                            <parameter>numScalers</parameter> 32 bit scaler counters.
+                            The start/stop time offsets are both set to
+                            <literal>0</literal> as are the scaler values.
+                            The time divisor is initialized to <literal>1</literal>
+                            and the clock time is set to the time at which
+                            the item was constructed.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><constructorsynopsis>
+                           <methodname>CRingScalerItem</methodname>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>startTime</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>stopTime,</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>time_t   </type><parameter>timestamp</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>std::vector&lt;uint32_t&gt; </type><parameter>scalers,</parameter>
+                        </methodparam>
+                        <methodparam>
+                            <type>bool </type><parameter>isIncremental</parameter>
+                            <initializer>true</initializer>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t </type><parameter>sid</parameter>
+                            <initializer>0</initializer>
+                        </methodparam>
+                        <methodparam>
+                            <type>uint32_t  </type><parameter>timeOffsetDivisor</parameter>
+                            <initializer>1</initializer>
+                        </methodparam>
+                       </constructorsynopsis></term>
+                       <listitem>
+                           <para>
+                            Fully constructs a scaler item.  The scaler values
+                            are passed in via the <parameter>scalers</parameter>
+                            parameter.  The size of that vector determines
+                            the number of scalers the item will hold.
+                           </para>
+                           <para>
+                            The interval start and stop offsets are given
+                            by <parameter>startTime</parameter> and
+                            <parameter>stopTime</parameter> respecively.
+                            The optional <parameter>timeOffsetDivisor</parameter>
+                            parameter provides the number of ticks in these
+                            offset values per second providing support for
+                            sub-second time resolution.
+                           </para>
+                           <para>
+                            THe clock time is provided by
+                            <parameter>timestamp</parameter>.
+                           </para>
+                           <para>
+                            If <parameter>isIncremental</parameter> is false,
+                            the counts are assumed to accumulate for the length
+                            of the run.  Otherwise the counts in the scalers are
+                            assumed to represent the counts over the interval
+                            defined by <parameter>startTime</parameter>
+                            through <parameter>stopTime</parameter>.
+                           </para>
+                           <para>
+                            The <parameter>sid</parameter> is used to initialize
+                            the source id field of the body header for this item.
+                            The timestamp is initialized to a value that asks the
+                            event builder to assign a timestap to the item.
+                            The barrier type of the body header is set to
+                            <literal>0</literal> (no barrier).
+                           </para>
+                           <para>
+                            The original source id field in the body is also set
+                            to <parameter>sid</parameter>.  This allows downstream
+                            software to properly attribute the source if this item
+                            after the event builder re-writes the body header.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setStartTime</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>startTime</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the offset into the run at which the scaler counting
+                            interval began.
+        
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t</type>
+                          <methodname> getStartTime() </methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the offset into the run at which the
+                            scaler counting began.  See next method, however.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float    </type>
+                          <methodname>computeStartTime</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Uses the scaler interval start offset and the
+                            counting divisor to compute the start time offset
+                            in seconds.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setEndTime</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>endTime</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the offset into the run of the end of the
+                            scaler counting interval
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getEndTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the offset into the run at which the scaler
+                            counting interval ended.  See, however the next
+                            method.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual float    </type>
+                          <methodname>computeEndTime</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Using the end offset and the offset divisor computes
+                            and returns the number of seconds into the run at
+                            which the scaler counting interval ended.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getTimeDivisor</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the number of ticks in the start and end
+                            time offsets that correspond to a second.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setTimestamp</methodname>
+                          <methodparam>
+                              <type>time_t </type><parameter>stamp</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the clock time associated with the item
+                            to be <parameter>stamp</parameter>.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual time_t   </type>
+                          <methodname>getTimestamp</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the clock time associated with the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual bool </type>
+                          <methodname>isIncremental</methodname>
+                          <void />
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            If the scalers are cleared after each read, this
+                            returns <literal>true</literal>, if they are allowed
+                            to accumulate across counting intervals, this returns
+                            <literal>false</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void     </type>
+                          <methodname>setScaler</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>channel</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>value</parameter>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets the counts for the scaler  selected by
+                            <parameter>channel</parameter> to
+                            <parameter>value</parameter>. If <parameter>channel</parameter>
+                            is out of range an <classname>std::out_of_range</classname>
+                            exception is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getScaler</methodname>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>channel</parameter>
+                          </methodparam>
+                          <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returs the value of the scaler selected by
+                            <parameter>channel</parameter>.  If
+                            <parameter>channel</parameter> is out of range a
+                            <classname>std::out_of_range</classname>
+                            exception is thrown.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::vector&lt;uint32_t&gt; </type>
+                          <methodname>getScalers</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a vector containing the values of the scaler
+                            counts in the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual uint32_t </type>
+                          <methodname>getScalerCount</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the number of scalers in the item.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type> virtual uint32_t </type>
+                          <methodname>getOriginalSourceId</methodname>
+                          <void /><modifier> const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns the original source id field from the item.
+                            Version 11 does not support orginal source ids and therefore
+                            if there's a body header the source id from the body
+                            header is returned, if not <literal>0</literal>
+                            is returned.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void* </type>
+                          <methodname>getBodyHeader</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a pointer to the item's body header
+                            or <literal>nullptr</literal> if it does not have one.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual void </type>
+                          <methodname>setBodyHeader</methodname>
+                          <methodparam>
+                              <type>   uint64_t </type><parameter>timestamp</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>sourceId</parameter>
+                          </methodparam>
+                          <methodparam>
+                              <type>uint32_t </type><parameter>barrierType</parameter>
+                              <initializer>0</initializer>
+                          </methodparam>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Sets new values for the body header of the item
+                            if it already has one or creates a new one if it does not.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>typeName</methodname>
+                          <void /><modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that identifies the type of the item:
+                            <literal>Scaler</literal>
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                       <term><methodsynopsis>
+                          <type>virtual std::string </type>
+                          <methodname>toString</methodname>
+                          <void /> <modifier>const</modifier>
+                       </methodsynopsis></term>
+                       <listitem>
+                           <para>
+                            Returns a string that details the contents of the
+                            item.  This is used by e.g. <command>dumper</command>
+                            to produce a formated dump of a stream of ring items.
+                           </para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                </refsect1>
+            </refentry>     
        </section>
        
     </chapter>
