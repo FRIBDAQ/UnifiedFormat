@@ -15900,10 +15900,11 @@ public:
                        <listitem>
                            <para>
                             Returns the original source id field from the item.
-                            Version 11 does not support orginal source ids and therefore
-                            if there's a body header the source id from the body
-                            header is returned, if not <literal>0</literal>
-                            is returned.
+                            Analysis software should use this to determine the
+                            actual source of the data in this item as the
+                            source id in the body header is prone to be overwritten
+                            by the event builder (the reason for introducing this
+                            field).
                            </para>
                         </listitem>
                     </varlistentry>
