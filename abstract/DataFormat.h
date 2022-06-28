@@ -136,6 +136,9 @@ static const uint32_t RING_FORMAT         = 12; /* Has format major/minor in it.
 /* Scaler data: */
 
 static const uint32_t PERIODIC_SCALERS = 20;
+static const uint32_t INCREMENTAL_SCALERS = 20;
+static const uint32_t TIMESTAMPED_NONINCR_SCALERS =21;
+
 
 
 /* Note timestamped nonincremental scalers absorbed into incremental scalers. */
