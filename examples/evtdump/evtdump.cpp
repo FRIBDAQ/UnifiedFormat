@@ -27,6 +27,63 @@
 #include <cstdlib>
 #include <unistd.h>
 
+#include "DataSource.h"
+#include "FdDataSource.h"
+#include "StreamDataSource.h"
+#include "RingDataSource.h"
+#include <CRemoteAccess.h>
+#include <CRingBuffer.h>
+#include <memory>
+
+#include <URL.h>
+#include <URIFormatException.h>
+#include <Exception.h>
+#include <fstream>
+
+/**
+ * makeDataSource
+ *    - parse the URI of the source
+ *    - Based on the parse create the underlying connection, stream, fd, ringbuffer
+ *    - Create the correcte concrete instance of DataSource given all that.
+ * @param pFact - pointer to the ring item factory to use.
+ * @param strUrl   - String URI of the connection.
+ * @return DataSource* - dynamically allocated data source.
+ * @throw std::exception derived exception on failure -- which can come from
+ *          not being able to form the underlying connection
+ */
+DataSource*
+makeDataSource(RingItemFactoryBase* pFactory, const std::string& strUrl)
+{
+    // Special case the url is just "-"  then it's stdin, a file descriptor
+    // data source:
+    
+    if (strUrl == "-") {
+        return new FdDataSource(pFactory, STDIN_FILENO);   
+    }
+    // Parse the URI:
+    
+    try {
+        URL uri(strUrl);
+        std::string protocol = uri.getProto();
+        
+        if ((protocol == "tcp") || (protocol == "ring")) {
+            // Ring buffer so:
+            
+            CRingBuffer* pRing = CRingAccess::daqConsumeFrom(strUrl);
+            return new RingDataSource(pFactory, *pRing);
+        } else {
+            std::string path = uri.getPath();
+            std::ifstream& in(*(new std::ifstream(path.c_str())));  // Need it to last past block.
+            return new StreamDataSource(pFactory, in);
+        }
+        
+    }
+    catch (CException& error) {
+        throw std::invalid_argument(error.ReasonText());
+    }
+    
+}
+
 /**
  * mapVersion
  *    Map the version we get from the command line to a factory version:
@@ -85,6 +142,12 @@ int main(int argc, char** argv)
         std::string excludeItems = args.exclude_arg;
         int         scalerBits = args.scaler_width_arg;
         FormatSelector::SupportedVersions defaultVersion = mapVersion(args.format_arg);
+        auto& fact = FormatSelector::selectFactory(defaultVersion);
+        
+        // Now we need to take the URI and the factory and create a data source:
+        
+        
+        std::unique_ptr<DataSource> pSource(makeDataSource(&fact, dataSource));        
         
     }
     catch (std::exception& e) {

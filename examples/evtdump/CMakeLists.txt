@@ -20,6 +20,7 @@ target_include_directories(evtdump PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/../../
   ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
   ${CMAKE_BINARY_DIR}/examples/evtdump
+  ${NSCLDAQ_INC}
 )
 target_link_libraries(evtdump
 NSCLDAQFormat
@@ -27,6 +28,10 @@ AbstractFormat
 V10Format
 V11Format
 V12Format
+${NSCLDAQ_LIB}/libdaqshm.so
+${NSCLDAQ_LIB}/libDataFlow.so
+${NSCLDAQ_LIB}/libException.so
+${NSCLDAQ_LIB}/liburl.so
 )
 target_compile_options(evtdump PUBLIC -g)
 target_link_options(evtdump PUBLIC -g)
