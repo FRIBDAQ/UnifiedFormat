@@ -41,6 +41,7 @@ public:
     DataSource(RingItemFactoryBase* pFactory);
     virtual ~DataSource();
     virtual CRingItem* getItem() = 0;
+    void setFactory(RingItemFactoryBase* pFactory);
 };
 
 

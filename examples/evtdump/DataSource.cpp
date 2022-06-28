@@ -39,3 +39,15 @@ DataSource::~DataSource()
 {
     delete m_pFactory;
 }
+/**
+ * setFactory
+ *   - delete the current factory
+ *   - set a new factory - this is done if the format changes.
+ * @param pFactory - new factory to set.
+ */
+void
+DataSource::setFactory(RingItemFactoryBase* pFactory)
+{
+    delete m_pFactory;
+    m_pFactory = pFactory;
+}
