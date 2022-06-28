@@ -11,6 +11,9 @@ add_custom_target(
 add_executable(
   evtdump
   evtdump.cpp cmdline.o cmdline.h
+  DataSource.cpp
+  FdDataSource.cpp StreamDataSource.cpp
+  RingDataSource.cpp
 )
 
 target_include_directories(evtdump PRIVATE 
