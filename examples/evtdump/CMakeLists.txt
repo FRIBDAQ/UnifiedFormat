@@ -15,7 +15,15 @@ add_executable(
 
 target_include_directories(evtdump PRIVATE 
   ${CMAKE_CURRENT_SOURCE_DIR}/../../
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
   ${CMAKE_BINARY_DIR}/examples/evtdump
+)
+target_link_libraries(evtdump
+NSCLDAQFormat
+AbstractFormat
+V10Format
+V11Format
+V12Format
 )
 target_compile_options(evtdump PUBLIC -g)
 target_link_options(evtdump PUBLIC -g)
