@@ -39,6 +39,93 @@
 #include <URIFormatException.h>
 #include <Exception.h>
 #include <fstream>
+#include <vector>
+#include <map>
+#include <DataFormat.h>
+
+// Map of exclusion type strings to type integers:
+
+static std::map<std::string, uint32_t> TypeMap = {
+    {"BEGIN_RUN", BEGIN_RUN}, {"END_RUN", END_RUN}, {"PAUSE_RUN", PAUSE_RUN},
+    {"RESUME_RUN", RESUME_RUN},
+    {"ABNORMAL_ENDRUN", ABNORMAL_ENDRUN},
+    {"PACKET_TYPES", PACKET_TYPES}, {"MONITORED_VARIABLES", MONITORED_VARIABLES},
+    {"RING_FORMAT", RING_FORMAT},
+    {"PERIODIC_SCALERS", PERIODIC_SCALERS}, {"INCREMENTAL_SCALERS", INCREMENTAL_SCALERS},
+    {"TIMESTAMPED_NONINCR_SCALERS", TIMESTAMPED_NONINCR_SCALERS},
+    {"PHYSICS_EVENT", PHYSICS_EVENT}, {"PHYSICS_EVENT_COUNT", PHYSICS_EVENT_COUNT},
+    {"EVB_FRAGMENT", EVB_FRAGMENT}, {"EVB_UNKNOWN_PAYLOAD", EVB_UNKNOWN_PAYLOAD},
+    {"EVB_GLOM_INFO", EVB_GLOM_INFO}
+};
+/**
+ * tokenize
+ *   Shamelessly stolen from https://www.techiedelight.com/split-string-cpp-using-delimiter/
+ * @param str - string to split up.
+ * @param delim - delimimeter on which to split the string.
+ * @return std::vector<string> - not that in the original, this is a parameter
+ */
+static std::vector<std::string>
+tokenize(std::string const &str, const char delim)
+{
+    std::vector<std::string> out;
+    size_t start;
+    size_t end = 0;
+ 
+    while ((start = str.find_first_not_of(delim, end)) != std::string::npos)
+    {
+        end = str.find(delim, start);
+        out.push_back(str.substr(start, end - start));
+    }
+    return out;
+}
+ 
+/**
+ * makeExclusionList
+ *    Creates a vector of the ring item types to be excluded from the dump
+ *    given a comma separated list of types. A type can be a string or a positive number.
+ *    If it is a string, it is translated to the type id using TypeMap.  If
+ *    it is a number, it is used as is.
+ *
+ *    @param exclusions - string containing the exclusion list.
+ *    @return std::vector<uint32_t> - items to exclude.
+ *    @throw std::invalid_argument an exclusion item is not a string and is not in the
+ *                  map of recognized item types.
+ *                 
+ */
+std::vector<uint32_t>
+makeExclusionList(const std::string& exclusions)
+{
+    std::vector<uint32_t> result;
+    std::vector<std::string> words = tokenize(exclusions, ',');
+    
+    // Process the words into an exclusion list:
+    for (auto s : words) {
+        bool isInt(true);
+        int intValue;
+        try {
+            intValue = std::stoi(s);
+        }
+        catch (...) {
+            // failed as int
+            
+            isInt = false;
+        }
+        if (isInt) {
+            result.push_back(intValue);
+        } else {
+            auto p = TypeMap.find(s);
+            if (p != TypeMap.end()) {
+                result.push_back(p->second);
+            } else {
+                std::string msg("Invalid item type in exclusion list: ");
+                msg += s;
+                throw std::invalid_argument(msg);
+            }
+        }
+    }
+    
+    return result;
+}
 
 /**
  * makeDataSource
@@ -138,8 +225,8 @@ int main(int argc, char** argv)
         std::string dataSource = makeSourceString(args.source_arg);
         int         skipCount  = args.skip_arg;
         int         dumpCount  = args.count_arg;
-        std::string sampledItems = args.sample_arg;
         std::string excludeItems = args.exclude_arg;
+        std::vector<uint32_t> exclusionList = makeExclusionList(excludeItems);
         int         scalerBits = args.scaler_width_arg;
         FormatSelector::SupportedVersions defaultVersion = mapVersion(args.format_arg);
         auto& fact = FormatSelector::selectFactory(defaultVersion);
