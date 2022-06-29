@@ -1338,7 +1338,7 @@ void v11facttest::txt_5()
         m_pFactory->makeAbnormalEndItem());
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeTextItem(*pSource),
-        std::bad_cast
+        std::invalid_argument
     );
 }
 // Parameterized unknown fragment type.
@@ -1574,7 +1574,7 @@ void v11facttest::state_4()
     );
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeStateChangeItem(*pItem),
-        std::bad_cast
+        std::logic_error
     );
     
 }

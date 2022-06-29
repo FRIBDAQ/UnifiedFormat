@@ -114,7 +114,8 @@ public:
         std::string title
     ) ;
     virtual ::CRingStateChangeItem* makeStateChangeItem(const ::CRingItem& rhs) ;
-
+private:
+    std::vector<std::string> marshallStrings(const void* p);
     
 };
 }

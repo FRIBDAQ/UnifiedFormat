@@ -34,6 +34,6 @@ ${NSCLDAQ_LIB}/libException.so
 ${NSCLDAQ_LIB}/liburl.so
 )
 target_compile_options(evtdump PUBLIC -g)
-target_link_options(evtdump PUBLIC -g)
+target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${NSCLDAQ_LIB})
 install(TARGETS evtdump DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 add_dependencies(evtdump cmdopts)

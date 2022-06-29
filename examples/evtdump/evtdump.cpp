@@ -42,6 +42,28 @@
 #include <vector>
 #include <map>
 #include <DataFormat.h>
+#include <algorithm>
+#include <RingItemFactoryBase.h>
+
+// These are headers for the abstrct ring items we can get back from the factory.
+// As new ring items are added this set of #include's must be updated as well
+// as the switch statement in the dumpItem  method.
+//
+
+#include <CRingItem.h>
+#include <CAbnormalEndItem.h>
+#include <CDataFormatItem.h>
+#include <CGlomParameters.h>
+#include <CPhysicsEventItem.h>
+#include <CRingFragmentItem.h>
+#include <CRingPhysicsEventCountItem.h>
+#include <CRingScalerItem.h>
+#include <CRingTextItem.h>
+#include <CRingStateChangeItem.h>
+#include <CUnknownFragment.h>
+
+
+// End of ring item type headers.
 
 // Map of exclusion type strings to type integers:
 
@@ -78,7 +100,105 @@ tokenize(std::string const &str, const char delim)
     }
     return out;
 }
+/**
+ * dumpItem
+ *    Dump an item to stdout.
+ *    - Based on the item type, use the factory to get a new item using the
+ *      same data for the appropriate type.
+ *    - Use the toString method of that item to get the string to dump.
+ *    - Dump the item with a "--------" trailer.
+ *  @param pItem - pointer to the item.
+ *  @param factory - reference to the factory appropriate to the format.
+ *  @note this method is rather long but this is only due to the switch statement
+ *        that must handle every possible ring item type in DataFormat.h
+ *        The actual code is really quite simple (I think).
+ *  @note the use of std::unique_Ptr to ensure that temporary specific ring item
+ *        objects are automatically deleted.
+ */
+static void
+dumpItem(CRingItem* pItem, RingItemFactoryBase& factory) {
+    std::string dumpText;
  
+    // Note that the switch statement here assumes that if you have a ring item type
+    // the factory can generate it... this fails if the wrong version of the factory
+    // is used for the event file.
+    
+    switch(pItem->type()) {
+        case BEGIN_RUN:
+        case END_RUN:
+        case PAUSE_RUN:
+        case RESUME_RUN:
+            {
+                std::unique_ptr<CRingStateChangeItem> p(factory.makeStateChangeItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case ABNORMAL_ENDRUN:
+            {
+                std::unique_ptr<CAbnormalEndItem> p(factory.makeAbnormalEndItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case PACKET_TYPES:
+        case MONITORED_VARIABLES:
+            {
+                std::unique_ptr<CRingTextItem> p(factory.makeTextItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case RING_FORMAT:
+            {
+                std::unique_ptr<CDataFormatItem> p(factory.makeDataFormatItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case PERIODIC_SCALERS:
+        // case INCREMENTAL_SCALERS:        // Same value as PERIODIC_SCALERS.
+        case TIMESTAMPED_NONINCR_SCALERS:
+            {
+                std::unique_ptr<CRingScalerItem> p(factory.makeScalerItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case PHYSICS_EVENT:
+            {
+                std::unique_ptr<CPhysicsEventItem> p(factory.makePhysicsEventItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case PHYSICS_EVENT_COUNT:
+            {
+                std::unique_ptr<CRingPhysicsEventCountItem> p(factory.makePhysicsEventCountItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case EVB_FRAGMENT:
+            {
+                std::unique_ptr<CRingFragmentItem> p(factory.makeRingFragmentItem(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case EVB_UNKNOWN_PAYLOAD:
+            {
+                std::unique_ptr<CUnknownFragment> p(factory.makeUnknownFragment(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        case EVB_GLOM_INFO:
+            {
+                std::unique_ptr<CGlomParameters> p(factory.makeGlomParameters(*pItem));
+                dumpText = p->toString();
+            }
+            break;
+        default:
+            dumpText = pItem->toString();                 // Unknown item type.
+            break;
+    }
+ 
+    std::cout << "------------------------------------------\n";
+    std::cout << dumpText << std::endl;
+    
+}
 /**
  * makeExclusionList
  *    Creates a vector of the ring item types to be excluded from the dump
@@ -223,7 +343,7 @@ int main(int argc, char** argv)
         // Figure out the parameters:
         
         std::string dataSource = makeSourceString(args.source_arg);
-        int         skipCount  = args.skip_arg;
+        int         skipCount  = args.skip_given ? args.skip_arg : 0;
         int         dumpCount  = args.count_arg;
         std::string excludeItems = args.exclude_arg;
         std::vector<uint32_t> exclusionList = makeExclusionList(excludeItems);
@@ -234,11 +354,52 @@ int main(int argc, char** argv)
         // Now we need to take the URI and the factory and create a data source:
         
         
-        std::unique_ptr<DataSource> pSource(makeDataSource(&fact, dataSource));        
+        std::unique_ptr<DataSource> pSource(makeDataSource(&fact, dataSource));
+        
+        // If there's a skip count skip exactly that many items:
+        
+        if (skipCount > 0) {
+            for (int i =0; i < skipCount; i++) {
+                std::unique_ptr<CRingItem> p(pSource->getItem());
+                if (!p.get()) {
+                    // end of data source
+                    exit(EXIT_SUCCESS);
+                }
+            }
+        }
+        // Now dump the items that are not excluded and if there's a dumpCount
+        // only dump that many items -- or until the end of the data source:
+        
+        int remaining = dumpCount;
+        while(1) {
+            std::unique_ptr<CRingItem> pItem(pSource->getItem());
+            if (!pItem.get()) {
+                exit(EXIT_SUCCESS);                          // End of source.
+            }
+            
+            if (std::find(
+                    exclusionList.begin(), exclusionList.end(), pItem->type()
+                ) == exclusionList.end()) {
+                // Dumpable:
+                    
+                dumpItem(pItem.get(), fact);
+                
+                // Apply any limit to the count:
+                
+                if (args.count_given) {
+                    remaining--;
+                    if(remaining <= 0) {
+                        exit(EXIT_SUCCESS);
+                    }
+                }
+            }
+            
+        }
+        
         
     }
     catch (std::exception& e) {
-        std::cerr << e.what();
+        std::cerr << e.what() << std::endl;
         cmdline_parser_print_help();
         std::exit(EXIT_FAILURE);
     }

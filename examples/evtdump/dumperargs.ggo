@@ -5,6 +5,6 @@ purpose "Formatted dump of acquired data items"
 option "source" s "URL of source, ring buffer or file" string optional default=""
 option "skip"   m "number of items to skip before dumping" int optional
 option "count"  c "Number of items to dump before exiting" int optional
-option "sample" S "List of item types to sample" string optional default=""
+option "exclude" E "List of item types to exclude from the dump" string optional default=""
 option "scaler-width" w "Number of bits wide scaler counters are" int optional default="32"
 option "format" f "NSCLDAQ format version" values="v12","v11","v10" enum default="v12" optional
