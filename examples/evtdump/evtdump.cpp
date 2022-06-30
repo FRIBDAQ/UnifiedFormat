@@ -148,8 +148,15 @@ dumpItem(CRingItem* pItem, RingItemFactoryBase& factory) {
             break;
         case RING_FORMAT:
             {
-                std::unique_ptr<CDataFormatItem> p(factory.makeDataFormatItem(*pItem));
-                dumpText = p->toString();
+                try {
+                    std::unique_ptr<CDataFormatItem> p(factory.makeDataFormatItem(*pItem));
+                    dumpText = p->toString();
+                }
+                catch (std::bad_cast e) {
+                    throw std::logic_error(
+                        "Unable to dump a data format item.. likely you've specified the wrong --format"
+                    );
+                }
             }
             break;
         case PERIODIC_SCALERS:

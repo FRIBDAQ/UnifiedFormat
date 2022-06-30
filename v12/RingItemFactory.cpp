@@ -301,8 +301,10 @@ RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
     }
     // This can throw as well:
     
-    const ::CDataFormatItem& original(dynamic_cast<const ::CDataFormatItem&>(rhs));
-    if (original.getMajor() != v12::FORMAT_MAJOR) {
+    const v12::DataFormat* pItem =
+        reinterpret_cast<const v12::DataFormat*>(rhs.getItemPointer());
+    
+    if (pItem->s_majorVersion != v12::FORMAT_MAJOR) {
         throw std::bad_cast();
     }
     return new v12::CDataFormatItem();        // No actual differentiation.
@@ -358,14 +360,15 @@ RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
         throw std::bad_cast();
     }
     
-    // this too could throw:
+    const v12::GlomParameters* pItem =
+        reinterpret_cast<const v12::GlomParameters*>(rhs.getItemPointer());
     
-    const ::CGlomParameters& item(dynamic_cast<const ::CGlomParameters&>(rhs));
     
     // Make the new item:
     
     return new v12::CGlomParameters(
-        item.coincidenceTicks(), item.isBuilding(), item.timestampPolicy()
+        pItem->s_coincidenceTicks, pItem->s_isBuilding,
+        static_cast<::CGlomParameters::TimestampPolicy>(pItem->s_timestampPolicy)
     );
 }
 /**
@@ -460,11 +463,12 @@ RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
     if (rhs.size() < sizeof(v12::EventBuilderFragment)) {
         throw std::bad_cast();
     }
-    const ::CRingFragmentItem& item(dynamic_cast<const::CRingFragmentItem&>(rhs));
-    
-    return new v12::CRingFragmentItem(
-        item.timestamp(), item.source(), item.getBodySize(), item.getBodyPointer(),
-        item.barrierType()
+    const v12::EventBuilderFragment* pItem =
+        reinterpret_cast<const v12::EventBuilderFragment*>(rhs.getItemPointer());
+    return makeRingFragmentItem(
+        pItem->s_bodyHeader.s_timestamp, pItem->s_bodyHeader.s_sourceId,
+        rhs.size() - sizeof(v12::EventBuilderFragment), pItem->s_body,
+        pItem->s_bodyHeader.s_barrier
     );
 }
 /**
@@ -496,15 +500,33 @@ RingItemFactory::makePhysicsEventCountItem(const ::CRingItem& rhs)
     if (rhs.type() != v12::PHYSICS_EVENT_COUNT) {
         throw std::bad_cast();
     }
+    const v12::PhysicsEventCountItem* pItem =
+        reinterpret_cast<const v12::PhysicsEventCountItem*>(rhs.getItemPointer());
     
-    const ::CRingPhysicsEventCountItem& item(
-        dynamic_cast<const ::CRingPhysicsEventCountItem&>(rhs)
-    );
+    // Could have a body header:
     
-    return makePhysicsEventCountItem(
-        item.getEventCount(), item.getTimeOffset(), item.getTimestamp(),
-        item.getTimeDivisor()
-    );
+    if (pItem->s_body.u_noBodyHeader.s_empty > sizeof(uint32_t)) {
+        const v12::BodyHeader* pH = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
+        const v12::PhysicsEventCountItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+        
+        // Make the base item:
+        
+        auto result = makePhysicsEventCountItem(
+            pBody->s_eventCount, pBody->s_timeOffset, pBody->s_timestamp,
+            pBody->s_offsetDivisor
+        );
+        // Add in the body header:
+        
+        result->setBodyHeader(pH->s_timestamp, pH->s_sourceId, pH->s_barrier);
+        return result;
+    } else {
+        const v12::PhysicsEventCountItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+        return makePhysicsEventCountItem(
+            pBody->s_eventCount, pBody->s_timeOffset, pBody->s_timestamp,
+            pBody->s_offsetDivisor
+        );
+    }
+    
 }
 /**
  * makeScalerItem
@@ -560,31 +582,34 @@ RingItemFactory::makeScalerItem(const ::CRingItem& rhs)
     if (rhs.type() != v12::PERIODIC_SCALERS) {
         throw std::bad_cast();
     }
-    const ::CRingScalerItem& item(dynamic_cast<const ::CRingScalerItem&>(rhs));
-    v12::CRingScalerItem* pResult;
-    if (item.hasBodyHeader()) {
-         pResult = new v12::CRingScalerItem(
-            item.getEventTimestamp(), item.getSourceId(), item.getBarrierType(),
-            item.getStartTime(), item.getEndTime(), item.getTimestamp(),
-            item.getScalers(), item.getTimeDivisor(), item.isIncremental()
+    const v12::ScalerItem* pItem =
+        reinterpret_cast<const v12::ScalerItem*>(rhs.getItemPointer());
+        
+    if (pItem->s_body.u_noBodyHeader.s_empty > sizeof(uint32_t)) {
+        const v12::BodyHeader* pH = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
+        const v12::ScalerItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+        
+        // First make a scaler item and then add the body header:
+        
+        std::vector<uint32_t> scalers(pBody->s_scalers, pBody->s_scalers+pBody->s_scalerCount);
+        auto pResult = makeScalerItem(
+            pBody->s_intervalStartOffset, pBody->s_intervalEndOffset,
+            pBody->s_timestamp, scalers, pBody->s_isIncremental,
+            pBody->s_originalSid, pBody->s_intervalDivisor
         );
-         // It's possible the rhs has a different original sid than the body header
-         // (e.g. if it's been through the event builder):
-         
-         if (item.getSourceId() != item.getOriginalSourceId()) {
-            v12::pScalerItemBody pBody =
-                reinterpret_cast<v12::pScalerItemBody>(pResult->getBodyPointer());
-            pBody->s_originalSid = item.getOriginalSourceId();
-         }
+        pResult->setBodyHeader(pH->s_timestamp, pH->s_sourceId, pH->s_barrier);
+        return pResult;
     } else {
-        pResult = dynamic_cast<v12::CRingScalerItem*>(makeScalerItem(
-            item.getStartTime(), item.getEndTime(), item.getTimestamp(),
-            item.getScalers(), item.isIncremental(), item.getOriginalSourceId(),
-            item.getTimeDivisor()
-        ));
+        const v12::ScalerItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
+        std::vector<uint32_t> scalers(pBody->s_scalers, pBody->s_scalers+pBody->s_scalerCount);
+        return makeScalerItem(
+            pBody->s_intervalStartOffset, pBody->s_intervalEndOffset,
+            pBody->s_timestamp, scalers, pBody->s_isIncremental,
+            pBody->s_originalSid, pBody->s_intervalDivisor
+        );
         
     }
-    return pResult;
+    
 }
 /**
  * makeTextItem
@@ -647,20 +672,27 @@ RingItemFactory::makeTextItem(const ::CRingItem& rhs)
     if (validTextItemTypes.count(rhs.type()) == 0) {
         throw std::bad_cast();
     }
-    const ::CRingTextItem& item(dynamic_cast<const ::CRingTextItem&>(rhs));
-    if (item.hasBodyHeader()) {
-        return new v12::CRingTextItem(
-            item.type(),
-            item.getEventTimestamp(), item.getSourceId(), item.getBarrierType(),
-            item.getStrings(), item.getTimeOffset(), item.getTimestamp(),
-            item.getTimeDivisor()
+    const v12::TextItem* pItem =
+        reinterpret_cast<const v12::TextItem*>(rhs.getItemPointer());
+    if (pItem->s_body.u_noBodyHeader.s_empty > sizeof(uint32_t)) {
+        const v12::BodyHeader* pH = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
+        const v12::TextItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+        auto strings = marshallStrings(pBody);
+        auto result = makeTextItem(
+            rhs.type(), strings, pBody->s_timeOffset, pBody->s_timestamp,
+            pBody->s_offsetDivisor
         );
+        result->setBodyHeader(pH->s_timestamp, pH->s_sourceId, pH->s_barrier);
+        return result;
     } else {
-        return new v12::CRingTextItem(
-            item.type(), item.getStrings(), item.getTimeOffset(),
-            item.getTimestamp(), item.getTimeDivisor()
+        const v12::TextItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
+        auto strings = marshallStrings(pBody);
+        return makeTextItem(
+            rhs.type(), strings, pBody->s_timeOffset, pBody->s_timestamp,
+            pBody->s_offsetDivisor
         );
     }
+    
 }
 /**
  * makeUnknownFragment
@@ -703,6 +735,8 @@ RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
     if (rhs.size() < sizeof(v12::EventBuilderFragment)) {
         throw std::bad_cast();
     }
+    
+    
     const v12::EventBuilderFragment* pItem =
         reinterpret_cast<const v12::EventBuilderFragment*>(rhs.getItemPointer());
         
@@ -780,6 +814,20 @@ RingItemFactory::makeStateChangeItem(const ::CRingItem& rhs)
     }
     
 }
+///////////////////////////////////// Private methds ///////////////////////
 
+std::vector<std::string>
+RingItemFactory::marshallStrings(const void* p)
+{
+    const v12::TextItemBody* pBody = reinterpret_cast<const v12::TextItemBody*>(p);
+    const char* pString = pBody->s_strings;
+    std::vector<std::string> result;
+    for (int i = 0; i < pBody->s_stringCount; i++) {
+        std::string s(pString);
+        result.push_back(s);
+        p += s.size() + 1;
+    }
+    return result;
+}
 //// end of v12 namespace
 }
