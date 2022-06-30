@@ -37,3 +37,13 @@ target_compile_options(evtdump PUBLIC -g)
 target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${NSCLDAQ_LIB})
 install(TARGETS evtdump DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 add_dependencies(evtdump cmdopts)
+
+install(FILES
+  evtdump.cpp 
+  DataSource.cpp
+  FdDataSource.cpp StreamDataSource.cpp
+  RingDataSource.cpp
+  dumperargs.ggo
+  
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/share/examples/evtdump
+)

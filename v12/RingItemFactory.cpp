@@ -825,7 +825,7 @@ RingItemFactory::marshallStrings(const void* p)
     for (int i = 0; i < pBody->s_stringCount; i++) {
         std::string s(pString);
         result.push_back(s);
-        p += s.size() + 1;
+        pString += s.size() + 1;
     }
     return result;
 }

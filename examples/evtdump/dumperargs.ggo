@@ -1,4 +1,4 @@
-package "Dumper"
+package "evtdump"
 version "1.0"
 purpose "Formatted dump of acquired data items"
 
