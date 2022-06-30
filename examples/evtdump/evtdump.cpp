@@ -363,6 +363,13 @@ int main(int argc, char** argv)
         
         std::unique_ptr<DataSource> pSource(makeDataSource(&fact, dataSource));
         
+        // Proces the scalerBits value into a ::CRingScalerItem::m_ScalerFormatMask
+        
+        uint64_t sbits = 1;
+        sbits = sbits << scalerBits;
+        sbits--;
+        ::CRingScalerItem::m_ScalerFormatMask = sbits;
+        
         // If there's a skip count skip exactly that many items:
         
         if (skipCount > 0) {
