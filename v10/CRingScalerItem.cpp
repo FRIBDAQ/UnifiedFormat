@@ -468,10 +468,11 @@ CRingScalerItem::toString() const
   out << "Index         Counts                 Rate\n";
   for (int i=0; i < scalers.size(); i++) {
     char line[128];
-    double rate = (static_cast<double>(scalers[i])/duration);
+    uint32_t scaler = (scalers[i] & m_ScalerFormatMask);
+    double rate = (static_cast<double>(scaler)/duration);
 
     sprintf(line, "%5d      %9d                 %.2f\n",
-	    i, scalers[i], rate);
+	    i, scaler, rate);
     out << line;
   }
 
