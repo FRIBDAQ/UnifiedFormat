@@ -26,7 +26,9 @@
 #include <DataFormat.h>
 #include "RingItemFactory.h"
 #include "CRingItem.h"
+#if NSCLDAQ_ROOT != '_'
 #include <CRingBuffer.h>
+#endif
 #include <CAbnormalEndItem.h>
 #include "CDataFormatItem.h"   // need the v12
 #include "CGlomParameters.h"
@@ -131,22 +133,28 @@ class v12facttest : public CppUnit::TestFixture {
     
 private:
     v12::RingItemFactory* m_pFactory;
+#if NSCLDAQ_ROOT != '_'    
     CRingBuffer*          m_pProducer;
     CRingBuffer*          m_pConsumer;
+#endif    
 public:
     void setUp() {
         m_pFactory = new v12::RingItemFactory;
+#if NSCLDAQ_ROOT != '_'    
         m_pProducer = CRingBuffer::createAndProduce("v12factory");
         m_pConsumer = new CRingBuffer("v12factory");
+#endif
     }
     void tearDown() {
         delete m_pFactory;
+#if NSCLDAQ_ROOT != '_'    
         delete m_pProducer;
         delete m_pConsumer;
         try {
             CRingBuffer::remove("v12factory");
         }
         catch (...) {}
+#endif
         
     }
 protected:
@@ -389,7 +397,7 @@ void v12facttest::mkringitem_6()
 // Get a ring item from a ringbufer (no body header).
 void v12facttest::get_1()
 {
-    
+#if NSCLDAQ_ROOT != '_'        
     std::unique_ptr<::CRingItem> src(
         m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
     );
@@ -409,11 +417,13 @@ void v12facttest::get_1()
     std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+#endif
 }
 
 // Get a ring item with a body header from a ringbuffer.
 void v12facttest::get_2()
 {
+#if NSCLDAQ_ROOT != '_'        
     std::unique_ptr<::CRingItem> src(
         m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
     );
@@ -433,6 +443,7 @@ void v12facttest::get_2()
     std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+#endif
 }
 // Get from fd (memfd will be used.)
 
@@ -554,6 +565,7 @@ void v12facttest::get_6()
 
 void v12facttest::put_1()
 {
+#if NSCLDAQ_ROOT != '_'    
     std::unique_ptr<::CRingItem> src(
         m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
     );
@@ -573,11 +585,13 @@ void v12facttest::put_1()
     std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+#endif
 }
 // Put body header item into ring buffer.
 
 void v12facttest::put_2()
 {
+#if NSCLDAQ_ROOT != '_'    
     std::unique_ptr<::CRingItem> src(
         m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
     );
@@ -597,11 +611,13 @@ void v12facttest::put_2()
     std::unique_ptr<::CRingItem> cpy(m_pFactory->getRingItem(*m_pConsumer));
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+#endif
 }
 // Put non body header item in file descriptor.
 
 void v12facttest::put_3()
 {
+  
     std::unique_ptr<::CRingItem> src(
         m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 100)
     );
@@ -625,10 +641,12 @@ void v12facttest::put_3()
     close(fd);
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+
 }
 // put body header item in file descriptor.
 void v12facttest::put_4()
 {
+
     std::unique_ptr<::CRingItem> src(
         m_pFactory->makeRingItem(v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2)
     );
@@ -652,6 +670,7 @@ void v12facttest::put_4()
     close(fd);
     EQ(src->size(), cpy->size());
     EQ(0, memcmp(src->getItemPointer(), cpy->getItemPointer(), src->size()));
+
     
 }
 void v12facttest::put_5()

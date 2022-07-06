@@ -24,7 +24,9 @@
 #include "Asserts.h"
 #include "RingItemFactory.h"
 #include "DataFormat.h"
+#if NSCLDAQ_ROOT != '_'  
 #include <CRingBuffer.h>
+#endif
 #include "CRingItem.h"
 #include <string.h>
 
@@ -202,23 +204,28 @@ protected:
     void state_8();
     private:
     v10::RingItemFactory* m_pFactory;
+#if NSCLDAQ_ROOT != '_'  
     CRingBuffer*          m_pProducer;
     CRingBuffer*          m_pConsumer;
+#endif
 public:
     void setUp() {
+#if NSCLDAQ_ROOT != '_'  
         if ( CRingBuffer::isRing(ringName)) {
             CRingBuffer::remove(ringName);
         }
         m_pProducer = CRingBuffer::createAndProduce(ringName);
         m_pConsumer = new CRingBuffer(ringName);
-        
+#endif
         m_pFactory = new v10::RingItemFactory;
     }
     void tearDown() {
         delete m_pFactory;
+#if NSCLDAQ_ROOT != '_'  
         delete m_pProducer;
         delete m_pConsumer;
         CRingBuffer::remove(ringName);
+#endif
     }
 
 private:
@@ -351,6 +358,7 @@ v10factorytest::ring_4()
 void
 v10factorytest::ring_5()
 {
+#if NSCLDAQ_ROOT != '_'  
 #pragma packed(push, 1)
     struct {
         v10::RingItemHeader s_header;
@@ -379,6 +387,7 @@ v10factorytest::ring_5()
         throw;
     }
     delete pItem;
+#endif
 }
 // get ring item from an fd:
 void
@@ -550,6 +559,7 @@ v10factorytest::ring_9()
 void
 v10factorytest::ring_10()
 {
+#if NSCLDAQ_ROOT != '_'  
 #pragma packed(push, 1)
     struct {
         v10::RingItemHeader s_header;
@@ -579,6 +589,7 @@ v10factorytest::ring_10()
     }
     delete pItem;
     delete pReadItem;
+#endif
 }
 // Can't create an abnormal end item:
 

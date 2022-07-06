@@ -43,6 +43,8 @@ target_include_directories(
     V12Format PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
 )
+if (${NSCLDAQ_ROOT} STREQUAL _)
+else ()
 target_link_libraries(
     V12Format
     ${NSCLDAQ_LIB}/libdaqshm.so
@@ -50,9 +52,10 @@ target_link_libraries(
     ${NSCLDAQ_LIB}/libException.so
    
 )
-
-target_compile_options(V12Format PRIVATE -g)
 target_link_options(V12Format PRIVATE -g PUBLIC -Wl,-rpath=${NSCLDAQ_LIB})
+endif()
+
+target_compile_options(V12Format PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
 install(FILES
     ${v12headers}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v12
@@ -79,6 +82,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC}
 )
 
-target_compile_options(v12unittests PRIVATE -g)
+target_compile_options(v12unittests PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
 target_link_options(v12unittests PRIVATE -g)
 add_test(NAME v12unittests COMMAND v12unittests)

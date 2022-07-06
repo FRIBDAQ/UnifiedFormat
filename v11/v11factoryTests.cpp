@@ -39,7 +39,9 @@
 #include <CRingStateChangeItem.h>
 
 #include <string.h>
+#if NSCLDAQ_ROOT != '_'    
 #include <CRingBuffer.h>
+#endif
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -353,6 +355,7 @@ void v11facttest::base_4()
 // This test requires the DAQ be running.
 void v11facttest::get_1()
 {
+#if NSCLDAQ_ROOT != '_'    
     CRingBuffer* pProducer(0);
     CRingBuffer* pConsumer(0);
     ::CRingItem* pGotten(0);
@@ -390,6 +393,7 @@ void v11facttest::get_1()
     delete pProducer;
     delete pConsumer;
     CRingBuffer::remove(ringbuffer);
+#endif
 }
 /* get from file descriptor. */
 void v11facttest::get_2()
@@ -534,10 +538,11 @@ void v11facttest::put_2()
     delete pGotten;
 }
 // put into ringbuffer.
-
+  
 void v11facttest::put_3()
 {
-    CRingBuffer* pProducer(0);
+#if NSCLDAQ_ROOT != '_'
+CRingBuffer* pProducer(0);
     CRingBuffer* pConsumer(0);
     ::CRingItem* pGotten(0);
     try {
@@ -576,8 +581,9 @@ void v11facttest::put_3()
     delete pProducer;
     delete pConsumer;
     CRingBuffer::remove(ringbuffer);
-    
+#endif    
 }
+
 // Create from nothing.
 void v11facttest::abnormal_1()
 {

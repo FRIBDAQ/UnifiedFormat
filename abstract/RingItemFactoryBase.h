@@ -56,14 +56,17 @@ public:
     virtual CRingItem* makeRingItem(const CRingItem& rhs) = 0;
     virtual CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
     
-    
+#if NSCLDAQ_ROOT != '_'        
     virtual CRingItem* getRingItem(CRingBuffer& ringbuf) = 0;
+#endif
     virtual CRingItem* getRingItem(int fd) = 0;
     virtual CRingItem* getRingItem(std::istream& in) = 0;
     
     virtual std::ostream& putRingItem(const CRingItem* pItem, std::ostream& out) = 0;
     virtual void putRingItem(const CRingItem* pItem, int fd) = 0;
+#if NSCLDAQ_ROOT != '_'    
     virtual void putRingItem(const CRingItem* pItem, CRingBuffer& ringbuf) = 0;
+#endif
     
     virtual CAbnormalEndItem* makeAbnormalEndItem() = 0;
     virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem& rhs) = 0;

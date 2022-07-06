@@ -28,7 +28,9 @@
 #include "CRingScalerItem.h"
 #include "CRingTextItem.h"
 #include "CRingStateChangeItem.h"
+#if NSCLDAQ_ROOT != '_'  
 #include <CRingBuffer.h>
+#endif
 #include <io.h>
 
 #include <string.h>
@@ -117,6 +119,7 @@ namespace v10 {
   *   @return ::CRingItem* pointer to a newly created ring item that must
   *                   be deleted at some point.
   */
+ #if NSCLDAQ_ROOT != '_'  
  ::CRingItem*
  RingItemFactory::getRingItem(CRingBuffer& ringbuf)
  {
@@ -135,6 +138,7 @@ namespace v10 {
     
     return result;
  }
+ #endif
  /**
   * getRingItem (from file descriptor)
   *    @param fd - file descriptor.
@@ -147,7 +151,7 @@ namespace v10 {
     // Read the header then the body:
     
     v10::RingItemHeader hdr;
-    if (io::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
+    if (fmtio::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
      return nullptr;               // EOF.
     }
     
@@ -155,7 +159,7 @@ namespace v10 {
     
     uint8_t* p  = reinterpret_cast<uint8_t*>(result->getBodyCursor());
     size_t bodySize = hdr.s_size - sizeof(v10::RingItemHeader);
-    if (io::readData(fd, p, bodySize) < bodySize) {
+    if (fmtio::readData(fd, p, bodySize) < bodySize) {
      delete result;
      return nullptr;                  // EOF.
     }
@@ -168,7 +172,7 @@ namespace v10 {
  /**
   * getRingItem (from ios::istream)
   *    @param in - input stream  (note that this must be opened with
-  *                io::binary set)
+  *                fmtio::binary set)
   *     @return ::CRingItem* pointer to new ring itemthat must be
   *              destroyed via delete.
   *     @retval nullptr - if the read could not be done;
@@ -225,7 +229,7 @@ namespace v10 {
   *
   *  @param pItem - pointer to the item.
   *  @param fd    - file descriptor.
-  *  @throw errors are reported by the NSCLDAQ io::writeData function
+  *  @throw errors are reported by the NSCLDAQ fmtio::writeData function
   *         via exceptions.
   */
  void
@@ -233,7 +237,7 @@ namespace v10 {
  {
     const ::v10::RingItemHeader* hdr =
         reinterpret_cast<const ::v10::RingItemHeader*>(pItem->getItemPointer());
-    io::writeData(fd, hdr, hdr->s_size);
+    fmtio::writeData(fd, hdr, hdr->s_size);
     
  }
  /**
@@ -243,6 +247,7 @@ namespace v10 {
   *   @throw exceptions from CRingBUfer::put
   *   @note ringbuf must be opened as a producer.
   */
+ #if NSCLDAQ_ROOT != '_'  
  void
  RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf)
  {
@@ -250,6 +255,7 @@ namespace v10 {
         reinterpret_cast<const ::v10::RingItemHeader*>(pItem->getItemPointer());
     ringbuf.put(hdr, hdr->s_size);
  }
+ #endif
  //////////////////////////////////////////////////////////////
  // Abnormal end items are not supported by V10.
  // Attempts to create them from scratch return nullptr.

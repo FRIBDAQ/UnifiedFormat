@@ -36,9 +36,13 @@
 
 
 #include <string.h>
-#include <CRingBuffer.h>
+
 #include <iostream>
 #include <unistd.h>
+
+#if NSCLDAQ_ROOT != '_'
+#include <CRingBuffer.h>
+#endif
 #include <io.h>
 #include <stdexcept>
 #include <typeinfo>
@@ -83,6 +87,7 @@ RingItemFactory::makeRingItem(
  *   @note there is an assumption that the ring item header
  *        matches the format of the v11::RingItemHeader.
  */
+
 ::CRingItem*
 RingItemFactory::makeRingItem(const ::CRingItem& rhs)
 {
@@ -112,6 +117,7 @@ RingItemFactory::makeRingItem(const ::RingItem* pRawRing)
     pItem->updateSize();
     return pItem;
 }
+#if NSCLDAQ_ROOT != '_'    
 /**
  * getRingItem
  *     Get a ring item from a ringbuffer (we must be attached as
@@ -136,6 +142,7 @@ RingItemFactory::getRingItem(CRingBuffer& ringbuf)
     pItem->updateSize();
     return pItem;
 }
+#endif
 /**
  * getRingItem
  *   @param fd - file descriptor open on the source of ring items.
@@ -146,7 +153,7 @@ RingItemFactory::getRingItem(CRingBuffer& ringbuf)
 RingItemFactory::getRingItem(int fd)
 {
     v11::RingItemHeader hdr;
-    if (io::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
+    if (fmtio::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
         return nullptr;
     }
     v11::CRingItem* pResult = new v11::CRingItem(hdr.s_type, hdr.s_size);
@@ -155,7 +162,7 @@ RingItemFactory::getRingItem(int fd)
         reinterpret_cast<v11::pRingItem>(pResult->getItemPointer());
     size_t remainingSize = hdr.s_size - sizeof(v11::RingItemHeader);
     uint8_t* p = reinterpret_cast<uint8_t*>(&(pRawItem->s_body));
-    if (io::readData(fd, p, remainingSize) != remainingSize) {
+    if (fmtio::readData(fd, p, remainingSize) != remainingSize) {
         delete pResult;
         return nullptr;                 // EOF.
     }
@@ -225,8 +232,9 @@ RingItemFactory::putRingItem(const ::CRingItem* pItem, int fd)
 {
     const void* pData = pItem->getItemPointer();
     size_t bytes      = pItem->size();
-    io::writeData(fd, pData, bytes);
+    fmtio::writeData(fd, pData, bytes);
 }
+#if NSCLDAQ_ROOT != '_'    
 /**
  * putRingItem
  *    Put a ring item to a ringbuffer.  BLocks until the item is fully
@@ -239,6 +247,7 @@ RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& rbuf)
 {
     rbuf.put(pItem->getItemPointer(), pItem->size());
 }
+#endif
 /**
  * makeAbnormalEndItem.
  *   Creates a v11::CAbnormalEndItem and returns it as a base class

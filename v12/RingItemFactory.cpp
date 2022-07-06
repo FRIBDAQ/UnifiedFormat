@@ -35,7 +35,9 @@
 #include "DataFormat.h"
 
 #include <string.h>
+#if NSCLDAQ_ROOT != '_'    
 #include <CRingBuffer.h>
+#endif
 #include <io.h>
 #include <stdexcept>
 #include <set>
@@ -108,6 +110,7 @@ RingItemFactory::makeRingItem(
     memcpy(pResult->getItemPointer(), rhs, rhs->s_header.s_size);
     return pResult;
 }
+#if NSCLDAQ_ROOT != '_'    
 /**
  * getRingItem
  *    Get a ring item from a ring buffer.
@@ -135,6 +138,7 @@ RingItemFactory::getRingItem(CRingBuffer& ringbuf)
     pResult->updateSize();
     return pResult;
 }
+#endif
 /**
  * getRingItem
  *    Read a ring item from file open on a file descriptor.,
@@ -146,7 +150,7 @@ RingItemFactory::getRingItem(CRingBuffer& ringbuf)
 RingItemFactory::getRingItem(int fd)
 {
     v12::RingItemHeader hdr;
-    if (io::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
+    if (fmtio::readData(fd, &hdr, sizeof(hdr)) < sizeof(hdr)) {
         return nullptr;
     }
     
@@ -157,7 +161,7 @@ RingItemFactory::getRingItem(int fd)
     uint32_t remaining = hdr.s_size - sizeof(hdr);
     
     if (remaining) {
-        if (io::readData(fd, p, remaining) < remaining) {
+        if (fmtio::readData(fd, p, remaining) < remaining) {
             delete pResult;
             return nullptr;
         }
@@ -219,15 +223,16 @@ RingItemFactory::putRingItem(const ::CRingItem* pItem, std::ostream& out)
  *
  *   @param pItem - pointer to the item t put.
  *   @param fd    - File descriptor open on the file.
- *   @throw errors from io::writeData are thrown as exceptions.
+ *   @throw errors from fmtio::writeData are thrown as exceptions.
  */
 void
 RingItemFactory::putRingItem(const ::CRingItem* pItem, int fd)
 {
     size_t n = pItem->size();
     const void* p = pItem->getItemPointer();
-    io::writeData(fd, p, n);
+    fmtio::writeData(fd, p, n);
 }
+#if NSCLDAQ_ROOT != '_'    
 /**
  * putRingItem
  *    Put a ring item to a ring buffer.
@@ -243,6 +248,7 @@ RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf)
     
     ringbuf.put(p, n);
 }
+#endif
 /**
  *  makeAbnormalEndItem
  *     Create an abnormal end run item:
