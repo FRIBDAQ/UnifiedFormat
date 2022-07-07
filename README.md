@@ -27,5 +27,25 @@ Key to the directories:
 
 *  abstract - contains the various base classes. While functional for some
 version of NSCDAQ they are not meant to actually be used.
+*  v10, v11, 12 contain the support for those versions of NSCLDAQ format.
+*  examples contain example programs, currently only evtdump
+*  the top level contains the factory selector code.
+*  docs contains the documentation (docbook) source code.
 
+Installation instructions:
+The build system is cmake which likes to do out of tree builds.  There are
+currently two cmake variables:
 
+CMAKE_INSTALL_PREFIX - governs where the package is installed.
+NSCLDAQ_ROOT         - if building with NSCLDAQ (to support online use), this
+                       points to an NSCLDAQ installation tree.
+Here's a sample build with cd set to the cloned repository:
+
+```
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/opt/daqformat/1.1 \
+  -DNSCLDAQ_ROOT=/usr/opt/daq/11.3-027
+make -j26 all && make install && make test
+
+```
