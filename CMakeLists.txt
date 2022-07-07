@@ -9,14 +9,15 @@ set(NSCLDAQ_LIB ${NSCLDAQ_ROOT}/lib CACHE STRING "${NSCLDAQ_ROOT}/lib")
 
 file(WRITE ${CMAKE_BINARY_DIR}/fmtconfig.h "#ifndef FMTCONFIG_H\n")
 file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#define FMTCONFIG_H\n")
-file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#define NSCLDAQ_ROOT '${NSCLDAQ_ROOT}'\n")
-file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#if NSCLDAQ_ROOT != '_'\n")
-file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#define HAVE_NSCLDAQ\n")
-file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#endif\n")
+if(${NSCLDAQ_ROOT} STREQUAL _)
+else()
+ file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#define HAVE_NSCLDAQ\n")
+endif()
 file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#endif\n")
 
 install(FILES ${CMAKE_BINARY_DIR}/fmtconfig.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 enable_testing()
+
 
 
 # specify the C++ standard

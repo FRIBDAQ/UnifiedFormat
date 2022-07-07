@@ -55,7 +55,7 @@ else ()
   ${NSCLDAQ_INC}
    ${CMAKE_BINARY_DIR}
   )
-  target_sources(evtdump {RIVATE RingDataSource.cpp)
+  target_sources(evtdump PRIVATE RingDataSource.cpp)
 
   target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${NSCLDAQ_LIB})
 

@@ -290,7 +290,7 @@ makeDataSource(RingItemFactoryBase* pFactory, const std::string& strUrl)
             CRingBuffer* pRing = CRingAccess::daqConsumeFrom(strUrl);
             return new RingDataSource(pFactory, *pRing);
         }
-        catch (CExceptino& e) {
+        catch (CException& e) {
             throw std::invalid_argument(e.ReasonText());
         }
 #else

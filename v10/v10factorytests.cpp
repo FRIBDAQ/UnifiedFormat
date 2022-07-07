@@ -24,7 +24,7 @@
 #include "Asserts.h"
 #include "RingItemFactory.h"
 #include "DataFormat.h"
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
 #include <CRingBuffer.h>
 #endif
 #include "CRingItem.h"
@@ -204,13 +204,13 @@ protected:
     void state_8();
     private:
     v10::RingItemFactory* m_pFactory;
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
     CRingBuffer*          m_pProducer;
     CRingBuffer*          m_pConsumer;
 #endif
 public:
     void setUp() {
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
         if ( CRingBuffer::isRing(ringName)) {
             CRingBuffer::remove(ringName);
         }
@@ -221,7 +221,7 @@ public:
     }
     void tearDown() {
         delete m_pFactory;
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
         delete m_pProducer;
         delete m_pConsumer;
         CRingBuffer::remove(ringName);
@@ -358,7 +358,7 @@ v10factorytest::ring_4()
 void
 v10factorytest::ring_5()
 {
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
 #pragma packed(push, 1)
     struct {
         v10::RingItemHeader s_header;
@@ -559,7 +559,7 @@ v10factorytest::ring_9()
 void
 v10factorytest::ring_10()
 {
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
 #pragma packed(push, 1)
     struct {
         v10::RingItemHeader s_header;

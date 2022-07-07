@@ -39,7 +39,7 @@
 #include <CRingStateChangeItem.h>
 
 #include <string.h>
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ    
 #include <CRingBuffer.h>
 #endif
 #include <sys/mman.h>
@@ -355,7 +355,7 @@ void v11facttest::base_4()
 // This test requires the DAQ be running.
 void v11facttest::get_1()
 {
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ    
     CRingBuffer* pProducer(0);
     CRingBuffer* pConsumer(0);
     ::CRingItem* pGotten(0);
@@ -541,7 +541,7 @@ void v11facttest::put_2()
   
 void v11facttest::put_3()
 {
-#if NSCLDAQ_ROOT != '_'
+#ifdef HAVE_NSCLDAQ
 CRingBuffer* pProducer(0);
     CRingBuffer* pConsumer(0);
     ::CRingItem* pGotten(0);
