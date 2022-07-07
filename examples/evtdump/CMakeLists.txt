@@ -16,7 +16,7 @@ add_executable(
   URL.cpp
 )
 
-target_compile_options(evtdump PUBLIC -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+target_compile_options(evtdump PUBLIC -g )
 add_dependencies(evtdump cmdopts)
 
 
@@ -26,6 +26,7 @@ if(${NSCLDAQ_ROOT} STREQUAL _)
   ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
   ${CMAKE_BINARY_DIR}/examples/evtdump
   ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_BINARY_DIR}
   )
 target_link_libraries(evtdump
   NSCLDAQFormat
@@ -52,6 +53,7 @@ else ()
   ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
   ${CMAKE_BINARY_DIR}/examples/evtdump
   ${NSCLDAQ_INC}
+   ${CMAKE_BINARY_DIR}
   )
   target_sources(evtdump {RIVATE RingDataSource.cpp)
 

@@ -18,7 +18,10 @@
 /** @file:  evtdump.cpp
  *  @brief: Main program to use the format library to do event file dumping
  */
-
+#include <fmtconfig.h>
+#ifdef HAVE_NSCLDAQ
+#error "Have nscldaq"
+#endif
 #include "cmdline.h"
 #include <string>
 #include <NSCLDAQFormatFactorySelector.h>
@@ -30,7 +33,7 @@
 #include "DataSource.h"
 #include "FdDataSource.h"
 #include "StreamDataSource.h"
-#if NSCLDAQ_ROOT != '_'
+#ifdef HAVE_NSCLDAQ
 #include "RingDataSource.h"
 #include <CRemoteAccess.h>
 #include <CRingBuffer.h>
@@ -284,7 +287,7 @@ makeDataSource(RingItemFactoryBase* pFactory, const std::string& strUrl)
     
     if ((protocol == "tcp") || (protocol == "ring")) {
         // Ring buffer so:
-#if NSCLDAQ_ROOT != '_'
+#ifdef HAVE_NSCLDAQ
         try {
             CRingBuffer* pRing = CRingAccess::daqConsumeFrom(strUrl);
             return new RingDataSource(pFactory, *pRing);

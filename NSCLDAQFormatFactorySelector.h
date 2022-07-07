@@ -21,7 +21,7 @@
 
 #ifndef NSCLDAQFORMATFACTORYSELECTOR_H
 #define NSCLDAQFORMATFACTORYSELECTOR_h
-
+#include <fmtconfig.h>
 /**
  * Rather than a class, we can just use a namespace to provide these
  * essentially unbound functions.
