@@ -19,9 +19,7 @@
  *  @brief: Main program to use the format library to do event file dumping
  */
 #include <fmtconfig.h>
-#ifdef HAVE_NSCLDAQ
-#error "Have nscldaq"
-#endif
+
 #include "cmdline.h"
 #include <string>
 #include <NSCLDAQFormatFactorySelector.h>
