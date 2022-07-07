@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <vector>
+#include <fmtconfig.h>
 // Forward definitions
 
 class CRingBuffer;
@@ -56,7 +57,7 @@ public:
     virtual CRingItem* makeRingItem(const CRingItem& rhs) = 0;
     virtual CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
     
-#if NSCLDAQ_ROOT != '_'        
+#ifdef HAVE_NSCLDAQ
     virtual CRingItem* getRingItem(CRingBuffer& ringbuf) = 0;
 #endif
     virtual CRingItem* getRingItem(int fd) = 0;
@@ -64,7 +65,7 @@ public:
     
     virtual std::ostream& putRingItem(const CRingItem* pItem, std::ostream& out) = 0;
     virtual void putRingItem(const CRingItem* pItem, int fd) = 0;
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ
     virtual void putRingItem(const CRingItem* pItem, CRingBuffer& ringbuf) = 0;
 #endif
     

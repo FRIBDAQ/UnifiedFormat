@@ -40,7 +40,7 @@
 #include <iostream>
 #include <unistd.h>
 
-#if NSCLDAQ_ROOT != '_'
+#ifdef HAVE_NSCLDAQ
 #include <CRingBuffer.h>
 #endif
 #include <io.h>
@@ -117,7 +117,7 @@ RingItemFactory::makeRingItem(const ::RingItem* pRawRing)
     pItem->updateSize();
     return pItem;
 }
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ    
 /**
  * getRingItem
  *     Get a ring item from a ringbuffer (we must be attached as
@@ -234,7 +234,7 @@ RingItemFactory::putRingItem(const ::CRingItem* pItem, int fd)
     size_t bytes      = pItem->size();
     fmtio::writeData(fd, pData, bytes);
 }
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ    
 /**
  * putRingItem
  *    Put a ring item to a ringbuffer.  BLocks until the item is fully

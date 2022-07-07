@@ -17,7 +17,7 @@ set_target_properties(
     AbstractFormat PROPERTIES PUBLIC_HEADER "${ABSTRACT_FORMAT_PUBLIC_HEADERS}"
 )
 
-
+target_include_directories(AbstractFormat PRIVATE ${CMAKE_BINARY_DIR})
 
 target_compile_options(AbstractFormat PRIVATE -g -DDNSCLDAQROOT=${NSCLDAQ_ROOT})
 target_link_options(AbstractFormat PRIVATE -g)
@@ -39,6 +39,7 @@ add_executable(
     Asserts.h DataFormat.h 
 )
 
+target_include_directories(unittests PRIVATE ${CMAKE_BINARY_DIR})
 
 target_link_libraries(unittests AbstractFormat cppunit)
 target_compile_options(unittests PRIVATE -g)

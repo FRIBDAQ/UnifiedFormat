@@ -42,6 +42,7 @@ target_sources(
 target_include_directories(
     V12Format PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
+    ${CMAKE_BINARY_DIR}
 )
 if (${NSCLDAQ_ROOT} STREQUAL _)
 else ()
@@ -79,7 +80,7 @@ add_executable(v12unittests
 target_link_libraries(v12unittests AbstractFormat V12Format cppunit)
 target_include_directories(v12unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
-${NSCLDAQ_INC}
+${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
 )
 
 target_compile_options(v12unittests PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')

@@ -28,7 +28,7 @@
 #include "CRingScalerItem.h"
 #include "CRingTextItem.h"
 #include "CRingStateChangeItem.h"
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
 #include <CRingBuffer.h>
 #endif
 #include <io.h>
@@ -119,7 +119,7 @@ namespace v10 {
   *   @return ::CRingItem* pointer to a newly created ring item that must
   *                   be deleted at some point.
   */
- #if NSCLDAQ_ROOT != '_'  
+ #ifdef HAVE_NSCLDAQ  
  ::CRingItem*
  RingItemFactory::getRingItem(CRingBuffer& ringbuf)
  {
@@ -247,7 +247,7 @@ namespace v10 {
   *   @throw exceptions from CRingBUfer::put
   *   @note ringbuf must be opened as a producer.
   */
- #if NSCLDAQ_ROOT != '_'  
+ #ifdef HAVE_NSCLDAQ  
  void
  RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf)
  {

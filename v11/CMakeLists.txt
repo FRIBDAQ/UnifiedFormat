@@ -29,6 +29,7 @@ target_sources(
 )
 target_include_directories(V11Format PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
+      ${CMAKE_BINARY_DIR}
 )
 
 install(TARGETS V11Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
@@ -70,6 +71,7 @@ target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
 target_include_directories(v11unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC}
+${CMAKE_BINARY_DIR}
 )
 
 target_compile_options(v11unittests PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')

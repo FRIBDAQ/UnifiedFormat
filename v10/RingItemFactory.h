@@ -37,7 +37,7 @@ namespace v10 {
                 size_t maxBody, uint32_t barrierType = 0 );
         ::CRingItem* makeRingItem(const ::CRingItem& rhs);
         ::CRingItem* makeRingItem(const RingItem* pRawRing);
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
         virtual ::CRingItem* getRingItem(CRingBuffer& ringbuf) ;
 #endif
         virtual ::CRingItem* getRingItem(int fd) ;
@@ -45,7 +45,7 @@ namespace v10 {
         
         virtual std::ostream& putRingItem(const ::CRingItem* pItem, std::ostream& out) ;
         virtual void putRingItem(const ::CRingItem* pItem, int fd) ;
-#if NSCLDAQ_ROOT != '_'  
+#ifdef HAVE_NSCLDAQ  
         virtual void putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf) ;
 #endif
         // abnormal end items for 10.x:

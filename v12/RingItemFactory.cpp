@@ -35,7 +35,7 @@
 #include "DataFormat.h"
 
 #include <string.h>
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ    
 #include <CRingBuffer.h>
 #endif
 #include <io.h>
@@ -110,7 +110,7 @@ RingItemFactory::makeRingItem(
     memcpy(pResult->getItemPointer(), rhs, rhs->s_header.s_size);
     return pResult;
 }
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ    
 /**
  * getRingItem
  *    Get a ring item from a ring buffer.
@@ -232,7 +232,7 @@ RingItemFactory::putRingItem(const ::CRingItem* pItem, int fd)
     const void* p = pItem->getItemPointer();
     fmtio::writeData(fd, p, n);
 }
-#if NSCLDAQ_ROOT != '_'    
+#ifdef HAVE_NSCLDAQ    
 /**
  * putRingItem
  *    Put a ring item to a ring buffer.
