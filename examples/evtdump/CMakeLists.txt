@@ -13,30 +13,56 @@ add_executable(
   evtdump.cpp cmdline.o cmdline.h
   DataSource.cpp
   FdDataSource.cpp StreamDataSource.cpp
-  RingDataSource.cpp
+  URL.cpp
 )
 
-target_include_directories(evtdump PRIVATE 
+target_compile_options(evtdump PUBLIC -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+add_dependencies(evtdump cmdopts)
+
+
+if(${NSCLDAQ_ROOT} STREQUAL _)
+  target_include_directories(evtdump PRIVATE 
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
+  ${CMAKE_BINARY_DIR}/examples/evtdump
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+target_link_libraries(evtdump
+  NSCLDAQFormat
+  AbstractFormat
+  V10Format
+  V11Format
+  V12Format
+  )
+  target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib )
+else ()
+  target_link_libraries(evtdump
+  NSCLDAQFormat
+  AbstractFormat
+  V10Format
+  V11Format
+  V12Format
+  ${NSCLDAQ_LIB}/libdaqshm.so
+  ${NSCLDAQ_LIB}/libDataFlow.so
+  ${NSCLDAQ_LIB}/libException.so
+  ${NSCLDAQ_LIB}/liburl.so
+  )
+  target_include_directories(evtdump PRIVATE 
   ${CMAKE_CURRENT_SOURCE_DIR}/../../
   ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
   ${CMAKE_BINARY_DIR}/examples/evtdump
   ${NSCLDAQ_INC}
-)
-target_link_libraries(evtdump
-NSCLDAQFormat
-AbstractFormat
-V10Format
-V11Format
-V12Format
-${NSCLDAQ_LIB}/libdaqshm.so
-${NSCLDAQ_LIB}/libDataFlow.so
-${NSCLDAQ_LIB}/libException.so
-${NSCLDAQ_LIB}/liburl.so
-)
-target_compile_options(evtdump PUBLIC -g)
-target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${NSCLDAQ_LIB})
+  )
+  target_sources(evtdump {RIVATE RingDataSource.cpp)
+
+  target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${NSCLDAQ_LIB})
+
+endif()
+
+
+
+
 install(TARGETS evtdump DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-add_dependencies(evtdump cmdopts)
 
 install(FILES
   evtdump.cpp 

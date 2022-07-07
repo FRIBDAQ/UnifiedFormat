@@ -30,14 +30,16 @@
 #include "DataSource.h"
 #include "FdDataSource.h"
 #include "StreamDataSource.h"
+#if NSCLDAQ_ROOT != '_'
 #include "RingDataSource.h"
 #include <CRemoteAccess.h>
 #include <CRingBuffer.h>
+#include <Exception.h>
+#endif
 #include <memory>
 
 #include <URL.h>
-#include <URIFormatException.h>
-#include <Exception.h>
+
 #include <fstream>
 #include <vector>
 #include <map>
@@ -276,26 +278,30 @@ makeDataSource(RingItemFactoryBase* pFactory, const std::string& strUrl)
     }
     // Parse the URI:
     
-    try {
-        URL uri(strUrl);
-        std::string protocol = uri.getProto();
-        
-        if ((protocol == "tcp") || (protocol == "ring")) {
-            // Ring buffer so:
-            
+    
+    URL uri(strUrl);
+    std::string protocol = uri.getProto();
+    
+    if ((protocol == "tcp") || (protocol == "ring")) {
+        // Ring buffer so:
+#if NSCLDAQ_ROOT != '_'
+        try {
             CRingBuffer* pRing = CRingAccess::daqConsumeFrom(strUrl);
             return new RingDataSource(pFactory, *pRing);
-        } else {
-            std::string path = uri.getPath();
-            std::ifstream& in(*(new std::ifstream(path.c_str())));  // Need it to last past block.
-            return new StreamDataSource(pFactory, in);
         }
-        
+        catch (CExceptino& e) {
+            throw std::invalid_argument(e.ReasonText());
+        }
+#else
+        std::cerr <<  "This version of evtdump has not been built with ringbuffer data source support\n";
+        exit(EXIT_FAILURE);
+#endif
+    } else {
+        std::string path = uri.getPath();
+        std::ifstream& in(*(new std::ifstream(path.c_str())));  // Need it to last past block.
+        return new StreamDataSource(pFactory, in);
     }
-    catch (CException& error) {
-        throw std::invalid_argument(error.ReasonText());
-    }
-    
+
 }
 
 /**
