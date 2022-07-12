@@ -526,7 +526,7 @@ RingItemFactory::makePhysicsEventCountItem(const ::CRingItem& rhs)
         result->setBodyHeader(pH->s_timestamp, pH->s_sourceId, pH->s_barrier);
         return result;
     } else {
-        const v12::PhysicsEventCountItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+        const v12::PhysicsEventCountItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
         return makePhysicsEventCountItem(
             pBody->s_eventCount, pBody->s_timeOffset, pBody->s_timestamp,
             pBody->s_offsetDivisor
