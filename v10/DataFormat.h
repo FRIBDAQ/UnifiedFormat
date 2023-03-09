@@ -53,9 +53,7 @@ be zero.
 
 namespace v10 {
 
-#ifndef PSTRUCT
-#define PSTRUCT struct 
-#endif
+
 
 // state change item type codes:
 
@@ -99,7 +97,7 @@ static const uint32_t TITLE_MAXSIZE(80);
 
 /*!  All ring items have common header structures: */
 
-typedef PSTRUCT _RingItemHeader {
+typedef struct _RingItemHeader {
   uint32_t     s_size;
   uint32_t     s_type;
 } RingItemHeader, *pRingItemHeader;
@@ -109,7 +107,7 @@ typedef PSTRUCT _RingItemHeader {
   header and a generic body
 */
 
-typedef PSTRUCT _RingItem {
+typedef struct _RingItem {
   RingItemHeader s_header;
   uint8_t        s_body[1];
 } RingItem, *pRingItem;
@@ -120,7 +118,7 @@ typedef PSTRUCT _RingItem {
   structure shown below:
 
 */
-typedef PSTRUCT _StateChangeItem {
+typedef struct _StateChangeItem {
   RingItemHeader  s_header;
   uint32_t        s_runNumber;
   uint32_t        s_timeOffset;
@@ -132,7 +130,7 @@ typedef PSTRUCT _StateChangeItem {
    Scaler items contain run time counters.
 */
 
-typedef PSTRUCT _ScalerItem {
+typedef struct _ScalerItem {
   RingItemHeader  s_header;
   uint32_t        s_intervalStartOffset;
   uint32_t        s_intervalEndOffset;
@@ -147,7 +145,7 @@ typedef PSTRUCT _ScalerItem {
   put in those scalers includes both the raw time and a divisor that
   can be used to support sub-second timing information
 */
-typedef PSTRUCT _NonIncrTimestampedScaler {
+typedef struct _NonIncrTimestampedScaler {
   RingItemHeader  s_header;
   uint64_t        s_eventTimestamp; /* For event building. */
   uint32_t        s_intervalStartOffset;
@@ -163,7 +161,7 @@ typedef PSTRUCT _NonIncrTimestampedScaler {
   are back to back in the body of the ring buffer. item.
 */
 
-typedef PSTRUCT _TextItem {
+typedef struct _TextItem {
   RingItemHeader s_header;
   uint32_t       s_timeOffset;
   uint32_t         s_timestamp;
@@ -176,7 +174,7 @@ typedef PSTRUCT _TextItem {
   For now a physics event is just a header and a body of uint16_t's.
 */
 
-typedef PSTRUCT _PhysicsEventItem {
+typedef struct _PhysicsEventItem {
   RingItemHeader s_header;
   uint16_t       s_body[];
 } PhysicsEventItem, *pPhysicsEventItem;
@@ -186,7 +184,7 @@ typedef PSTRUCT _PhysicsEventItem {
    need to know how many physics events have been produced
    so that they can figure out the sampling fraction.
 */
-typedef PSTRUCT __PhysicsEventCountItem {
+typedef struct __PhysicsEventCountItem {
   RingItemHeader s_header;
   uint32_t       s_timeOffset;
   uint32_t         s_timestamp;
@@ -198,7 +196,7 @@ typedef PSTRUCT __PhysicsEventCountItem {
  * ring buffer for monitoring software:
  * (EVB_FRAGMENT):
  */
-typedef PSTRUCT _EventBuilderFragment {
+typedef struct _EventBuilderFragment {
   RingItemHeader s_header;
   uint64_t       s_timestamp;
   uint32_t       s_sourceId;
