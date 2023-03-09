@@ -19,7 +19,7 @@ set_target_properties(
 
 target_include_directories(AbstractFormat PRIVATE ${CMAKE_BINARY_DIR})
 
-target_compile_options(AbstractFormat PRIVATE -g -DDNSCLDAQROOT=${NSCLDAQ_ROOT})
+target_compile_options(AbstractFormat PRIVATE -g -O2 -DDNSCLDAQROOT=${NSCLDAQ_ROOT})
 target_link_options(AbstractFormat PRIVATE -g)
 
 install(TARGETS AbstractFormat LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
@@ -42,7 +42,7 @@ add_executable(
 target_include_directories(unittests PRIVATE ${CMAKE_BINARY_DIR})
 
 target_link_libraries(unittests AbstractFormat cppunit)
-target_compile_options(unittests PRIVATE -g)
+target_compile_options(unittests PRIVATE -g -O2)
 target_link_options(unittests PRIVATE -g)
 
 

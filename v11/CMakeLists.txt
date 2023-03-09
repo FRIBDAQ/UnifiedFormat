@@ -45,7 +45,7 @@ target_link_libraries(V11Format
 )
 target_link_options(V11Format PRIVATE -g PUBLIC -Wl,-rpath=${NSCLDAQ_LIB})
 endif()
-target_compile_options(V11Format PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+target_compile_options(V11Format PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
 install(FILES
     ${v11headers}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v11

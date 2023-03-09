@@ -28,7 +28,7 @@ target_link_options(V10Format
 )
 endif()
 
-target_compile_options(V10Format PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+target_compile_options(V10Format PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
 
 
 install(TARGETS
@@ -51,7 +51,7 @@ target_include_directories(v10unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
 )
-target_compile_options(v10unittests PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+target_compile_options(v10unittests PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
 target_link_options(v10unittests PRIVATE -g)
 
 add_test(NAME v10Format COMMAND v10unittests)

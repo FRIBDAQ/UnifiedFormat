@@ -56,7 +56,7 @@ target_link_libraries(
 target_link_options(V12Format PRIVATE -g PUBLIC -Wl,-rpath=${NSCLDAQ_LIB})
 endif()
 
-target_compile_options(V12Format PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+target_compile_options(V12Format PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
 install(FILES
     ${v12headers}
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v12
@@ -83,6 +83,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
 )
 
-target_compile_options(v12unittests PRIVATE -g -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+target_compile_options(v12unittests PRIVATE -g -O2  -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
 target_link_options(v12unittests PRIVATE -g)
 add_test(NAME v12unittests COMMAND v12unittests)

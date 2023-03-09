@@ -16,7 +16,7 @@ add_executable(
   URL.cpp
 )
 
-target_compile_options(evtdump PUBLIC -g )
+target_compile_options(evtdump PUBLIC -g -O2)
 add_dependencies(evtdump cmdopts)
 
 

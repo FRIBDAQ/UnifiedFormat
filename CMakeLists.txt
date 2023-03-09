@@ -53,7 +53,7 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
 
-target_compile_options(NSCLDAQFormat PRIVATE -g)
+target_compile_options(NSCLDAQFormat PRIVATE -g -O2)
 target_link_options(NSCLDAQFormat PRIVATE -g)
 
 install(TARGETS NSCLDAQFormat LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
@@ -78,7 +78,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
  ${CMAKE_BINARY_DIR}
 )
 
-target_compile_options(selectortests PRIVATE -g)
+target_compile_options(selectortests PRIVATE -g -O2)
 target_link_options(selectortests PRIVATE -g)
 
 target_link_libraries(selectortests
