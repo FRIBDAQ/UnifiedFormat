@@ -54,7 +54,7 @@ be zero.
 namespace v10 {
 
 #ifndef PSTRUCT
-#define PSTRUCT struct __attribute__((__packed__))
+#define PSTRUCT struct 
 #endif
 
 // state change item type codes:
