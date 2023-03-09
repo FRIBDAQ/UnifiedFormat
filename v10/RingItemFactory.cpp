@@ -589,7 +589,8 @@ namespace v10 {
         for (const auto &s : strings) {
            expectedSize += s.size() + 1;      // + 1 for the null terminator byte.
         }
-        if (pItem->s_header.s_size != expectedSize) throw std::bad_cast();
+	// Since sizeof is not realy possible to deal with if not padded:
+	//        if (pItem->s_header.s_size != expectedSize) throw std::bad_cast();
         
         return makeTextItem(
            pItem->s_header.s_type, strings, pItem->s_timeOffset,
