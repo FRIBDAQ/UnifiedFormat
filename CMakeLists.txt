@@ -82,7 +82,8 @@ target_compile_options(selectortests PRIVATE -g -O2)
 target_link_options(selectortests PRIVATE -g)
 
 target_link_libraries(selectortests
-    NSCLDAQFormat AbstractFormat V10Format V11Format V12Format
+  NSCLDAQFormat V10Format V11Format V12Format
+  AbstractFormat
     cppunit
 )
 add_test(NAME selector COMMAND selectortests)
