@@ -39,7 +39,7 @@
 #include <stdexcept>
 #include <typeinfo>            // std::bad_cast
 #include <set>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 namespace v10 {
 /////////////////////////////////////////////////////////////////////////////
 // Factory methods for raw ring items:
@@ -710,9 +710,7 @@ namespace v10 {
           return result;
      }
      
-     static std::set<uint32_t> validStateChangeType = {
-         v10::BEGIN_RUN, v10::END_RUN, v10:PAUSE_RUN, v10::RESUME_RUN
-     };
+     static std::set<uint32_t> validStateChangeType;
      /**
       * isValidStateChangeType
       *    @param reason - state change item type (proposed).
@@ -721,6 +719,16 @@ namespace v10 {
      bool
      RingItemFactory::isValidStateChangeType(uint32_t reason)
      {
+       // Sadly using {} initializers for sets does not work in Gcc9 so:
+
+          if (validStateChangeType.empty()) {
+	     validStateChangeType.insert(v10::BEGIN_RUN);
+	     validStateChangeType.insert(v10::END_RUN);
+	     validStateChangeType.insert(v10::PAUSE_RUN);
+	     validStateChangeType.insert(v10::RESUME_RUN);
+ 
+ 	  }
+	 
           return validStateChangeType.count(reason) > 0;
      }
 }                          // v10 namespace.
