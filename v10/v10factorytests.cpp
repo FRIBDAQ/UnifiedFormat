@@ -48,7 +48,8 @@
 #include "CRingFragmentItem.h"
 #include <CUnknownFragment.h>
 #include <memory>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#pragma GCC diagnostic ignored "-Wunused-result"
 // A comment about all the try catch blocks:
 // ASSERTIONS that fail trigger an exception so we catch all
 // exceptions and delete any dynamically created ring item and then
