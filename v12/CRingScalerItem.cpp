@@ -21,7 +21,7 @@
 #include <string.h>
 #include <sstream>
 #include <stdio.h>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 using namespace std;
 
 namespace v12 {

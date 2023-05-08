@@ -46,7 +46,8 @@
 #include <sys/types.h>
 #include <sstream>      // For get std::istream e..
 #include <time.h>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#pragma GCC diagnostic ignored "-Wunused-result"
 
 // In our tests, we use std::unique_ptr to ensure there's not
 // any memory leaking.

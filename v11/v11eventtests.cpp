@@ -25,7 +25,7 @@
 #include "DataFormat.h"
 
 #include <stdexcept>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 class v11eventtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11eventtest);
     CPPUNIT_TEST(construct_1);

@@ -41,7 +41,7 @@
 #include <io.h>
 #include <stdexcept>
 #include <set>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 namespace v12 {
 
 static std::set<uint16_t> validTextItemTypes = {

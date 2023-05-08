@@ -48,7 +48,7 @@
 #include <sstream>
 #include <memory>
 
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 const char* ringbuffer="v11factoryring";
 
 static const size_t
