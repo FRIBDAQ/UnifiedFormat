@@ -24,7 +24,7 @@
 #include "CRingPhysicsEventCountItem.h"
 #include "DataFormat.h"
 #include <time.h>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 class v10counttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10counttest);
     CPPUNIT_TEST(construct_1);

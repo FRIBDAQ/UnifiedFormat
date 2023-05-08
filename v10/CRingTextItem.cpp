@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sstream>
 #include "DataFormat.h"
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 using namespace std;
 
 namespace v10 {

@@ -22,7 +22,7 @@
 #include <sstream>
 #include <string.h>
 #include <stdexcept>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 
 using namespace std;
 namespace v10 {

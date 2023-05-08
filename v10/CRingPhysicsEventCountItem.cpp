@@ -17,7 +17,7 @@
 #include "CRingPhysicsEventCountItem.h"
 #include "DataFormat.h"
 #include <sstream>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 using namespace std;
 
 namespace v10 {

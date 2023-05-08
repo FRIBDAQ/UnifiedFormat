@@ -47,7 +47,7 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <time.h>
-
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 namespace v11 {
 /**
  * makeRingItem
