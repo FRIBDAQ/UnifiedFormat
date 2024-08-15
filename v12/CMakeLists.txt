@@ -28,10 +28,11 @@ set (v12sources
   RingItemFactory.cpp
 )
 add_library(
-    V12Format SHARED ${v12sources}
+    V12Format STATIC ${v12sources}
 )
 
 install(TARGETS V12Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v12
 )
 
@@ -77,7 +78,7 @@ add_executable(v12unittests
   v12factorytests.cpp
 )
 
-target_link_libraries(v12unittests AbstractFormat V12Format cppunit)
+target_link_libraries(v12unittests V12Format  AbstractFormat cppunit)
 target_include_directories(v12unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}

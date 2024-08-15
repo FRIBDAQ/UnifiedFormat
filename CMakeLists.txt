@@ -45,7 +45,7 @@ set (toplevel_headers
 )
 
 add_library(
-    NSCLDAQFormat SHARED ${toplevel_sources}
+    NSCLDAQFormat STATIC ${toplevel_sources}
 )
 
 install(FILES
@@ -56,7 +56,9 @@ install(FILES
 target_compile_options(NSCLDAQFormat PRIVATE -g -O2)
 target_link_options(NSCLDAQFormat PRIVATE -g)
 
-install(TARGETS NSCLDAQFormat LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib )
+install(TARGETS NSCLDAQFormat LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib 
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib 
+)
 target_include_directories(
     NSCLDAQFormat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/v10

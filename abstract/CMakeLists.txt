@@ -1,5 +1,5 @@
 add_library(
-    AbstractFormat SHARED
+    AbstractFormat STATIC
     CRingItem.cpp CAbnormalEndItem.cpp CDataFormatItem.cpp CGlomParameters.cpp
     CPhysicsEventItem.cpp CRingFragmentItem.cpp
     CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp CRingTextItem.cpp
@@ -23,6 +23,7 @@ target_compile_options(AbstractFormat PRIVATE -g -O2 -DDNSCLDAQROOT=${NSCLDAQ_RO
 target_link_options(AbstractFormat PRIVATE -g)
 
 install(TARGETS AbstractFormat LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
+ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib"
 PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
 )
 

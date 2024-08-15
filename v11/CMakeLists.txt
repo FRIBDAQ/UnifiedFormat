@@ -20,7 +20,7 @@ set(v11headers
     RingItemFactory.h
     )
 add_library(
-    V11Format SHARED ${v11sources}
+    V11Format STATIC ${v11sources}
 )
 
 target_sources(
@@ -33,6 +33,7 @@ target_include_directories(V11Format PRIVATE
 )
 
 install(TARGETS V11Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v11
 )
 
@@ -67,7 +68,7 @@ v11unktests.cpp
 v11factoryTests.cpp
 )
 
-target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
+target_link_libraries(v11unittests V11Format AbstractFormat  cppunit)
 target_include_directories(v11unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC}

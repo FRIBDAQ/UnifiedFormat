@@ -1,7 +1,7 @@
 
 
 add_library(
-    V10Format SHARED CRingItem.cpp CPhysicsEventItem.cpp CRingFragmentItem.cpp
+    V10Format STATIC CRingItem.cpp CPhysicsEventItem.cpp CRingFragmentItem.cpp
     CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp CRingStateChangeItem.cpp
     CRingTextItem.cpp RingItemFactory.cpp
 )
@@ -33,6 +33,7 @@ target_compile_options(V10Format PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}'
 
 install(TARGETS
   V10Format LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v10
 )
 
@@ -46,7 +47,7 @@ add_executable(v10unittests
   v10counttests.cpp v10scalertests.cpp v10statetests.cpp v10txttests.cpp
   v10factorytests.cpp
 )
-target_link_libraries(v10unittests AbstractFormat V10Format cppunit)
+target_link_libraries(v10unittests V10Format AbstractFormat  cppunit)
 target_include_directories(v10unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
