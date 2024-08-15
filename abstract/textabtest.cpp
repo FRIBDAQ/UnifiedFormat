@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdexcept>
 
+using namespace ufmt;
 class textabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(textabtest);
     CPPUNIT_TEST(construct_1);

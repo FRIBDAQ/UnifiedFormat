@@ -25,82 +25,83 @@
 #include <typeinfo>
 #include <stdexcept>
 
+namespace ufmt {
+
+    /**
+     * default constructor
+     *    Create the ring item.
+     */
+    CAbnormalEndItem::CAbnormalEndItem() :
+        CRingItem(ABNORMAL_ENDRUN) {}
+        
+    /**
+     * destructor is null.
+     */
+    CAbnormalEndItem::~CAbnormalEndItem() {}
 
 
-/**
- * default constructor
- *    Create the ring item.
- */
-CAbnormalEndItem::CAbnormalEndItem() :
-    CRingItem(ABNORMAL_ENDRUN) {}
-    
-/**
- * destructor is null.
- */
-CAbnormalEndItem::~CAbnormalEndItem() {}
-
-
-/*
- * copy costructors --sort of.
- */
-CAbnormalEndItem::CAbnormalEndItem(const CAbnormalEndItem& rhs) :
-    CRingItem(rhs)
-{}
-CAbnormalEndItem::CAbnormalEndItem(const CRingItem& rhs) :
-    CRingItem(rhs)
-{
-    if(type() != ABNORMAL_ENDRUN) {
-        throw std::bad_cast();
+    /*
+    * copy costructors --sort of.
+    */
+    CAbnormalEndItem::CAbnormalEndItem(const CAbnormalEndItem& rhs) :
+        CRingItem(rhs)
+    {}
+    CAbnormalEndItem::CAbnormalEndItem(const CRingItem& rhs) :
+        CRingItem(rhs)
+    {
+        if(type() != ABNORMAL_ENDRUN) {
+            throw std::bad_cast();
+        }
     }
-}
 
 
 
-/* Formatting interface */
+    /* Formatting interface */
 
-/**
- * typeName
- *    Returns a textual name of the item typ
- * @return std::string
- */
-std::string
-CAbnormalEndItem::typeName() const
-{
-    return "Abnormal End";
-}
-/**
- * toString
- *
- *   Return a nicely formatted rendition of the ring item.
- * @return std::string
- */
-std::string
-CAbnormalEndItem::toString() const
-{
-    std::string result = typeName();
-    result += "\n";
-    return result;
-}
-// Implement pure virtuals from base class:
+    /**
+     * typeName
+     *    Returns a textual name of the item typ
+     * @return std::string
+     */
+    std::string
+    CAbnormalEndItem::typeName() const
+    {
+        return "Abnormal End";
+    }
+    /**
+     * toString
+     *
+     *   Return a nicely formatted rendition of the ring item.
+     * @return std::string
+     */
+    std::string
+    CAbnormalEndItem::toString() const
+    {
+        std::string result = typeName();
+        result += "\n";
+        return result;
+    }
+    // Implement pure virtuals from base class:
 
-/**
- * getBodyHeader()
- *   @return nullptr
- */
-void*
-CAbnormalEndItem::getBodyHeader() const
-{
-  return nullptr;
-}
-/**
- * setBodyHeader
- *    no-op
- */
-void
-CAbnormalEndItem::setBodyHeader(
-    uint64_t timestamp, uint32_t sourceId,
-    uint32_t barrierType
-)
-{
+    /**
+     * getBodyHeader()
+     *   @return nullptr
+     */
+    void*
+    CAbnormalEndItem::getBodyHeader() const
+    {
+    return nullptr;
+    }
+    /**
+     * setBodyHeader
+     *    no-op
+     */
+    void
+    CAbnormalEndItem::setBodyHeader(
+        uint64_t timestamp, uint32_t sourceId,
+        uint32_t barrierType
+    )
+    {
 
+    }
 }

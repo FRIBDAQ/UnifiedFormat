@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <string>
 #include <stdint.h>
-
+using namespace ufmt;
 class ringfabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(ringfabtest);
     CPPUNIT_TEST(construct_1);

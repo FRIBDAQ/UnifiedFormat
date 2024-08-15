@@ -25,6 +25,8 @@
 #include <stdexcept>
 #include <string>
 
+using namespace ufmt;
+
 class phyabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(phyabtest);
     CPPUNIT_TEST(name);

@@ -24,6 +24,8 @@
 #include "CAbnormalEndItem.h"
 #include <stdexcept>
 
+using namespace ufmt;
+
 class abendabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(abendabtest);
     CPPUNIT_TEST(typeName);

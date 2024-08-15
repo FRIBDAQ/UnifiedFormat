@@ -32,6 +32,7 @@
 
 #include <sstream>
 
+using namespace ufmt;
 /** Since the CRingItem class is abstract we need a minimal concrete sublcass
  * to test any of it.
  */

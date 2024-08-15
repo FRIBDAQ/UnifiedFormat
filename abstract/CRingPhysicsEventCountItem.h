@@ -24,69 +24,69 @@
 #include <typeinfo>
 #include <string>
 
+namespace ufmt {
+  /*!
+    The physics event count item provides periodic informatino about how
+    many events have been produced by the DAQ system.  This is provided
+    so that applications that sample event data can determine what fraction
+    of the data they've managed to keep up with.
+    Applications can count the physics events they've seen,
+    They can then divide this number by the number of events that
+    have actually been generated to get an analysis fraction.
 
-/*!
-   The physics event count item provides periodic informatino about how
-   many events have been produced by the DAQ system.  This is provided
-   so that applications that sample event data can determine what fraction
-   of the data they've managed to keep up with.
-   Applications can count the physics events they've seen,
-   They can then divide this number by the number of events that
-   have actually been generated to get an analysis fraction.
+  */
+  class CRingPhysicsEventCountItem : public CRingItem
+  {
 
-*/
-class CRingPhysicsEventCountItem : public CRingItem
-{
-
-  // constructors and other canonicals:
-public:
-  CRingPhysicsEventCountItem();
-  CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset, unsigned divisor = 1);
-  CRingPhysicsEventCountItem(uint64_t count, 
-			     uint32_t timeoffset, 
-			     time_t stamp, uint32_t sid, unsigned divisor = 1);
-  virtual ~CRingPhysicsEventCountItem();
-private:
-  CRingPhysicsEventCountItem(const CRingPhysicsEventCountItem& rhs);
-  CRingPhysicsEventCountItem& operator=(const CRingPhysicsEventCountItem& rhs);
-  int operator==(const CRingPhysicsEventCountItem& rhs) const;
-  int operator!=(const CRingPhysicsEventCountItem& rhs) const;
-public:
-
-
-  // public interface:
-public:
-  virtual uint32_t getTimeOffset() const;
-  virtual void     setTimeOffset(uint32_t offset);
-  virtual float    computeElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
-
-  virtual time_t   getTimestamp() const;
-  virtual void     setTimestamp(time_t stamp);
-
-  virtual uint64_t getEventCount() const;
-  virtual void     setEventCount(uint64_t count);
-  
-  virtual uint32_t getOriginalSourceId() const;
+    // constructors and other canonicals:
+  public:
+    CRingPhysicsEventCountItem();
+    CRingPhysicsEventCountItem(uint64_t count,
+            uint32_t timeOffset, unsigned divisor = 1);
+    CRingPhysicsEventCountItem(uint64_t count, 
+            uint32_t timeoffset, 
+            time_t stamp, uint32_t sid, unsigned divisor = 1);
+    virtual ~CRingPhysicsEventCountItem();
+  private:
+    CRingPhysicsEventCountItem(const CRingPhysicsEventCountItem& rhs);
+    CRingPhysicsEventCountItem& operator=(const CRingPhysicsEventCountItem& rhs);
+    int operator==(const CRingPhysicsEventCountItem& rhs) const;
+    int operator!=(const CRingPhysicsEventCountItem& rhs) const;
+  public:
 
 
-  // Virtual method overrides:
+    // public interface:
+  public:
+    virtual uint32_t getTimeOffset() const;
+    virtual void     setTimeOffset(uint32_t offset);
+    virtual float    computeElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
 
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual void* getBodyHeader() const; 
+    virtual time_t   getTimestamp() const;
+    virtual void     setTimestamp(time_t stamp);
 
-  virtual std::string typeName() const;	// Textual type of item.
-  virtual std::string toString() const; // Provide string dump of the item.
+    virtual uint64_t getEventCount() const;
+    virtual void     setEventCount(uint64_t count);
+    
+    virtual uint32_t getOriginalSourceId() const;
 
 
-private:
-  void* fillEventCountBody(
-      uint32_t tOffset, uint32_t divisor, uint32_t tStamp,
-      uint64_t count, uint32_t sid
-  );
+    // Virtual method overrides:
 
-};
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                          uint32_t barrierType = 0);
+    virtual void* getBodyHeader() const; 
 
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
+
+
+  private:
+    void* fillEventCountBody(
+        uint32_t tOffset, uint32_t divisor, uint32_t tStamp,
+        uint64_t count, uint32_t sid
+    );
+
+  };
+}
 #endif

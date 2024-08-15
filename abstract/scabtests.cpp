@@ -25,7 +25,7 @@
 #include "DataFormat.h"
 #include <time.h>
 #include <stdexcept>
-
+using namespace ufmt;
 class scabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(scabtest);
     CPPUNIT_TEST(construct_1);

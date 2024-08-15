@@ -224,6 +224,7 @@
             <title>Generating a Physics item for NSCLDAQ-11</title>
             <programlisting>
 #include &lt;v11/CPhysicsEventItem.h&gt;     <co id='v11phys.header' />
+using namespace ufmt;
 ...
 v11::CPhysicsEventItem item;                      <co id='v11phys.create' />
 item.setBodyHeader(someTimestamp, someSourceId); <co id='v11phys.setbodyheader' />
@@ -384,8 +385,8 @@ item.updateSize();                           <co id='v11phys.setsize' />
 #include &lt;memory&gt;                   <co id='v11fact.memory' />
 ...
 
-v11::RingItemFactory fact;               <co id='v11fact.instance' />
-std::unique_ptr&lt;::CPhysicsEventItem&gt; pItem(fact.makePhysicsEventItem()); <co id='v11fact.make' />
+ufmt::v11::RingItemFactory fact;               <co id='v11fact.instance' />
+std::unique_ptr&lt;ufmt::CPhysicsEventItem&gt; pItem(fact.makePhysicsEventItem()); <co id='v11fact.make' />
 
 pItem-&gt;setBodyHeader(someTimestamp, someSourceId); 
 uint16_t* pBody = reinterpret_cast&lt;uint16_t*&gt;(pItem-&gt;getBodyCursor); 
@@ -544,9 +545,10 @@ pItem-&gt;updateSize();
 #include &lt;RingItemFactoryBase.h&gt;    <co id='select.headers' />
 #include &lt;CPhysicsEventItem.h&gt;
 #include &lt;memory&gt;
+using namespace ufmt;
 ..
 
-::RingItemFactoryBase&amp; fact(FormatSelector::selectFactory(FormatSelector::v11)); <co id='select.select' />
+RingItemFactoryBase&amp; fact(ufmtFormatSelector::selectFactory(FormatSelector::v11)); <co id='select.select' />
 std::unique_ptr&lt;::CPhysicsEventItem&gt; pItem(fact.makePhysicsEventItem());  <co id='select.makeitem' />
                                                                   <co id='select.fillbody' />
 pItem-&gt;setBodyHeader(someTimestamp, someSourceId); 
@@ -643,21 +645,22 @@ pItem-&gt;updateSize();
 #include &lt;CRingFormatItem.h&gt;    <co id='fmt.formatitem' />
 #include &lt;memory&gt;
 #include &lt;DataFormat.h&gt;         <co id='fmt.dataformat' />
+using namespace ufmt;
 
 static enum FormatSelector::SupportedVersions defaultVersion(FormatSelector::v10); <co id='fmt.defaultfmt' />
 ...
-:RingItemFactoryBase* pFactory(0);
+RingItemFactoryBase* pFactory(0);
 
-std::unique_ptr&lt;::CRingItem&gt; item(getRingItem());  <co id='fmt.getitem' />
+std::unique_ptr&lt;CRingItem&gt; item(getRingItem());  <co id='fmt.getitem' />
 if (item-&gt;type() == RING_FORMAT) {                    <co id='fmt.isformat' />
-    ::CRingFormatItem* pFormatItem =
+    CRingFormatItem* pFormatItem =
         reinterpret_cast&lt;::CRingFormatItem*&gt;(item.get()); <co id='fmt.cast' />
     pFactory = &amp;(FormatSelector::selectFactory(*pFormatItem)); <co id='fmt.selectfromitem' />
 } else {
     pFactory = &amp;(FormatSelector::selectFactory(defaultVersion)); <co id='fmt.selectdefault' />
 }
 
-::RingItemFactoryBase&amp; fact(*pFactory);               <co id='fmt.makereference' />
+RingItemFactoryBase&amp; fact(*pFactory);               <co id='fmt.makereference' />
 
 ...
 
@@ -780,16 +783,16 @@ if (item-&gt;type() == RING_FORMAT) {                    <co id='fmt.isformat' /
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;NSCLDAQFactorySelector.h&gt;
+namespace ufmt {
+    namespace FormatSelector {
+        enum SupportedVersions {v10, v11, v12};
 
-namespace FormatSelector {
-    enum SupportedVersions {v10, v11, v12};
-
-    RingItemFactoryBase&amp; selectFactory(SupportedVersions version);
-    RingItemFactoryBase&amp; selectFactory(CDataFormatItem&amp; item);
+        RingItemFactoryBase&amp; selectFactory(SupportedVersions version);
+        RingItemFactoryBase&amp; selectFactory(CDataFormatItem&amp; item);
 
 
+    }
 }
-
 
                 </programlisting>
             </refsynopsisdiv>
@@ -907,95 +910,95 @@ namespace FormatSelector {
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;RingItemFactoryBase.h&gt;
-
-class RingItemFactoryBase {
-public:
-    virtual CRingItem* makeRingItem(uint16_t type, size_t maxBody) = 0;
-    virtual CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
-            size_t maxBody, uint32_t barrierType = 0 ) = 0;
-    virtual CRingItem* makeRingItem(const CRingItem&amp; rhs) = 0;
-    virtual CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
-
-
-    virtual CRingItem* getRingItem(CRingBuffer&amp; ringbuf) = 0;
-    virtual CRingItem* getRingItem(int fd) = 0;
-    virtual CRingItem* getRingItem(std::istream&amp; in) = 0;
-
-    virtual std::ostream&amp; putRingItem(const CRingItem* pItem, std::ostream&amp; out) = 0;
-    virtual void putRingItem(const CRingItem* pItem, int fd) = 0;
-    virtual void putRingItem(const CRingItem* pItem, CRingBuffer&amp; ringbuf) = 0;
-
-    virtual CAbnormalEndItem* makeAbnormalEndItem() = 0;
-    virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem&amp; rhs) = 0;
-
-    virtual CDataFormatItem* makeDataFormatItem() = 0;
-    virtual CDataFormatItem* makeDataFormatItem(const CRingItem&amp; rhs) = 0;
-
-    virtual CGlomParameters* makeGlomParameters(
-        uint64_t interval, bool isBuilding, uint16_t policy
-    )  = 0;
-    virtual CGlomParameters* makeGlomParameters(const CRingItem&amp; rhs) = 0;
-
-    virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) = 0;
-    virtual CPhysicsEventItem* makePhysicsEventItem(
-        uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
-    ) = 0;
-    virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem&amp; rhs) = 0;
-
-    virtual CRingFragmentItem* makeRingFragmentItem(
-        uint64_t timestamp, uint32_t source, uint32_t payloadSize,
-        const void* payload, uint32_t barrier=0
-    ) = 0;
-    virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem&amp; rhs) = 0;
+namespace ufmt {
+    class RingItemFactoryBase {
+    public:
+        virtual CRingItem* makeRingItem(uint16_t type, size_t maxBody) = 0;
+        virtual CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+                size_t maxBody, uint32_t barrierType = 0 ) = 0;
+        virtual CRingItem* makeRingItem(const CRingItem&amp; rhs) = 0;
+        virtual CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
 
 
-    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        uint64_t count, uint32_t timeoffset, time_t stamp,
-    int divisor=1
-    ) = 0;
-    virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem&amp; rhs) = 0;
+        virtual CRingItem* getRingItem(CRingBuffer&amp; ringbuf) = 0;
+        virtual CRingItem* getRingItem(int fd) = 0;
+        virtual CRingItem* getRingItem(std::istream&amp; in) = 0;
 
-    virtual CRingScalerItem* makeScalerItem(size_t numScalers) = 0;
-    virtual CRingScalerItem* makeScalerItem(
-        uint32_t startTime,
-        uint32_t stopTime,
-        time_t   timestamp,
-        std::vector&lt;uint32_t&gt; scalers,
-        bool                  isIncremental = true,
-        uint32_t              sid = 0,
-        uint32_t              timeOffsetDivisor = 1
-    ) = 0;
-    virtual CRingScalerItem* makeScalerItem(const CRingItem&amp; rhs) = 0;
+        virtual std::ostream&amp; putRingItem(const CRingItem* pItem, std::ostream&amp; out) = 0;
+        virtual void putRingItem(const CRingItem* pItem, int fd) = 0;
+        virtual void putRingItem(const CRingItem* pItem, CRingBuffer&amp; ringbuf) = 0;
 
-    virtual CRingTextItem* makeTextItem(
-        uint16_t type,
-                std::vector&lt;std::string&gt; theStrings
-    ) = 0;
-    virtual CRingTextItem* makeTextItem(
-        uint16_t type,
-                std::vector&lt;std::string&gt; theStrings,
-                uint32_t                 offsetTime,
-                time_t                   timestamp, uint32_t divisor=1
-    ) = 0;
-    virtual CRingTextItem* makeTextItem(const CRingItem&amp; rhs) = 0;
+        virtual CAbnormalEndItem* makeAbnormalEndItem() = 0;
+        virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem&amp; rhs) = 0;
 
-    virtual CUnknownFragment* makeUnknownFragment(
-        uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-        uint32_t size, void* pPayload
-    ) = 0;
-    virtual CUnknownFragment* makeUnknownFragment(const CRingItem&amp; rhs) = 0;
+        virtual CDataFormatItem* makeDataFormatItem() = 0;
+        virtual CDataFormatItem* makeDataFormatItem(const CRingItem&amp; rhs) = 0;
 
-    virtual CRingStateChangeItem* makeStateChangeItem(
-        uint32_t itemType, uint32_t runNumber,
-        uint32_t timeOffset,
-        time_t   timestamp,
-        std::string title
-    ) = 0;
-    virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem&amp; rhs) = 0;
+        virtual CGlomParameters* makeGlomParameters(
+            uint64_t interval, bool isBuilding, uint16_t policy
+        )  = 0;
+        virtual CGlomParameters* makeGlomParameters(const CRingItem&amp; rhs) = 0;
 
-};
+        virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) = 0;
+        virtual CPhysicsEventItem* makePhysicsEventItem(
+            uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
+        ) = 0;
+        virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem&amp; rhs) = 0;
+
+        virtual CRingFragmentItem* makeRingFragmentItem(
+            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+            const void* payload, uint32_t barrier=0
+        ) = 0;
+        virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem&amp; rhs) = 0;
 
 
+        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            uint64_t count, uint32_t timeoffset, time_t stamp,
+        int divisor=1
+        ) = 0;
+        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem&amp; rhs) = 0;
+
+        virtual CRingScalerItem* makeScalerItem(size_t numScalers) = 0;
+        virtual CRingScalerItem* makeScalerItem(
+            uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector&lt;uint32_t&gt; scalers,
+            bool                  isIncremental = true,
+            uint32_t              sid = 0,
+            uint32_t              timeOffsetDivisor = 1
+        ) = 0;
+        virtual CRingScalerItem* makeScalerItem(const CRingItem&amp; rhs) = 0;
+
+        virtual CRingTextItem* makeTextItem(
+            uint16_t type,
+                    std::vector&lt;std::string&gt; theStrings
+        ) = 0;
+        virtual CRingTextItem* makeTextItem(
+            uint16_t type,
+                    std::vector&lt;std::string&gt; theStrings,
+                    uint32_t                 offsetTime,
+                    time_t                   timestamp, uint32_t divisor=1
+        ) = 0;
+        virtual CRingTextItem* makeTextItem(const CRingItem&amp; rhs) = 0;
+
+        virtual CUnknownFragment* makeUnknownFragment(
+            uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+            uint32_t size, void* pPayload
+        ) = 0;
+        virtual CUnknownFragment* makeUnknownFragment(const CRingItem&amp; rhs) = 0;
+
+        virtual CRingStateChangeItem* makeStateChangeItem(
+            uint32_t itemType, uint32_t runNumber,
+            uint32_t timeOffset,
+            time_t   timestamp,
+            std::string title
+        ) = 0;
+        virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem&amp; rhs) = 0;
+
+    };
+
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -2088,40 +2091,41 @@ pItem->setBodyHeader(timestamp, sourceId, barrierType);
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CRingItem.h&lt;
+namespace ufmt {
+    class CRingItem {
 
-class CRingItem {
+    public:
+        CRingItem(uint16_t type, size_t maxBody = CRingItemStaticBufferSize - 10);
 
-public:
-      CRingItem(uint16_t type, size_t maxBody = CRingItemStaticBufferSize - 10);
-
-      CRingItem(const CRingItem&amp; rhs);
-      CRingItem(pRingItem pItem);
-      virtual ~CRingItem();
-      virtual size_t getStorageSize() const;
-      virtual size_t getBodySize()    const;
-      virtual const void*  getBodyPointer() const;
-      virtual void* getBodyPointer();
-      void*  getBodyCursor();
-      pRingItem  getItemPointer();
-      const RingItem*  getItemPointer() const;
-      uint32_t type() const;
-      uint32_t size() const;
-      virtual bool mustSwap() const;
-      virtual bool hasBodyHeader() const;
-      virtual void* getBodyHeader() const = 0;
-      virtual uint64_t getEventTimestamp() const;
-      virtual uint32_t getSourceId() const;
-      virtual uint32_t getBarrierType() const;
-      virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0) = 0;
-      virtual void setBodyCursor(void* pNewCursor);
-      virtual void updateSize();          
-      virtual std::string typeName() const; 
-      virtual std::string toString() const; 
-      virtual void* appendBodyData(const void* pSrc, uint32_t nBytes);
+        CRingItem(const CRingItem&amp; rhs);
+        CRingItem(pRingItem pItem);
+        virtual ~CRingItem();
+        virtual size_t getStorageSize() const;
+        virtual size_t getBodySize()    const;
+        virtual const void*  getBodyPointer() const;
+        virtual void* getBodyPointer();
+        void*  getBodyCursor();
+        pRingItem  getItemPointer();
+        const RingItem*  getItemPointer() const;
+        uint32_t type() const;
+        uint32_t size() const;
+        virtual bool mustSwap() const;
+        virtual bool hasBodyHeader() const;
+        virtual void* getBodyHeader() const = 0;
+        virtual uint64_t getEventTimestamp() const;
+        virtual uint32_t getSourceId() const;
+        virtual uint32_t getBarrierType() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0) = 0;
+        virtual void setBodyCursor(void* pNewCursor);
+        virtual void updateSize();          
+        virtual std::string typeName() const; 
+        virtual std::string toString() const; 
+        virtual void* appendBodyData(const void* pSrc, uint32_t nBytes);
 
 
-};
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -2628,20 +2632,21 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CAbnormalEndItem.h&gt;
+namespace ufmt {
+    class CAbnormalEndItem : public CRingItem
+    {
+    public:
+        CAbnormalEndItem();
+        virtual ~CAbnormalEndItem();
 
-class CAbnormalEndItem : public CRingItem
-{
-public:
-    CAbnormalEndItem();
-    virtual ~CAbnormalEndItem();
+        virtual void* getBodyHeader() const;
+        virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
 
-    virtual void* getBodyHeader() const;
-    virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-
-    virtual std::string typeName() const;
-    virtual std::string toString() const;
-};
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+    };
+}
 
                 </programlisting>
             </refsynopsisdiv>
@@ -2759,30 +2764,30 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CDataFormatItem.h&gt;
+namespace ufmt {
+    class CDataFormatItem : public CRingItem
+    {
+    public:
+        CDataFormatItem();
+        virtual ~CDataFormatItem();
 
-class CDataFormatItem : public CRingItem
-{
-public:
-    CDataFormatItem();
-    virtual ~CDataFormatItem();
-
-    CDataFormatItem(const CDataFormatItem&amp; rhs);
-    CDataFormatItem(const CRingItem&amp; rhs) ;
-
-
-    virtual uint16_t getMajor() const;
-    virtual uint16_t getMinor() const;
+        CDataFormatItem(const CDataFormatItem&amp; rhs);
+        CDataFormatItem(const CRingItem&amp; rhs) ;
 
 
-    virtual std::string typeName() const;
-    virtual std::string toString() const;
+        virtual uint16_t getMajor() const;
+        virtual uint16_t getMinor() const;
 
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
 
-};
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
 
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -2912,32 +2917,32 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CGlomParameters.h&gt;
-
-class CGlomParameters : public CRingItem
-{
-public:
-    
-    typedef enum _TimestampPolicy {
-        first = 0, last = 1, average = 2
-    } TimestampPolicy;
-    
-public:
-    CGlomParameters(uint64_t interval, bool isBuilding, TimestampPolicy policy);
-    
-    virtual uint64_t coincidenceTicks() const;
-    virtual bool     isBuilding() const;
-    virtual TimestampPolicy timestampPolicy() const;
-
-    virtual std::string typeName() const;  
-    virtual std::string toString() const;
+namespace ufmt {
+    class CGlomParameters : public CRingItem
+    {
+    public:
         
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-    
+        typedef enum _TimestampPolicy {
+            first = 0, last = 1, average = 2
+        } TimestampPolicy;
+        
+    public:
+        CGlomParameters(uint64_t interval, bool isBuilding, TimestampPolicy policy);
+        
+        virtual uint64_t coincidenceTicks() const;
+        virtual bool     isBuilding() const;
+        virtual TimestampPolicy timestampPolicy() const;
 
-};
+        virtual std::string typeName() const;  
+        virtual std::string toString() const;
+            
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+        
 
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -3158,20 +3163,21 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CPHysicsEventItem.h&gt;
-
-class CPhysicsEventItem : public CRingItem
-{
-public:
-    CPhysicsEventItem(size_t maxBody=8192);
-  
-    virtual std::string typeName() const;	// Textual type of item.
-    virtual std::string toString() const; // Provide string dump of the item.
+namespace ufmt {
+    class CPhysicsEventItem : public CRingItem
+    {
+    public:
+        CPhysicsEventItem(size_t maxBody=8192);
     
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  
-};
+        virtual std::string typeName() const;	// Textual type of item.
+        virtual std::string toString() const; // Provide string dump of the item.
+        
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+    
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -3302,35 +3308,36 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CRingFragmentItem.h&gt;
+namespace ufmt {
+    class CRingFragmentItem : public CRingItem
+    {
+    
 
-class CRingFragmentItem : public CRingItem
-{
- 
+    public:
+    CRingFragmentItem(uint64_t timestamp, 
+                uint32_t source, 
+                uint32_t payloadSize, 
+                const void* pBody,
+                uint32_t barrier=0);
 
-public:
-  CRingFragmentItem(uint64_t timestamp, 
-		    uint32_t source, 
-		    uint32_t payloadSize, 
-		    const void* pBody,
-		    uint32_t barrier=0);
+    virtual uint64_t     timestamp() const;
+    virtual uint32_t     source() const;
+    virtual size_t       payloadSize() const;
+    virtual void*        payloadPointer();
+    virtual uint32_t     barrierType() const;
 
-  virtual uint64_t     timestamp() const;
-  virtual uint32_t     source() const;
-  virtual size_t       payloadSize() const;
-  virtual void*        payloadPointer();
-  virtual uint32_t     barrierType() const;
-
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-  
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0) ;
-  
-  virtual void* getBodyHeader() const;
-  virtual bool hasBodyHeader() const;
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+    
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0) ;
+    
+    virtual void* getBodyHeader() const;
+    virtual bool hasBodyHeader() const;
 
 
-};
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -3552,39 +3559,40 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CRingPhysicsEventCount.h&gt;
+namespace ufmt {
+    class CRingPhysicsEventCountItem : public CRingItem
+    {
 
-class CRingPhysicsEventCountItem : public CRingItem
-{
+    public:
+    CRingPhysicsEventCountItem();
+    CRingPhysicsEventCountItem(uint64_t count,
+                    uint32_t timeOffset, unsigned divisor = 1);
+    CRingPhysicsEventCountItem(uint64_t count, 
+                    uint32_t timeoffset, 
+                    time_t stamp, uint32_t sid, unsigned divisor = 1);
 
-public:
-  CRingPhysicsEventCountItem();
-  CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset, unsigned divisor = 1);
-  CRingPhysicsEventCountItem(uint64_t count, 
-			     uint32_t timeoffset, 
-			     time_t stamp, uint32_t sid, unsigned divisor = 1);
+    virtual uint32_t getTimeOffset() const;
+    virtual void     setTimeOffset(uint32_t offset);
+    virtual float    computeElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
 
-  virtual uint32_t getTimeOffset() const;
-  virtual void     setTimeOffset(uint32_t offset);
-  virtual float    computeElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
+    virtual time_t   getTimestamp() const;
+    virtual void     setTimestamp(time_t stamp);
 
-  virtual time_t   getTimestamp() const;
-  virtual void     setTimestamp(time_t stamp);
+    virtual uint64_t getEventCount() const;
+    virtual void     setEventCount(uint64_t count);
+    
+    virtual uint32_t getOriginalSourceId() const;
 
-  virtual uint64_t getEventCount() const;
-  virtual void     setEventCount(uint64_t count);
-  
-  virtual uint32_t getOriginalSourceId() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+    virtual void* getBodyHeader() const; 
 
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual void* getBodyHeader() const; 
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
 
-  virtual std::string typeName() const;	// Textual type of item.
-  virtual std::string toString() const; // Provide string dump of the item.
-
-};
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -3885,57 +3893,55 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CRingScalerItem.h&gt;
+namespace ufmt {
+    class CRingScalerItem : public CRingItem
+    {
+    public:
+    static uint32_t m_ScalerFormatMask;
 
-class CRingScalerItem : public CRingItem
-{
-public:
-  static uint32_t m_ScalerFormatMask;
-
-public:
-  CRingScalerItem(size_t numScalers);
-  CRingScalerItem(uint32_t startTime,
-		  uint32_t stopTime,
-		  time_t   timestamp,
-		  std::vector&lt;uint32_t&gt; scalers,
-                  bool                  isIncremental = true,
-                  uint32_t              sid = 0,
-                  uint32_t              timeOffsetDivisor = 1);
-
-
-  virtual void     setStartTime(uint32_t startTime);
-  virtual uint32_t getStartTime() const;
-  virtual float    computeStartTime() const;
-  
-  virtual void     setEndTime(uint32_t endTime);
-  virtual uint32_t getEndTime() const;
-  virtual float    computeEndTime() const;
-
-  virtual uint32_t getTimeDivisor() const;
-
-  virtual void     setTimestamp(time_t stamp);
-  virtual time_t   getTimestamp() const;
-  
-  virtual bool isIncremental() const;
-
-  virtual void     setScaler(uint32_t channel, uint32_t value) ;
-  virtual uint32_t getScaler(uint32_t channel) const ;
-  virtual std::vector&lt;uint32_t&gt; getScalers() const;
-
-  virtual uint32_t getScalerCount() const;
-  virtual uint32_t getOriginalSourceId() const;
-
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-      uint64_t timestamp, uint32_t sourceId,
-      uint32_t barrierType = 0
-  );
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-
-};
-   
+    public:
+    CRingScalerItem(size_t numScalers);
+    CRingScalerItem(uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector&lt;uint32_t&gt; scalers,
+                    bool                  isIncremental = true,
+                    uint32_t              sid = 0,
+                    uint32_t              timeOffsetDivisor = 1);
 
 
+    virtual void     setStartTime(uint32_t startTime);
+    virtual uint32_t getStartTime() const;
+    virtual float    computeStartTime() const;
+    
+    virtual void     setEndTime(uint32_t endTime);
+    virtual uint32_t getEndTime() const;
+    virtual float    computeEndTime() const;
+
+    virtual uint32_t getTimeDivisor() const;
+
+    virtual void     setTimestamp(time_t stamp);
+    virtual time_t   getTimestamp() const;
+    
+    virtual bool isIncremental() const;
+
+    virtual void     setScaler(uint32_t channel, uint32_t value) ;
+    virtual uint32_t getScaler(uint32_t channel) const ;
+    virtual std::vector&lt;uint32_t&gt; getScalers() const;
+
+    virtual uint32_t getScalerCount() const;
+    virtual uint32_t getOriginalSourceId() const;
+
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(
+        uint64_t timestamp, uint32_t sourceId,
+        uint32_t barrierType = 0
+    );
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+
+    };
+}   
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -4355,43 +4361,43 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CRingStateChangeItem.h&gt;
+namespace ufmt {
+    class CRingStateChangeItem : public CRingItem
+    {
 
-class CRingStateChangeItem : public CRingItem
-{
 
+    public:
+    CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
+    CRingStateChangeItem(uint16_t reason,
+                uint32_t runNumber,
+                uint32_t timeOffset,
+                time_t   timestamp,
+                std::string title) ;
+    
 
-public:
-  CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
-  CRingStateChangeItem(uint16_t reason,
-		       uint32_t runNumber,
-		       uint32_t timeOffset,
-		       time_t   timestamp,
-		       std::string title) ;
-  
+    virtual void setRunNumber(uint32_t run);
+    virtual uint32_t getRunNumber() const;
 
-  virtual void setRunNumber(uint32_t run);
-  virtual uint32_t getRunNumber() const;
+    virtual void setElapsedTime(uint32_t offset);
+    virtual uint32_t getElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
+    virtual float    computeElapsedTime() const;
 
-  virtual void setElapsedTime(uint32_t offset);
-  virtual uint32_t getElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
-  virtual float    computeElapsedTime() const;
+    virtual void setTitle(std::string title) ;
+    virtual std::string getTitle() const;
 
-  virtual void setTitle(std::string title) ;
-  virtual std::string getTitle() const;
+    virtual void setTimestamp(time_t stamp);
+    virtual time_t getTimestamp() const;
+    virtual uint32_t getOriginalSourceId() const;
 
-  virtual void setTimestamp(time_t stamp);
-  virtual time_t getTimestamp() const;
-  virtual uint32_t getOriginalSourceId() const;
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
 
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-
-};
-
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -4752,39 +4758,39 @@ public:
                 <programlisting>
 #include &lt;CRingTextItem.h&gt;
 
+namespace ufmt {
+    class CRingTextItem : public CRingItem
+    {
+    public:
 
-class CRingTextItem : public CRingItem
-{
-public:
+    CRingTextItem(uint16_t type, size_t maxsize);
+    CRingTextItem(uint16_t type,
+            std::vector&lt;std::string&gt; theStrings);
+    CRingTextItem(uint16_t type,
+            std::vector&lt;std::string&gt; theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp, uint32_t divisor=1) ;
+    
+    virtual std::vector&lt;std::string&gt;  getStrings() const;
 
-  CRingTextItem(uint16_t type, size_t maxsize);
-  CRingTextItem(uint16_t type,
-		std::vector&lt;std::string&gt; theStrings);
-  CRingTextItem(uint16_t type,
-		std::vector&lt;std::string&gt; theStrings,
-		uint32_t                 offsetTime,
-		time_t                   timestamp, uint32_t divisor=1) ;
-  
-  virtual std::vector&lt;std::string&gt;  getStrings() const;
+    virtual void     setTimeOffset(uint32_t offset);
+    virtual uint32_t getTimeOffset() const;
+    virtual float    computeElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
 
-  virtual void     setTimeOffset(uint32_t offset);
-  virtual uint32_t getTimeOffset() const;
-  virtual float    computeElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
-
-  virtual void     setTimestamp(time_t stamp);
-  virtual time_t   getTimestamp() const;
-  virtual uint32_t getOriginalSourceId() const;
-  
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
-  );
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-  
-};
-
+    virtual void     setTimestamp(time_t stamp);
+    virtual time_t   getTimestamp() const;
+    virtual uint32_t getOriginalSourceId() const;
+    
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(
+            uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
+    );
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+    
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -5107,17 +5113,18 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CUnknownFragment.h&gt;
+namespace ufmt {
+    class CUnknownFragment : public CRingFragmentItem
+    {
+        
+    public:
+        CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+                        uint32_t size, void* pPayload);
 
-class CUnknownFragment : public CRingFragmentItem
-{
-    
-public:
-    CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-                     uint32_t size, void* pPayload);
-
-    std::string typeName() const;
-    
-};
+        std::string typeName() const;
+        
+    };
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -5158,105 +5165,106 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v10/RingItemFactory.h&gt;
+namespace ufmt {
+    namespace v10 {
+        
+        class RingItemFactory : public RingItemFactoryBase {
+        public:
+            
+            ::CRingItem* makeRingItem(uint16_t type, size_t maxBody);
+            ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+                    size_t maxBody, uint32_t barrierType = 0 );
+            ::CRingItem* makeRingItem(const ::CRingItem&amp; rhs);
+            ::CRingItem* makeRingItem(const RingItem* pRawRing);
+            
+            virtual CRingItem* getRingItem(CRingBuffer&amp; ringbuf) ;
+            virtual CRingItem* getRingItem(int fd) ;
+            virtual CRingItem* getRingItem(std::istream&amp; in);
+            
+            virtual std::ostream&amp; putRingItem(const CRingItem* pItem, std::ostream&amp; out) ;
+            virtual void putRingItem(const CRingItem* pItem, int fd) ;
+            virtual void putRingItem(const CRingItem* pItem, CRingBuffer&amp; ringbuf) ;
+            
+            
+            virtual CAbnormalEndItem* makeAbnormalEndItem() ;
+            virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem&amp; rhs) ;
+            
+        
+            virtual CDataFormatItem* makeDataFormatItem() ;
+            virtual CDataFormatItem* makeDataFormatItem(const CRingItem&amp; rhs);
+            
+            
+            virtual CGlomParameters* makeGlomParameters(
+                uint64_t interval, bool isBuilding, uint16_t policy
+            );
+            virtual CGlomParameters* makeGlomParameters(const CRingItem&amp; rhs) ;
+            
+            
+            virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
+            virtual CPhysicsEventItem* makePhysicsEventItem(
+                uint64_t timestamp, uint32_t source, uint32_t barrier,
+                size_t maxBody
+            ) ;
+            virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem&amp; rhs) ;
+            
+            
+            virtual CRingFragmentItem* makeRingFragmentItem(
+                uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+                const void* payload, uint32_t barrier=0
+            ) ;
+            virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem&amp; rhs) ;
+        
+            
+            virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+                uint64_t count, uint32_t timeoffset, time_t stamp,
+                int divisor=1
+            );
+            virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem&amp; rhs);
+            
+            
+            virtual CRingScalerItem* makeScalerItem(size_t numScalers);
+            virtual CRingScalerItem* makeScalerItem(
+                uint32_t startTime,
+                uint32_t stopTime,
+                time_t   timestamp,
+                std::vector&lt;uint32_t&gt; scalers,
+                bool                  isIncremental = true,
+                uint32_t              sid = 0,
+                uint32_t              timeOffsetDivisor = 1
+            );
+            virtual CRingScalerItem* makeScalerItem(const CRingItem&amp; rhs);
+            
+            
+            virtual CRingTextItem* makeTextItem(
+                uint16_t type,
+                std::vector&lt;std::string&gt; theStrings
+            );
+            virtual CRingTextItem* makeTextItem(
+                uint16_t type,
+                std::vector&lt;std::string&gt; theStrings,
+                uint32_t                 offsetTime,
+                time_t                   timestamp, uint32_t divisor=1
+            );
+            virtual CRingTextItem* makeTextItem(const CRingItem&amp; rhs);
+            
+            
+            virtual CUnknownFragment* makeUnknownFragment(
+                uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+                uint32_t size, void* pPayload
+            );
+            virtual CUnknownFragment* makeUnknownFragment(const CRingItem&amp; rhs);
+            
+            virtual CRingStateChangeItem* makeStateChangeItem(
+                uint32_t itemType, uint32_t runNumber,
+                uint32_t timeOffset,
+                time_t   timestamp,
+                std::string title
+            );
+            virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem&amp; rhs);
+        };
+            
 
-namespace v10 {
-    
-    class RingItemFactory : public RingItemFactoryBase {
-    public:
-        
-        ::CRingItem* makeRingItem(uint16_t type, size_t maxBody);
-        ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
-                size_t maxBody, uint32_t barrierType = 0 );
-        ::CRingItem* makeRingItem(const ::CRingItem&amp; rhs);
-        ::CRingItem* makeRingItem(const RingItem* pRawRing);
-        
-        virtual CRingItem* getRingItem(CRingBuffer&amp; ringbuf) ;
-        virtual CRingItem* getRingItem(int fd) ;
-        virtual CRingItem* getRingItem(std::istream&amp; in);
-        
-        virtual std::ostream&amp; putRingItem(const CRingItem* pItem, std::ostream&amp; out) ;
-        virtual void putRingItem(const CRingItem* pItem, int fd) ;
-        virtual void putRingItem(const CRingItem* pItem, CRingBuffer&amp; ringbuf) ;
-        
-        
-        virtual CAbnormalEndItem* makeAbnormalEndItem() ;
-        virtual CAbnormalEndItem* makeAbnormalEndItem(const CRingItem&amp; rhs) ;
-        
-    
-        virtual CDataFormatItem* makeDataFormatItem() ;
-        virtual CDataFormatItem* makeDataFormatItem(const CRingItem&amp; rhs);
-        
-        
-        virtual CGlomParameters* makeGlomParameters(
-            uint64_t interval, bool isBuilding, uint16_t policy
-        );
-        virtual CGlomParameters* makeGlomParameters(const CRingItem&amp; rhs) ;
-        
-        
-        virtual CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
-        virtual CPhysicsEventItem* makePhysicsEventItem(
-            uint64_t timestamp, uint32_t source, uint32_t barrier,
-            size_t maxBody
-        ) ;
-        virtual CPhysicsEventItem* makePhysicsEventItem(const CRingItem&amp; rhs) ;
-        
-        
-        virtual CRingFragmentItem* makeRingFragmentItem(
-            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
-            const void* payload, uint32_t barrier=0
-        ) ;
-        virtual CRingFragmentItem* makeRingFragmentItem(const CRingItem&amp; rhs) ;
-    
-        
-        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-            uint64_t count, uint32_t timeoffset, time_t stamp,
-            int divisor=1
-        );
-        virtual CRingPhysicsEventCountItem* makePhysicsEventCountItem(const CRingItem&amp; rhs);
-        
-        
-        virtual CRingScalerItem* makeScalerItem(size_t numScalers);
-        virtual CRingScalerItem* makeScalerItem(
-            uint32_t startTime,
-            uint32_t stopTime,
-            time_t   timestamp,
-            std::vector&lt;uint32_t&gt; scalers,
-            bool                  isIncremental = true,
-            uint32_t              sid = 0,
-            uint32_t              timeOffsetDivisor = 1
-        );
-        virtual CRingScalerItem* makeScalerItem(const CRingItem&amp; rhs);
-        
-        
-        virtual CRingTextItem* makeTextItem(
-            uint16_t type,
-            std::vector&lt;std::string&gt; theStrings
-        );
-        virtual CRingTextItem* makeTextItem(
-            uint16_t type,
-            std::vector&lt;std::string&gt; theStrings,
-            uint32_t                 offsetTime,
-            time_t                   timestamp, uint32_t divisor=1
-        );
-        virtual CRingTextItem* makeTextItem(const CRingItem&amp; rhs);
-        
-        
-        virtual CUnknownFragment* makeUnknownFragment(
-            uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-            uint32_t size, void* pPayload
-        );
-        virtual CUnknownFragment* makeUnknownFragment(const CRingItem&amp; rhs);
-        
-        virtual CRingStateChangeItem* makeStateChangeItem(
-            uint32_t itemType, uint32_t runNumber,
-            uint32_t timeOffset,
-            time_t   timestamp,
-            std::string title
-        );
-        virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem&amp; rhs);
-    };
-        
-
+    }
 }             
                 </programlisting>
             </refsynopsisdiv>
@@ -5290,6 +5298,7 @@ namespace v10 {
 #include &lt;CRingScalerItem.h&gt;
 #include &lt;memory&gt;
 #include &lt;fstream&gt;
+using namespace ufmt;
 
 ...
 std::ifstream in("run-0012-00.evt", ios::in | ios::binary); <co id='v10fact.open' />
@@ -6223,26 +6232,27 @@ if (item->type() == v10::INCREMENTAL_SCALERS ||
                 <programlisting>
 #include &lt;v10/CRingItem.h&gt;
 
+namespace ufmt {
+    namespace v10 {
 
-namespace v10 {
-
-    class CRingItem  : public ::CRingItem{
-    
-    public:
-      CRingItem(uint16_t type, size_t maxBody = 8192);
-    
-      virtual size_t getBodySize() const;
-      virtual void*  getBodyPointer();
-      virtual const void* getBodyPointer() const;
-    
-      virtual void* getBodyHeader() const;
-      virtual void setBodyHeader(
-        uint64_t timestamp, uint32_t sourceId, uint32_t barrierType = 0
-      );
-      virtual std::string typeName() const;	// Textual type of item.
-      virtual std::string toString() const; // Provide string dump of the item.
-      
-    };
+        class CRingItem  : public ::CRingItem{
+        
+        public:
+        CRingItem(uint16_t type, size_t maxBody = 8192);
+        
+        virtual size_t getBodySize() const;
+        virtual void*  getBodyPointer();
+        virtual const void* getBodyPointer() const;
+        
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(
+            uint64_t timestamp, uint32_t sourceId, uint32_t barrierType = 0
+        );
+        virtual std::string typeName() const;	// Textual type of item.
+        virtual std::string toString() const; // Provide string dump of the item.
+        
+        };
+    }
 }
                 </programlisting>
             </refsynopsisdiv>
@@ -6418,39 +6428,39 @@ namespace v10 {
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v10/CRingFragmentItem.h&gt;
+namespace ufmt {
+    namespace v10 {
 
-namespace v10 {
 
-
-    class CRingFragmentItem : public ::CRingFragmentItem
-    {
-     
-      // Implemented canonical items:
+        class CRingFragmentItem : public ::CRingFragmentItem
+        {
+        
+        // Implemented canonical items:
+        
+        public:
+        CRingFragmentItem(uint64_t timestamp, 
+                    uint32_t source, 
+                    uint32_t payloadSize, 
+                    const void* pBody,
+                    uint32_t barrier=0);
+        
+        virtual uint64_t     timestamp() const;
+        virtual uint32_t     source() const;
+        virtual size_t       payloadSize()   const;
+        virtual void*  payloadPointer();
+        virtual uint32_t     barrierType() const;
     
-    public:
-      CRingFragmentItem(uint64_t timestamp, 
-                uint32_t source, 
-                uint32_t payloadSize, 
-                const void* pBody,
-                uint32_t barrier=0);
-      
-      virtual uint64_t     timestamp() const;
-      virtual uint32_t     source() const;
-      virtual size_t       payloadSize()   const;
-      virtual void*  payloadPointer();
-      virtual uint32_t     barrierType() const;
- 
-      virtual bool hasBodyHeader() const;
-      virtual void* getBodyHeader() const;
-      virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                             uint32_t barrierType = 0) ;
-      
-      virtual std::string typeName() const;
-      virtual std::string toString() const;
- 
-    };
+        virtual bool hasBodyHeader() const;
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                                uint32_t barrierType = 0) ;
+        
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+    
+        };
+    }
 }
-
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -6669,40 +6679,41 @@ namespace v10 {
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v10/RingPhysicsEventCountItem.h&gt;
+namespace ufmt {
+    namespace v10 {
 
-namespace v10 {
+    class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
+    {
+    public:
+    CRingPhysicsEventCountItem();
+    CRingPhysicsEventCountItem(uint64_t count,
+                    uint32_t timeOffset);
+    CRingPhysicsEventCountItem(uint64_t count, 
+                    uint32_t timeoffset, 
+                    time_t stamp);
+    
+    virtual uint32_t getTimeOffset() const;
+    virtual void     setTimeOffset(uint32_t offset);
+    virtual float    computeElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
+    
 
-class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
-{
-public:
-  CRingPhysicsEventCountItem();
-  CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset);
-  CRingPhysicsEventCountItem(uint64_t count, 
-			     uint32_t timeoffset, 
-			     time_t stamp);
-  
-  virtual uint32_t getTimeOffset() const;
-  virtual void     setTimeOffset(uint32_t offset);
-  virtual float    computeElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
-  
+    virtual time_t   getTimestamp() const;
+    virtual void     setTimestamp(time_t stamp);
 
-  virtual time_t   getTimestamp() const;
-  virtual void     setTimestamp(time_t stamp);
+    virtual uint64_t getEventCount() const;
+    virtual void     setEventCount(uint64_t count);
 
-  virtual uint64_t getEventCount() const;
-  virtual void     setEventCount(uint64_t count);
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+    virtual void* getBodyHeader() const; 
 
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual void* getBodyHeader() const; 
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
 
-  virtual std::string typeName() const;	// Textual type of item.
-  virtual std::string toString() const; // Provide string dump of the item.
+    };
 
-};
-
+    }
 }
                 </programlisting>
             </refsynopsisdiv>
@@ -6981,56 +6992,57 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v10/CRingScalerItem.h&gt;
+namespace ufmt {
+    namespace v10 {
+    class CRingScalerItem : public ::CRingScalerItem
+    {
 
-namespace v10 {
-class CRingScalerItem : public ::CRingScalerItem
-{
+    public:
+        CRingScalerItem(size_t numScalers);
+        CRingScalerItem(uint32_t startTime,
+                uint32_t stopTime,
+                time_t   timestamp,
+                std::vector&lt;uint32_t&gt; scalers,
+            bool                  isIncremental = true,
+            uint32_t              sid = 0,
+            uint32_t              timeOffsetDivisor = 1);
+        
+        
+        virtual void     setStartTime(uint32_t startTime);
+        virtual uint32_t getStartTime() const;
+        virtual float    computeStartTime() const;
 
-public:
-  CRingScalerItem(size_t numScalers);
-  CRingScalerItem(uint32_t startTime,
-		  uint32_t stopTime,
-		  time_t   timestamp,
-		  std::vector&lt;uint32_t&gt; scalers,
-      bool                  isIncremental = true,
-      uint32_t              sid = 0,
-      uint32_t              timeOffsetDivisor = 1);
-  
-  
-  virtual void     setStartTime(uint32_t startTime);
-  virtual uint32_t getStartTime() const;
-  virtual float    computeStartTime() const;
+        virtual void     setEndTime(uint32_t endTime);
+        virtual uint32_t getEndTime() const;
+        virtual float    computeEndTime() const;
 
-  virtual void     setEndTime(uint32_t endTime);
-  virtual uint32_t getEndTime() const;
-  virtual float    computeEndTime() const;
-
-  virtual uint32_t getTimeDivisor() const;
-
-
-  virtual void     setTimestamp(time_t stamp);
-  virtual time_t   getTimestamp() const;
-  virtual bool isIncremental() const;
-  
-  virtual void     setScaler(uint32_t channel, uint32_t value);
-  virtual uint32_t getScaler(uint32_t channel) const;
-  virtual std::vector&lt;uint32_t&gt; getScalers() const;
-
-  virtual uint32_t getScalerCount() const;
-  virtual uint32_t getOriginalSourceId() const;
+        virtual uint32_t getTimeDivisor() const;
 
 
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-      uint64_t timestamp, uint32_t sourceId,
-      uint32_t barrierType = 0
-  );
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
+        virtual void     setTimestamp(time_t stamp);
+        virtual time_t   getTimestamp() const;
+        virtual bool isIncremental() const;
+        
+        virtual void     setScaler(uint32_t channel, uint32_t value);
+        virtual uint32_t getScaler(uint32_t channel) const;
+        virtual std::vector&lt;uint32_t&gt; getScalers() const;
 
-};
-   
+        virtual uint32_t getScalerCount() const;
+        virtual uint32_t getOriginalSourceId() const;
+
+
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(
+            uint64_t timestamp, uint32_t sourceId,
+            uint32_t barrierType = 0
+        );
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+
+        };
+    }    
 }
+
 
                 </programlisting>
             </refsynopsisdiv>
@@ -7466,45 +7478,46 @@ public:
                 <programlisting>
 #include &lt;v10/CRingStateChangeItem.h&gt;
 
-namespace v10 {
+namespace ufmt {
+    namespace v10 {
 
-class CRingStateChangeItem : public ::CRingStateChangeItem
-{
-public:
-  CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
-  CRingStateChangeItem(uint16_t reason,
-		       uint32_t runNumber,
-		       uint32_t timeOffset,
-		       time_t   timestamp,
-		       std::string title) ;
-  
-  virtual void setRunNumber(uint32_t run);
-  virtual uint32_t getRunNumber() const;
+    class CRingStateChangeItem : public ::CRingStateChangeItem
+    {
+    public:
+        CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
+        CRingStateChangeItem(uint16_t reason,
+                    uint32_t runNumber,
+                    uint32_t timeOffset,
+                    time_t   timestamp,
+                    std::string title) ;
+        
+        virtual void setRunNumber(uint32_t run);
+        virtual uint32_t getRunNumber() const;
 
-  virtual void setElapsedTime(uint32_t offset);
-  virtual uint32_t getElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;   
-  virtual float    computeElapsedTime() const;
+        virtual void setElapsedTime(uint32_t offset);
+        virtual uint32_t getElapsedTime() const;
+        virtual uint32_t getTimeDivisor() const;   
+        virtual float    computeElapsedTime() const;
 
-  virtual void setTitle(std::string title);
-  virtual std::string getTitle() const;
+        virtual void setTitle(std::string title);
+        virtual std::string getTitle() const;
 
-  virtual void setTimestamp(time_t stamp);
-  virtual time_t getTimestamp() const;
-  virtual uint32_t getOriginalSourceId() const;    
+        virtual void setTimestamp(time_t stamp);
+        virtual time_t getTimestamp() const;
+        virtual uint32_t getOriginalSourceId() const;    
 
-  // Virtual method overrides.
+        // Virtual method overrides.
 
-  virtual void* getBodyHeader() const;    // new
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);  
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-  
+        virtual void* getBodyHeader() const;    // new
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                                uint32_t barrierType = 0);  
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+        
 
-};
+    };
+    }
 }
-
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -7843,41 +7856,42 @@ public:
                 <programlisting>
 #include &lt;v10/CRingTextItem&gt;
 
+namespace ufmt {
+    namespace v10 {
+    class CRingTextItem : public ::CRingTextItem
 
-namespace v10 {
-class CRingTextItem : public ::CRingTextItem
+    public:
+        // Constructors and other canonicals:
 
-public:
-  // Constructors and other canonicals:
+        CRingTextItem(uint16_t type,
+                std::vector&lt;std::string&gt; theStrings);
+        CRingTextItem(uint16_t type,
+                std::vector&lt;std::string&gt; theStrings,
+                uint32_t                 offsetTime,
+                time_t                   timestamp, uint32_t divisor=1) ;
+        
+        virtual std::vector&lt;std::string&gt;  getStrings() const;
 
-  CRingTextItem(uint16_t type,
-		std::vector&lt;std::string&gt; theStrings);
-  CRingTextItem(uint16_t type,
-		std::vector&lt;std::string&gt; theStrings,
-		uint32_t                 offsetTime,
-		time_t                   timestamp, uint32_t divisor=1) ;
-  
-  virtual std::vector&lt;std::string&gt;  getStrings() const;
+        virtual void     setTimeOffset(uint32_t offset);
+        virtual uint32_t getTimeOffset() const;
+        virtual float    computeElapsedTime() const;
+        virtual uint32_t getTimeDivisor() const;
 
-  virtual void     setTimeOffset(uint32_t offset);
-  virtual uint32_t getTimeOffset() const;
-  virtual float    computeElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
+        virtual void     setTimestamp(time_t stamp);
+        virtual time_t   getTimestamp() const;
+        virtual uint32_t getOriginalSourceId() const;
 
-  virtual void     setTimestamp(time_t stamp);
-  virtual time_t   getTimestamp() const;
-  virtual uint32_t getOriginalSourceId() const;
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(
+                uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
+        );
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+        
+    };
 
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
-  );
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-  
-};
-
-}                        // v10 namespace
+    }                        // v10 namespace
+}
 
                 </programlisting>
             </refsynopsisdiv>
@@ -8268,97 +8282,98 @@ public:
                 <programlisting>
 #include &lt;v11/RingItemFactory.h&gt;
 
-namespace v11 {
-    
+namespace ufmt {
+    namespace v11 {
+        
 
-class RingItemFactory : public ::RingItemFactoryBase
-{
-public:
-    virtual ::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
-    virtual ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
-            size_t maxBody, uint32_t barrierType = 0 ) ;
-    virtual ::CRingItem* makeRingItem(const ::CRingItem&amp; rhs) ;
-    virtual ::CRingItem* makeRingItem(const ::RingItem* pRawRing) ;
-
-
-    virtual ::CRingItem* getRingItem(CRingBuffer&amp; ringbuf) ;
-    virtual ::CRingItem* getRingItem(int fd) ;
-    virtual ::CRingItem* getRingItem(std::istream&amp; in) ;
-
-    virtual std::ostream&amp; putRingItem(const ::CRingItem* pItem, std::ostream&amp; out) ;
-    virtual void putRingItem(const ::CRingItem* pItem, int fd) ;
-    virtual void putRingItem(const ::CRingItem* pItem, CRingBuffer&amp; ringbuf) ;
-
-    virtual ::CAbnormalEndItem* makeAbnormalEndItem() ;
-    virtual ::CAbnormalEndItem* makeAbnormalEndItem(const ::CRingItem&amp; rhs) ;
-
-    virtual ::CDataFormatItem* makeDataFormatItem() ;
-    virtual ::CDataFormatItem* makeDataFormatItem(const ::CRingItem&amp; rhs) ;
-
-    virtual ::CGlomParameters* makeGlomParameters(
-        uint64_t interval, bool isBuilding, uint16_t policy
-    )  ;
-    virtual ::CGlomParameters* makeGlomParameters(const ::CRingItem&amp; rhs) ;
-
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(
-        uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
-    ) ;
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(const ::CRingItem&amp; rhs) ;
-
-    virtual ::CRingFragmentItem* makeRingFragmentItem(
-        uint64_t timestamp, uint32_t source, uint32_t payloadSize,
-        const void* payload, uint32_t barrier=0
-    ) ;
-    virtual ::CRingFragmentItem* makeRingFragmentItem(const ::CRingItem&amp; rhs) ;
+    class RingItemFactory : public ::RingItemFactoryBase
+    {
+    public:
+        virtual ::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
+        virtual ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+                size_t maxBody, uint32_t barrierType = 0 ) ;
+        virtual ::CRingItem* makeRingItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CRingItem* makeRingItem(const ::RingItem* pRawRing) ;
 
 
-    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        uint64_t count, uint32_t timeoffset, time_t stamp,
-    int divisor=1
-    ) ;
-    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CRingItem* getRingItem(CRingBuffer&amp; ringbuf) ;
+        virtual ::CRingItem* getRingItem(int fd) ;
+        virtual ::CRingItem* getRingItem(std::istream&amp; in) ;
 
-    virtual ::CRingScalerItem* makeScalerItem(size_t numScalers) ;
-    virtual ::CRingScalerItem* makeScalerItem(
-        uint32_t startTime,
-        uint32_t stopTime,
-        time_t   timestamp,
-        std::vector&lt;uint32_t&gt; scalers,
-        bool                  isIncremental = true,
-        uint32_t              sid = 0,
-        uint32_t              timeOffsetDivisor = 1
-    ) ;
-    virtual ::CRingScalerItem* makeScalerItem(const ::CRingItem&amp; rhs) ;
+        virtual std::ostream&amp; putRingItem(const ::CRingItem* pItem, std::ostream&amp; out) ;
+        virtual void putRingItem(const ::CRingItem* pItem, int fd) ;
+        virtual void putRingItem(const ::CRingItem* pItem, CRingBuffer&amp; ringbuf) ;
 
-    virtual ::CRingTextItem* makeTextItem(
-        uint16_t type,
-                std::vector&lt;std::string&gt; theStrings
-    ) ;
-    virtual ::CRingTextItem* makeTextItem(
-        uint16_t type,
-        std::vector&lt;std::string&gt; theStrings,
-        uint32_t                 offsetTime,
-        time_t                   timestamp, uint32_t divisor=1
-    ) ;
-    virtual ::CRingTextItem* makeTextItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CAbnormalEndItem* makeAbnormalEndItem() ;
+        virtual ::CAbnormalEndItem* makeAbnormalEndItem(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CUnknownFragment* makeUnknownFragment(
-        uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-        uint32_t size, void* pPayload
-    ) ;
-    virtual ::CUnknownFragment* makeUnknownFragment(const ::CRingItem&amp; rhs) ;
+        virtual ::CDataFormatItem* makeDataFormatItem() ;
+        virtual ::CDataFormatItem* makeDataFormatItem(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CRingStateChangeItem* makeStateChangeItem(
-        uint32_t itemType, uint32_t runNumber,
-        uint32_t timeOffset,
-        time_t   timestamp,
-        std::string title
-    ) ;
-    virtual ::CRingStateChangeItem* makeStateChangeItem(const ::CRingItem&amp; rhs) ;   
-};
+        virtual ::CGlomParameters* makeGlomParameters(
+            uint64_t interval, bool isBuilding, uint16_t policy
+        )  ;
+        virtual ::CGlomParameters* makeGlomParameters(const ::CRingItem&amp; rhs) ;
+
+        virtual ::CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
+        virtual ::CPhysicsEventItem* makePhysicsEventItem(
+            uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
+        ) ;
+        virtual ::CPhysicsEventItem* makePhysicsEventItem(const ::CRingItem&amp; rhs) ;
+
+        virtual ::CRingFragmentItem* makeRingFragmentItem(
+            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+            const void* payload, uint32_t barrier=0
+        ) ;
+        virtual ::CRingFragmentItem* makeRingFragmentItem(const ::CRingItem&amp; rhs) ;
+
+
+        virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            uint64_t count, uint32_t timeoffset, time_t stamp,
+        int divisor=1
+        ) ;
+        virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(const ::CRingItem&amp; rhs) ;
+
+        virtual ::CRingScalerItem* makeScalerItem(size_t numScalers) ;
+        virtual ::CRingScalerItem* makeScalerItem(
+            uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector&lt;uint32_t&gt; scalers,
+            bool                  isIncremental = true,
+            uint32_t              sid = 0,
+            uint32_t              timeOffsetDivisor = 1
+        ) ;
+        virtual ::CRingScalerItem* makeScalerItem(const ::CRingItem&amp; rhs) ;
+
+        virtual ::CRingTextItem* makeTextItem(
+            uint16_t type,
+                    std::vector&lt;std::string&gt; theStrings
+        ) ;
+        virtual ::CRingTextItem* makeTextItem(
+            uint16_t type,
+            std::vector&lt;std::string&gt; theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp, uint32_t divisor=1
+        ) ;
+        virtual ::CRingTextItem* makeTextItem(const ::CRingItem&amp; rhs) ;
+
+        virtual ::CUnknownFragment* makeUnknownFragment(
+            uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+            uint32_t size, void* pPayload
+        ) ;
+        virtual ::CUnknownFragment* makeUnknownFragment(const ::CRingItem&amp; rhs) ;
+
+        virtual ::CRingStateChangeItem* makeStateChangeItem(
+            uint32_t itemType, uint32_t runNumber,
+            uint32_t timeOffset,
+            time_t   timestamp,
+            std::string title
+        ) ;
+        virtual ::CRingStateChangeItem* makeStateChangeItem(const ::CRingItem&amp; rhs) ;   
+    };
+    }
 }
-
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -9279,37 +9294,38 @@ p-&gt;setBodyCursor(pCursor);      // For whomever is filling the item body.
                 <programlisting>
 #include &lt;v11/CRingItem.h&gt;
 
+namespace ufmt {
+    namespace v11 {
 
-namespace v11 {
+    class CRingItem : public ::CRingItem
+    {
+    
+    public:
+        CRingItem(uint16_t type, size_t maxBody);
+        CRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+                    uint32_t barrierType, size_t maxBody );
+    
+    public:
+    
+        virtual size_t getBodySize()    const;
+        virtual const void*  getBodyPointer() const;
+        virtual void* getBodyPointer();
+        virtual bool hasBodyHeader() const;
+        uint64_t getEventTimestamp() const;
+        uint32_t getSourceId() const;
+        uint32_t getBarrierType() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+        virtual void* getBodyHeader() const;
 
-class CRingItem : public ::CRingItem
-{
-  
-public:
-  CRingItem(uint16_t type, size_t maxBody);
-  CRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
-            uint32_t barrierType, size_t maxBody );
- 
-public:
-  
-  virtual size_t getBodySize()    const;
-  virtual const void*  getBodyPointer() const;
-  virtual void* getBodyPointer();
-  virtual bool hasBodyHeader() const;
-  uint64_t getEventTimestamp() const;
-  uint32_t getSourceId() const;
-  uint32_t getBarrierType() const;
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                     uint32_t barrierType = 0);
-  virtual void* getBodyHeader() const;
+        virtual std::string typeName() const;	// Textual type of item.
+        virtual std::string toString() const; // Provide string dump of the item.
 
-  virtual std::string typeName() const;	// Textual type of item.
-  virtual std::string toString() const; // Provide string dump of the item.
+        std::string bodyHeaderToString() const;
+    
+    };
 
-  std::string bodyHeaderToString() const;
-  
-};
-
+    }
 }
                 </programlisting>
             </refsynopsisdiv>
@@ -9816,22 +9832,23 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;CAbnormalEndItem.h&gt;
-
-namespace v11 {
-class CAbnormalEndItem : public ::CAbnormalEndItem
-{
-public:
-    CAbnormalEndItem();
-    virtual bool  hasBodyHeader() const;
-    virtual void* getBodyHeader() const;
-    virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-    
-    
-    virtual std::string typeName() const;
-    virtual std::string toString() const;
-};
-
+namespace ufmt {
+    namespace v11 {
+    class CAbnormalEndItem : public ::CAbnormalEndItem
+    {
+    public:
+        CAbnormalEndItem();
+        virtual bool  hasBodyHeader() const;
+        virtual void* getBodyHeader() const;
+        virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+        
+        
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+    };
+    }
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -9942,31 +9959,32 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v11/CDataFormatITem.h&gt;
+namespace ufmt {
+    namespace v11 {
 
-namespace v11 {
-
-/
-class CDataFormatItem : public ::CDataFormatItem
-{
-    // Canonical methods:
-public:
-    CDataFormatItem();
-    virtual ~CDataFormatItem();
-    
-    virtual uint16_t getMajor() const;
-    virtual uint16_t getMinor() const;
-    
-    virtual std::string typeName() const;
-    virtual std::string toString() const;
-    
-    virtual bool hasBodyHeader() const;
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-    
-    
-    
-};
+    /
+    class CDataFormatItem : public ::CDataFormatItem
+    {
+        // Canonical methods:
+    public:
+        CDataFormatItem();
+        virtual ~CDataFormatItem();
+        
+        virtual uint16_t getMajor() const;
+        virtual uint16_t getMinor() const;
+        
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+        
+        virtual bool hasBodyHeader() const;
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+        
+        
+        
+    };
+    }
 }
                 </programlisting>
             </refsynopsisdiv>
@@ -10102,29 +10120,29 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v11/CGlomParameters.h&gt;
+namespace ufmt {
+    namespace v11 {
+    class CGlomParameters : public ::CGlomParameters
+    {
 
-namespace v11 {
-class CGlomParameters : public ::CGlomParameters
-{
-
+        
+    public:
+    CGlomParameters(uint64_t interval, bool isBuilding, TimestampPolicy policy);
+    uint64_t coincidenceTicks() const;
+    bool     isBuilding() const;
+    TimestampPolicy timestampPolicy() const;
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+    virtual bool  hasBodyHeader() const;
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
     
-public:
-   CGlomParameters(uint64_t interval, bool isBuilding, TimestampPolicy policy);
-   uint64_t coincidenceTicks() const;
-   bool     isBuilding() const;
-   TimestampPolicy timestampPolicy() const;
-   virtual std::string typeName() const;
-   virtual std::string toString() const;
-   virtual bool  hasBodyHeader() const;
-   virtual void* getBodyHeader() const;
-   virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-   
 
-};
+    };
 
-}                                // v11 namespace
-
+    }                                // v11 namespace
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -10371,39 +10389,39 @@ public:
                 <programlisting>
 #include &lt;v11/CPhysicsEventItem&gt;
 
+namespace ufmt {
+    namespace v11 {
 
-namespace v11 {
+    class CPhysicsEventItem : public ::CPhysicsEventItem
+    {
+    public:
+    CPhysicsEventItem(size_t maxBody=8192);
+    CPhysicsEventItem(                                 // Our factory can use this.
+        uint64_t timestamp, uint32_t source, uint32_t barrier,
+        size_t maxBody=8192
+    );
+    virtual size_t getBodySize()    const;
+    virtual const void*  getBodyPointer() const;
+    virtual void* getBodyPointer();
+    virtual bool hasBodyHeader() const;
+    virtual uint64_t getEventTimestamp() const;
+    virtual uint32_t getSourceId() const;
+    virtual uint32_t getBarrierType() const;
 
-class CPhysicsEventItem : public ::CPhysicsEventItem
-{
-public:
-  CPhysicsEventItem(size_t maxBody=8192);
-  CPhysicsEventItem(                                 // Our factory can use this.
-       uint64_t timestamp, uint32_t source, uint32_t barrier,
-       size_t maxBody=8192
-   );
-  virtual size_t getBodySize()    const;
-  virtual const void*  getBodyPointer() const;
-  virtual void* getBodyPointer();
-  virtual bool hasBodyHeader() const;
-  virtual uint64_t getEventTimestamp() const;
-  virtual uint32_t getSourceId() const;
-  virtual uint32_t getBarrierType() const;
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
 
-  virtual std::string typeName() const;	// Textual type of item.
-  virtual std::string toString() const; // Provide string dump of the item.
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(
+            uint64_t timestamp, uint32_t sourceId,
+            uint32_t barrierType = 0
+    );
 
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-        uint64_t timestamp, uint32_t sourceId,
-        uint32_t barrierType = 0
-  );
-
- 
- 
-};
+    
+    
+    };
+    }
 }
-
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -10527,35 +10545,36 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v11/CRingFragmentItem.h&gt;
+namespace ufmt {
+    namespace v11 {
 
-namespace v11 {
+    class CRingFragmentItem : public ::CRingFragmentItem
+    {
+    public:
+    CRingFragmentItem(uint64_t timestamp, 
+                uint32_t source, 
+                uint32_t payloadSize, 
+                const void* pBody,
+                uint32_t barrier=0);
 
-class CRingFragmentItem : public ::CRingFragmentItem
-{
-public:
-  CRingFragmentItem(uint64_t timestamp, 
-		    uint32_t source, 
-		    uint32_t payloadSize, 
-		    const void* pBody,
-		    uint32_t barrier=0);
+    virtual uint64_t     timestamp() const;
+    virtual uint32_t     source() const;
+    virtual size_t       payloadSize() const;
+    virtual void*        payloadPointer();
+    virtual uint32_t     barrierType() const;
+    virtual const void*  getBodyPointer() const;
+    virtual void* getBodyPointer();
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0) ;
+    virtual void* getBodyHeader() const;
+    virtual bool hasBodyHeader() const;
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
 
-  virtual uint64_t     timestamp() const;
-  virtual uint32_t     source() const;
-  virtual size_t       payloadSize() const;
-  virtual void*        payloadPointer();
-  virtual uint32_t     barrierType() const;
-  virtual const void*  getBodyPointer() const;
-  virtual void* getBodyPointer();
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0) ;
-  virtual void* getBodyHeader() const;
-  virtual bool hasBodyHeader() const;
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-
-};
+    };
+    }
 }
-                </programlisting>
+            </programlisting>
 
             </refsynopsisdiv>
             <refsect1>
@@ -10794,50 +10813,51 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v11/CRingPhysicsEventCountItem.h&gt;
+namespace ufmt {
+    namespace v11 {
 
-namespace v11 {
+    class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
+    {
 
-class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
-{
+    public:
+    CRingPhysicsEventCountItem();
+    CRingPhysicsEventCountItem(uint64_t count,
+                    uint32_t timeOffset, unsigned divisor);
+    CRingPhysicsEventCountItem(uint64_t count,
+                    uint32_t timeOffset, time_t stamp, unsigned divisor);
+    CRingPhysicsEventCountItem(uint64_t count, 
+                    uint32_t timeoffset, 
+                    time_t stamp, uint64_t timestamp, uint32_t sid, unsigned divisor = 1,
+            uint32_t barrier=0);
+    virtual uint32_t getTimeOffset() const;
+    virtual void     setTimeOffset(uint32_t offset);
+    virtual float    computeElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
 
-public:
-  CRingPhysicsEventCountItem();
-  CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset, unsigned divisor);
-  CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset, time_t stamp, unsigned divisor);
-  CRingPhysicsEventCountItem(uint64_t count, 
-			     uint32_t timeoffset, 
-			     time_t stamp, uint64_t timestamp, uint32_t sid, unsigned divisor = 1,
-           uint32_t barrier=0);
-  virtual uint32_t getTimeOffset() const;
-  virtual void     setTimeOffset(uint32_t offset);
-  virtual float    computeElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
+    virtual time_t   getTimestamp() const;
+    virtual void     setTimestamp(time_t stamp);
 
-  virtual time_t   getTimestamp() const;
-  virtual void     setTimestamp(time_t stamp);
+    virtual uint64_t getEventCount() const;
+    virtual void     setEventCount(uint64_t count);
 
-  virtual uint64_t getEventCount() const;
-  virtual void     setEventCount(uint64_t count);
-
-  virtual uint32_t getOriginalSourceId() const;
-  
-  virtual void*     getBodyPointer() ;
-  virtual const void* getBodyPointer() const;
-  virtual size_t  getBodySize() const;
-  virtual bool hasBodyHeader() const;
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual void* getBodyHeader() const; 
-
-
-  virtual std::string typeName() const;	
-  virtual std::string toString() const; 
+    virtual uint32_t getOriginalSourceId() const;
+    
+    virtual void*     getBodyPointer() ;
+    virtual const void* getBodyPointer() const;
+    virtual size_t  getBodySize() const;
+    virtual bool hasBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+    virtual void* getBodyHeader() const; 
 
 
-};
-}                                      // v
+    virtual std::string typeName() const;	
+    virtual std::string toString() const; 
+
+
+    };
+    }                                      // 
+}
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -11152,69 +11172,70 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v11/CRingScalerItem.h&gt;
-
-namespace v11 {
-/*!
-   This class derived from CRingItem and represents a set of scalers that have been 
-   formatted as a ring item.  
-*/
-class CRingScalerItem : public ::CRingScalerItem
-{
-
-
-public:
-  CRingScalerItem(size_t numScalers);
-  CRingScalerItem(uint32_t startTime,
-		  uint32_t stopTime,
-		  time_t   timestamp,
-		  std::vector&lt;uint32_t&gt; scalers,
-                  bool                  isIncremental = true,
-                  uint32_t              sid = 0,
-                  uint32_t              timeOffsetDivisor = 1);
-  CRingScalerItem(uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
-                  uint32_t startTime,
-		  uint32_t stopTime,
-		  time_t   timestamp,
-		  std::vector&lt;uint32_t&gt; scalers,
-                  uint32_t timeDivisor = 1, bool incremental=true);
-  virtual ~CRingScalerItem();
-
-  virtual void     setStartTime(uint32_t startTime);
-  virtual uint32_t getStartTime() const;
-  virtual float    computeStartTime() const;
-  
-  virtual void     setEndTime(uint32_t endTime);
-  virtual uint32_t getEndTime() const;
-  virtual float    computeEndTime() const;
-
-  virtual uint32_t getTimeDivisor() const;
-
-  virtual void     setTimestamp(time_t stamp);
-  virtual time_t   getTimestamp() const;
-  
-  virtual bool isIncremental() const;
-
-  virtual void     setScaler(uint32_t channel, uint32_t value) ;
-  virtual uint32_t getScaler(uint32_t channel) const ;
-  virtual std::vector&lt;uint32_t&gt; getScalers() const;
-
-  virtual uint32_t getScalerCount() const;
-  virtual uint32_t getOriginalSourceId() const;
+namespace ufmt {
+    namespace v11 {
+    /*!
+    This class derived from CRingItem and represents a set of scalers that have been 
+    formatted as a ring item.  
+    */
+    class CRingScalerItem : public ::CRingScalerItem
+    {
 
 
-  virtual void* getBodyPointer();
-  virtual const void* getBodyPointer() const;
-  virtual bool hasBodyHeader() const;
-  virtual void* getBodyHeader() const;
-  
-  virtual void setBodyHeader(
-      uint64_t timestamp, uint32_t sourceId,
-      uint32_t barrierType = 0
-  );
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
+    public:
+    CRingScalerItem(size_t numScalers);
+    CRingScalerItem(uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector&lt;uint32_t&gt; scalers,
+                    bool                  isIncremental = true,
+                    uint32_t              sid = 0,
+                    uint32_t              timeOffsetDivisor = 1);
+    CRingScalerItem(uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
+                    uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector&lt;uint32_t&gt; scalers,
+                    uint32_t timeDivisor = 1, bool incremental=true);
+    virtual ~CRingScalerItem();
 
-};
+    virtual void     setStartTime(uint32_t startTime);
+    virtual uint32_t getStartTime() const;
+    virtual float    computeStartTime() const;
+    
+    virtual void     setEndTime(uint32_t endTime);
+    virtual uint32_t getEndTime() const;
+    virtual float    computeEndTime() const;
+
+    virtual uint32_t getTimeDivisor() const;
+
+    virtual void     setTimestamp(time_t stamp);
+    virtual time_t   getTimestamp() const;
+    
+    virtual bool isIncremental() const;
+
+    virtual void     setScaler(uint32_t channel, uint32_t value) ;
+    virtual uint32_t getScaler(uint32_t channel) const ;
+    virtual std::vector&lt;uint32_t&gt; getScalers() const;
+
+    virtual uint32_t getScalerCount() const;
+    virtual uint32_t getOriginalSourceId() const;
+
+
+    virtual void* getBodyPointer();
+    virtual const void* getBodyPointer() const;
+    virtual bool hasBodyHeader() const;
+    virtual void* getBodyHeader() const;
+    
+    virtual void setBodyHeader(
+        uint64_t timestamp, uint32_t sourceId,
+        uint32_t barrierType = 0
+    );
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+
+    };
+    }
 }
                 </programlisting>
             </refsynopsisdiv>
@@ -11659,51 +11680,51 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v11/CRingStateChangeItem.h&gt;
+namespace ufmt {
+    namespace v11 {
+    class CRingStateChangeItem : public ::CRingStateChangeItem
+    {
+    public:
+    CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
+    CRingStateChangeItem(uint16_t reason,
+                uint32_t runNumber,
+                uint32_t timeOffset,
+                time_t   timestamp,
+                std::string title) ;
+    CRingStateChangeItem(uint64_t eventTimestamp, uint32_t sourceId, uint32_t barrierType,
+                        uint16_t reason,
+                uint32_t runNumber,
+                uint32_t timeOffset,
+                time_t   timestamp,
+                std::string title,
+                        uint32_t offsetDivisor = 1);
 
-namespace v11 {
-class CRingStateChangeItem : public ::CRingStateChangeItem
-{
-public:
-  CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
-  CRingStateChangeItem(uint16_t reason,
-		       uint32_t runNumber,
-		       uint32_t timeOffset,
-		       time_t   timestamp,
-		       std::string title) ;
-  CRingStateChangeItem(uint64_t eventTimestamp, uint32_t sourceId, uint32_t barrierType,
-                       uint16_t reason,
-		       uint32_t runNumber,
-		       uint32_t timeOffset,
-		       time_t   timestamp,
-		       std::string title,
-                       uint32_t offsetDivisor = 1);
+    virtual void setRunNumber(uint32_t run);
+    virtual uint32_t getRunNumber() const;
 
-  virtual void setRunNumber(uint32_t run);
-  virtual uint32_t getRunNumber() const;
+    virtual void setElapsedTime(uint32_t offset);
+    virtual uint32_t getElapsedTime() const;
+    virtual float    computeElapsedTime() const;
 
-  virtual void setElapsedTime(uint32_t offset);
-  virtual uint32_t getElapsedTime() const;
-  virtual float    computeElapsedTime() const;
+    virtual void setTitle(std::string title) ;
+    virtual std::string getTitle() const;
 
-  virtual void setTitle(std::string title) ;
-  virtual std::string getTitle() const;
+    virtual void setTimestamp(time_t stamp);
+    virtual time_t getTimestamp() const;
+    
+    virtual uint32_t getOriginalSourceId() const;
+    virtual const void*  getBodyPointer() const;
+    virtual void*        getBodyPointer();
+    virtual bool hasBodyHeader() const;
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
 
-  virtual void setTimestamp(time_t stamp);
-  virtual time_t getTimestamp() const;
-  
-  virtual uint32_t getOriginalSourceId() const;
-  virtual const void*  getBodyPointer() const;
-  virtual void*        getBodyPointer();
-  virtual bool hasBodyHeader() const;
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-
-};
+    };
+    }
 }
-
                 </programlisting>
             </refsynopsisdiv>
             <refsect1>
@@ -12069,54 +12090,55 @@ public:
             <refsynopsisdiv>
                 <programlisting>
 #include &lt;v11/CRingTextItem.h&gt;
+namespace ufmt {
+    namespace v11 {
 
-namespace v11 {
+    class CRingTextItem : public CRingTextItem
+    {
+    public:
+    
+    CRingTextItem(uint16_t type,
+            std::vector&lt;std::string&gt; theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp,
+        uint32_t                 divisor = 1) ;
+    CRingTextItem(
+        uint16_t type, uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
+        std::vector&lt;std::string&gt; theStrings, uint32_t offsetTime, time_t timestamp,
+        int offsetDivisor = 1
+    );
+    std::vector&lt;std::string&gt;  getStrings() const;
 
-class CRingTextItem : public ::CRingTextItem
-{
-public:
-  
-  CRingTextItem(uint16_t type,
-		std::vector&lt;std::string&gt; theStrings,
-		uint32_t                 offsetTime,
-		time_t                   timestamp,
-    uint32_t                 divisor = 1) ;
-  CRingTextItem(
-    uint16_t type, uint64_t eventTimestamp, uint32_t source, uint32_t barrier,
-    std::vector&lt;std::string&gt; theStrings, uint32_t offsetTime, time_t timestamp,
-    int offsetDivisor = 1
-  );
-  std::vector&lt;std::string&gt;  getStrings() const;
+    void     setTimeOffset(uint32_t offset);
+    uint32_t getTimeOffset() const;
+    float    computeElapsedTime() const;
+    uint32_t getTimeDivisor() const;
 
-  void     setTimeOffset(uint32_t offset);
-  uint32_t getTimeOffset() const;
-  float    computeElapsedTime() const;
-  uint32_t getTimeDivisor() const;
+    virtual void     setTimestamp(time_t stamp);
+    virtual time_t   getTimestamp() const;
+    virtual uint32_t getOriginalSourceId() const;
 
-  virtual void     setTimestamp(time_t stamp);
-  virtual time_t   getTimestamp() const;
-  virtual uint32_t getOriginalSourceId() const;
-
-  
-  
-  // Virtual methods all ring overrides.
-  
-  
-  virtual void* getBodyPointer();
-  virtual const void* getBodyPointer() const;
-  virtual bool hasBodyHeader() const;
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-        uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
-  );
+    
+    
+    // Virtual methods all ring overrides.
+    
+    
+    virtual void* getBodyPointer();
+    virtual const void* getBodyPointer() const;
+    virtual bool hasBodyHeader() const;
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(
+            uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
+    );
 
 
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-  
-};
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+    
+    };
 
-}                                
+    }                                
+}
 
                 </programlisting>
             </refsynopsisdiv>
@@ -12448,29 +12470,30 @@ public:
                 <programlisting>
 #include &lt;v11/CUnknownFragment.h&gt;
 
-namespace v11 {
+namespace ufmt {
+    namespace v11 {
 
-class CUnknownFragment : public ::CUnknownFragment
-{
-    
-public:
-    CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-                     uint32_t size, void* pPayload);
-    virtual const void*  getBodyPointer() const;
-    virtual void* getBodyPointer();
-    virtual bool hasBodyHeader() const;
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0) ;
-    
+    class CUnknownFragment : public ::CUnknownFragment
+    {
+        
+    public:
+        CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+                        uint32_t size, void* pPayload);
+        virtual const void*  getBodyPointer() const;
+        virtual void* getBodyPointer();
+        virtual bool hasBodyHeader() const;
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0) ;
+        
 
-    std::string typeName() const;
-    virtual std::string toString() const;
-    
-};
+        std::string typeName() const;
+        virtual std::string toString() const;
+        
+    };
 
-}
-
+    }
+]
 
                 </programlisting>
             </refsynopsisdiv>
@@ -12540,101 +12563,102 @@ public:
                 <programlisting>
 #include &lt;v12/RingItemFactory.h&gt;
 
-namespace v12 {
-    
-class RingItemFactory : public ::RingItemFactoryBase
-{
-public:
-    virtual ::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
-    virtual ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
-            size_t maxBody, uint32_t barrierType = 0 ) ;
-    virtual ::CRingItem* makeRingItem(const ::CRingItem&amp; rhs) ;
-    virtual ::CRingItem* makeRingItem(const ::RingItem* pRawRing) ;
+namespace ufmt {
+    namespace v12 {
+        
+    class RingItemFactory : public ::RingItemFactoryBase
+    {
+    public:
+        virtual ::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
+        virtual ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+                size_t maxBody, uint32_t barrierType = 0 ) ;
+        virtual ::CRingItem* makeRingItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CRingItem* makeRingItem(const ::RingItem* pRawRing) ;
 
 
-    virtual ::CRingItem* getRingItem(CRingBuffer&amp; ringbuf) ;
-    virtual ::CRingItem* getRingItem(int fd) ;
-    virtual ::CRingItem* getRingItem(std::istream&amp; in) ;
+        virtual ::CRingItem* getRingItem(CRingBuffer&amp; ringbuf) ;
+        virtual ::CRingItem* getRingItem(int fd) ;
+        virtual ::CRingItem* getRingItem(std::istream&amp; in) ;
 
-    virtual std::ostream&amp; putRingItem(const ::CRingItem* pItem, std::ostream&amp; out) ;
-    virtual void putRingItem(const ::CRingItem* pItem, int fd) ;
-    virtual void putRingItem(const ::CRingItem* pItem, CRingBuffer&amp; ringbuf) ;
+        virtual std::ostream&amp; putRingItem(const ::CRingItem* pItem, std::ostream&amp; out) ;
+        virtual void putRingItem(const ::CRingItem* pItem, int fd) ;
+        virtual void putRingItem(const ::CRingItem* pItem, CRingBuffer&amp; ringbuf) ;
 
-    virtual ::CAbnormalEndItem* makeAbnormalEndItem() ;
-    virtual ::CAbnormalEndItem* makeAbnormalEndItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CAbnormalEndItem* makeAbnormalEndItem() ;
+        virtual ::CAbnormalEndItem* makeAbnormalEndItem(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CDataFormatItem* makeDataFormatItem() ;
-    virtual ::CDataFormatItem* makeDataFormatItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CDataFormatItem* makeDataFormatItem() ;
+        virtual ::CDataFormatItem* makeDataFormatItem(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CGlomParameters* makeGlomParameters(
-        uint64_t interval, bool isBuilding, uint16_t policy
-    )  ;
-    virtual ::CGlomParameters* makeGlomParameters(const ::CRingItem&amp; rhs) ;
+        virtual ::CGlomParameters* makeGlomParameters(
+            uint64_t interval, bool isBuilding, uint16_t policy
+        )  ;
+        virtual ::CGlomParameters* makeGlomParameters(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(
-        uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
-    ) ;
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
+        virtual ::CPhysicsEventItem* makePhysicsEventItem(
+            uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
+        ) ;
+        virtual ::CPhysicsEventItem* makePhysicsEventItem(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CRingFragmentItem* makeRingFragmentItem(
-        uint64_t timestamp, uint32_t source, uint32_t payloadSize,
-        const void* payload, uint32_t barrier=0
-    ) ;
-    virtual ::CRingFragmentItem* makeRingFragmentItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CRingFragmentItem* makeRingFragmentItem(
+            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+            const void* payload, uint32_t barrier=0
+        ) ;
+        virtual ::CRingFragmentItem* makeRingFragmentItem(const ::CRingItem&amp; rhs) ;
 
 
-    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        uint64_t count, uint32_t timeoffset, time_t stamp,
-    int divisor=1
-    ) ;
-    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        const ::CRingItem&amp; rhs
-    ) ;
+        virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            uint64_t count, uint32_t timeoffset, time_t stamp,
+        int divisor=1
+        ) ;
+        virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            const ::CRingItem&amp; rhs
+        ) ;
 
-    virtual ::CRingScalerItem* makeScalerItem(size_t numScalers) ;
-    virtual ::CRingScalerItem* makeScalerItem(
-        uint32_t startTime,
-        uint32_t stopTime,
-        time_t   timestamp,
-        std::vector&lt;uint32_t&gt; scalers,
-        bool                  isIncremental = true,
-        uint32_t              sid = 0,
-        uint32_t              timeOffsetDivisor = 1
-    ) ;
-    virtual ::CRingScalerItem* makeScalerItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CRingScalerItem* makeScalerItem(size_t numScalers) ;
+        virtual ::CRingScalerItem* makeScalerItem(
+            uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            std::vector&lt;uint32_t&gt; scalers,
+            bool                  isIncremental = true,
+            uint32_t              sid = 0,
+            uint32_t              timeOffsetDivisor = 1
+        ) ;
+        virtual ::CRingScalerItem* makeScalerItem(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CRingTextItem* makeTextItem(
-        uint16_t type,
-        std::vector&lt;std::string&gt; theStrings
-    ) ;
-    virtual ::CRingTextItem* makeTextItem(
-        uint16_t type,
-        std::vector&lt;std::string&gt; theStrings,
-        uint32_t                 offsetTime,
-        time_t                   timestamp,
-        uint32_t divisor 
-    ) ;
-    virtual ::CRingTextItem* makeTextItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CRingTextItem* makeTextItem(
+            uint16_t type,
+            std::vector&lt;std::string&gt; theStrings
+        ) ;
+        virtual ::CRingTextItem* makeTextItem(
+            uint16_t type,
+            std::vector&lt;std::string&gt; theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp,
+            uint32_t divisor 
+        ) ;
+        virtual ::CRingTextItem* makeTextItem(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CUnknownFragment* makeUnknownFragment(
-        uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-        uint32_t size, void* pPayload
-    ) ;
-    virtual ::CUnknownFragment* makeUnknownFragment(const ::CRingItem&amp; rhs) ;
+        virtual ::CUnknownFragment* makeUnknownFragment(
+            uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+            uint32_t size, void* pPayload
+        ) ;
+        virtual ::CUnknownFragment* makeUnknownFragment(const ::CRingItem&amp; rhs) ;
 
-    virtual ::CRingStateChangeItem* makeStateChangeItem(
-        uint32_t itemType, uint32_t runNumber,
-        uint32_t timeOffset,
-        time_t   timestamp,
-        std::string title
-    ) ;
-    virtual ::CRingStateChangeItem* makeStateChangeItem(const ::CRingItem&amp; rhs) ;
+        virtual ::CRingStateChangeItem* makeStateChangeItem(
+            uint32_t itemType, uint32_t runNumber,
+            uint32_t timeOffset,
+            time_t   timestamp,
+            std::string title
+        ) ;
+        virtual ::CRingStateChangeItem* makeStateChangeItem(const ::CRingItem&amp; rhs) ;
 
-    
-};
-    
-}                     // V12 namespace.
+        
+    };
+        
+    }                     // V12 namespace.
 
 
                 </programlisting>
