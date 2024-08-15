@@ -29,19 +29,20 @@ if(${NSCLDAQ_ROOT} STREQUAL _)
    ${CMAKE_BINARY_DIR}
   )
 target_link_libraries(evtdump
+  NSCLDAQFormat
   V10Format
   V11Format
   V12Format
-  NSCLDAQFormat
   AbstractFormat
+  NSCLDAQFormat
   )
   target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib )
 else ()
   target_link_libraries(evtdump
+  NSCLDAQFormat
   V10Format
   V11Format
   V12Format
-  NSCLDAQFormat
   AbstractFormat
   ${NSCLDAQ_LIB}/libdaqshm.so
   ${NSCLDAQ_LIB}/libDataFlow.so
