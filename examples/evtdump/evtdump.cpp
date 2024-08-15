@@ -65,6 +65,7 @@
 #include <CRingStateChangeItem.h>
 #include <CUnknownFragment.h>
 
+using namespace ufmt;
 
 // End of ring item type headers.
 

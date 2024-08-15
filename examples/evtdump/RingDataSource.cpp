@@ -21,6 +21,7 @@
 
 #include "RingDataSource.h"
 #include <RingItemFactoryBase.h>
+using namespace ufmt;
 
 /**
  * constructor

@@ -21,7 +21,7 @@
 
 #include "DataSource.h"
 #include <RingItemFactoryBase.h>
-
+using namespace ufmt;
 /**
  * constructor
  *  Just saves the factory pointer - note that we gain ownershp of the factory and,

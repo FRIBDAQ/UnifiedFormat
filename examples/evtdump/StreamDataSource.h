@@ -22,6 +22,8 @@
 #include "DataSource.h"
 #include <istream>
 
+using namespace ufmt;
+
 class StreamDataSource : public DataSource
 {
 private:

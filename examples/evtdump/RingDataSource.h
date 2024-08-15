@@ -22,6 +22,8 @@
  */
 
 #include "DataSource.h"
+using namespace ufmt;
+
 class CRingBuffer;
 
 class RingDataSource : public DataSource
