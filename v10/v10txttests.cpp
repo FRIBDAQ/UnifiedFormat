@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+using namespace ufmt;
 class v10txttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10txttest);
     CPPUNIT_TEST(construct_1);
