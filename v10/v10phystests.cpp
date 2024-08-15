@@ -26,7 +26,7 @@
 
 
 #include <stdint.h>
-
+using namespace ufmt;
 class v10phytest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10phytest);
     CPPUNIT_TEST(construct_1);

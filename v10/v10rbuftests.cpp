@@ -24,6 +24,7 @@
 #include "CRingItem.h"
 #include "DataFormat.h"
 #include <type_traits>    //is_null_pointer
+using namespace ufmt;
 class v10rbuftest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10rbuftest);
     CPPUNIT_TEST(construct_1);
