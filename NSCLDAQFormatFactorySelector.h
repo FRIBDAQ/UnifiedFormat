@@ -22,22 +22,24 @@
 #ifndef NSCLDAQFORMATFACTORYSELECTOR_H
 #define NSCLDAQFORMATFACTORYSELECTOR_h
 #include <fmtconfig.h>
-/**
- * Rather than a class, we can just use a namespace to provide these
- * essentially unbound functions.
- */
 
-class RingItemFactoryBase;
-class CDataFormatItem;
-class CRingItem;
-namespace FormatSelector {
-    enum SupportedVersions {v10, v11, v12};
-    
-    RingItemFactoryBase& selectFactory(SupportedVersions version);
-    RingItemFactoryBase& selectFactory(CDataFormatItem& item);
-    
-    void clearCache();                // For testing...users must not call this.
-}                          // End namespace.
+namespace ufmt {
+    /**
+     * Rather than a class, we can just use a namespace to provide these
+     * essentially unbound functions.
+     */
 
+    class RingItemFactoryBase;
+    class CDataFormatItem;
+    class CRingItem;
+    namespace FormatSelector {
+        enum SupportedVersions {v10, v11, v12};
+        
+        RingItemFactoryBase& selectFactory(SupportedVersions version);
+        RingItemFactoryBase& selectFactory(CDataFormatItem& item);
+        
+        void clearCache();                // For testing...users must not call this.
+    }                          // End namespace FormatSelector
 
+}                             // End namespace ufmt.
 #endif
