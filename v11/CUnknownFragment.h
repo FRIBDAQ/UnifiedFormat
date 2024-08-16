@@ -18,44 +18,45 @@
  */
 
 #include <CUnknownFragment.h>
+namespace ufmt {
+    namespace v11 {
+    /**
+     * @class CUnknownFragment
+     *
+     * This class encapsulates ring items of type EVB_UNKNOWN_PAYLOAD. These are
+     * event builder fragments where the payloads are pretty clearly not ring items.
+     */
+    class CUnknownFragment : public ::ufmt::CUnknownFragment
+    {
+        // Canonical methods:
+        
+    public:
+        CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+                        uint32_t size, void* pPayload);
+        virtual ~CUnknownFragment();
+    private:
+        CUnknownFragment(const CUnknownFragment& rhs);
+        CUnknownFragment(const CRingItem& rhs) ;
+        
+        CUnknownFragment& operator=(const CUnknownFragment& rhs);
+        int operator==(const CUnknownFragment& rhs) const;
+        int operator!=(const CUnknownFragment& rhs) const;
+        
+        
+    public:
+        virtual const void*  getBodyPointer() const;
+        virtual void* getBodyPointer();
+        virtual bool hasBodyHeader() const;
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0) ;
+        
 
-namespace v11 {
-/**
- * @class CUnknownFragment
- *
- * This class encapsulates ring items of type EVB_UNKNOWN_PAYLOAD. These are
- * event builder fragments where the payloads are pretty clearly not ring items.
- */
-class CUnknownFragment : public ::CUnknownFragment
-{
-    // Canonical methods:
-    
-public:
-    CUnknownFragment(uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-                     uint32_t size, void* pPayload);
-    virtual ~CUnknownFragment();
-private:
-    CUnknownFragment(const CUnknownFragment& rhs);
-    CUnknownFragment(const CRingItem& rhs) ;
-    
-    CUnknownFragment& operator=(const CUnknownFragment& rhs);
-    int operator==(const CUnknownFragment& rhs) const;
-    int operator!=(const CUnknownFragment& rhs) const;
-    
-    
-public:
-    virtual const void*  getBodyPointer() const;
-    virtual void* getBodyPointer();
-    virtual bool hasBodyHeader() const;
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0) ;
-    
+        std::string typeName() const;
+        virtual std::string toString() const;   // Because we want the v11 one.
+        
+    };
 
-    std::string typeName() const;
-    virtual std::string toString() const;   // Because we want the v11 one.
-    
-};
-
+    }
 }
 #endif

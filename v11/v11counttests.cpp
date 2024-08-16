@@ -25,6 +25,8 @@
 #include "DataFormat.h"
 #include <time.h>
 
+using namespace ufmt;
+
 class v11counttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11counttest);
     CPPUNIT_TEST(construct_1);

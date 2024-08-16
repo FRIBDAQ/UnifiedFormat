@@ -27,6 +27,8 @@
 #include <string.h>
 #include <stdexcept>
 
+using namespace ufmt;
+
 static size_t
 sizeStrings(const std::vector<std::string>& strings)
 {

@@ -48,6 +48,8 @@
 #include <sstream>
 #include <memory>
 
+using namespace ufmt;
+
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 const char* ringbuffer="v11factoryring";
 
