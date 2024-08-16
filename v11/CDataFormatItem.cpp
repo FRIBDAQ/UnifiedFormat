@@ -31,7 +31,7 @@ namespace ufmt {
      *   data format major and minor versions encoded in DataFormat.h
      */
     CDataFormatItem::CDataFormatItem() :
-        ::umft::CDataFormatItem()
+        ::ufmt::CDataFormatItem()
     {
         v11::pDataFormat pItem = reinterpret_cast<v11::pDataFormat>(getItemPointer());
         pItem->s_header.s_type = v11::RING_FORMAT;

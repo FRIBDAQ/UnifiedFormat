@@ -107,7 +107,7 @@ namespace ufmt {
      *  @param pRawRing - raw ring item pointer.
     */
     ::ufmt::CRingItem*
-    RingItemFactory::makeRingItem(const ::RingItem* pRawRing)
+    RingItemFactory::makeRingItem(const ::ufmt::RingItem* pRawRing)
     {
         v11::CRingItem* pItem = new v11::CRingItem(
             pRawRing->s_header.s_type, pRawRing->s_header.s_size

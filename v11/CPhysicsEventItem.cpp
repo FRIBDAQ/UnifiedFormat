@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <iostream>
 
-namespace umft {
+namespace ufmt {
 
   namespace v11 {
   /**
@@ -59,7 +59,7 @@ namespace umft {
    */
   CPhysicsEventItem::CPhysicsEventItem(
       uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody) :
-      ::CPhysicsEventItem(maxBody)
+      ::ufmt::CPhysicsEventItem(maxBody)
   {
       v11::pPhysicsEventItem pItem = reinterpret_cast<v11::pPhysicsEventItem>(getItemPointer());
       

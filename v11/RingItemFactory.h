@@ -30,14 +30,14 @@ namespace ufmt {
      * @class v11::RingItemFactory
      *    Provides factory methods for v11 ring items.
      */
-    class RingItemFactory : public ::RingItemFactoryBase
+    class RingItemFactory : public ::ufmt::RingItemFactoryBase
     {
     public:
         virtual ::ufmt::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
         virtual ::ufmt::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
                 size_t maxBody, uint32_t barrierType = 0 ) ;
         virtual ::ufmt::CRingItem* makeRingItem(const ::ufmt::CRingItem& rhs) ;
-        virtual ::ufmt::CRingItem* makeRingItem(const ::RingItem* pRawRing) ;
+        virtual ::ufmt::CRingItem* makeRingItem(const ::ufmt::RingItem* pRawRing) ;
 
     #ifdef HAVE_NSCLDAQ    
         virtual ::ufmt::CRingItem* getRingItem(::ufmt::CRingBuffer& ringbuf) ;

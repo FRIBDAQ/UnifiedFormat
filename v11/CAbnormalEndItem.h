@@ -24,7 +24,7 @@
 
 
 #include <CAbnormalEndItem.h>
-namespace umft {
+namespace ufmt {
     namespace v11 {
     class CAbnormalEndItem : public ::ufmt::CAbnormalEndItem
     {

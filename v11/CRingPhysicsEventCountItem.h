@@ -31,7 +31,7 @@ namespace ufmt {
     have actually been generated to get an analysis fraction.
 
   */
-  class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
+  class CRingPhysicsEventCountItem : public ::ufmt::CRingPhysicsEventCountItem
   {
 
     // constructors and other canonicals:

@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespacde ufmt {
+namespace ufmt {
   namespace v11 {
   /*!
     The text ring item provides a mechanism to put an item in/take an item out of 
