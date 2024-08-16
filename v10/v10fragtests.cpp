@@ -24,7 +24,7 @@
 #include "CRingFragmentItem.h"
 #include "DataFormat.h"
 #include <string>
-
+using namespace ufmt;
 class v10fragtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10fragtest);
     CPPUNIT_TEST(construct_1);

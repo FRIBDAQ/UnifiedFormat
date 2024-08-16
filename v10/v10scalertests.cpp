@@ -24,7 +24,7 @@
 #include "CRingScalerItem.h"
 #include "DataFormat.h"
 #include <time.h>
-
+using  namespace ufmt;
 class v10scalertest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10scalertest);
     CPPUNIT_TEST(construct_1);

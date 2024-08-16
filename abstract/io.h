@@ -29,18 +29,18 @@
  * @brief Commonly used I/O method definitions.
  * @author Ron Fox
  */
+namespace ufmt {
+  namespace fmtio {
+    void writeData (int fd, const void* pData , size_t size);
+    size_t readData (int fd, void* pBuffer,  size_t nBytes);
+    void writeDataV(int fd, struct iovec* iov, int iovcnt);
+    void writeDataVUnlimited(int fd, struct iovec* iov, int iovcnt);
+    std::string getReadableEnvFile(const char* envName);
+    std::string getReadableFileFromHome(const char* file);
+    std::string getReadableFileFromWd(const char* file);
+    std::string getReadableFileFromEnvdir(const char* env, const char* file);
 
-namespace fmtio {
-  void writeData (int fd, const void* pData , size_t size);
-  size_t readData (int fd, void* pBuffer,  size_t nBytes);
-  void writeDataV(int fd, struct iovec* iov, int iovcnt);
-  void writeDataVUnlimited(int fd, struct iovec* iov, int iovcnt);
-  std::string getReadableEnvFile(const char* envName);
-  std::string getReadableFileFromHome(const char* file);
-  std::string getReadableFileFromWd(const char* file);
-  std::string getReadableFileFromEnvdir(const char* env, const char* file);
-
+  }
 }
-
 
 #endif

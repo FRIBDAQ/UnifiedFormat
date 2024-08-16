@@ -26,80 +26,81 @@
 #include <string>
 #include <typeinfo>
 
+namespace ufmt {
+  /*!
+    This class represents a state change item.
+    State change items are items in the buffer that indicate a change in the state of
+    data taking.  The set of state changes recognized by this class are:
 
-/*!
-  This class represents a state change item.
-  State change items are items in the buffer that indicate a change in the state of
-  data taking.  The set of state changes recognized by this class are:
+    - BEGIN_RUN  - the run has become active after being stopped.
+    - END_RUN    - The run has become inactive after being ended.
+    - PAUSE_RUN  - The run has become inactive after being temporarily paused.
+    - RESUME_RUN - The run has become active after being resumed while paused.
 
-  - BEGIN_RUN  - the run has become active after being stopped.
-  - END_RUN    - The run has become inactive after being ended.
-  - PAUSE_RUN  - The run has become inactive after being temporarily paused.
-  - RESUME_RUN - The run has become active after being resumed while paused.
-
-  This object is suitable for use by both producers (who must create state change
-  items), and consumers (who must inspect the contents of such items after getting
-  them from a ring).
-
-
-*/
-class CRingStateChangeItem : public CRingItem
-{
-
-  // construction and other canonicals
-public:
-  CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
-  CRingStateChangeItem(uint16_t reason,
-		       uint32_t runNumber,
-		       uint32_t timeOffset,
-		       time_t   timestamp,
-		       std::string title) ;
-  
-
-  virtual ~CRingStateChangeItem();
-private:
-  CRingStateChangeItem(const CRingItem& item) ;
-  CRingStateChangeItem(const CRingStateChangeItem& rhs);
-
-  CRingStateChangeItem& operator=(const CRingStateChangeItem& rhs);
-  int operator==(const CRingStateChangeItem& rhs) const;
-  int operator!=(const CRingStateChangeItem& rhs) const;
-
-  // Accessors for elements of the item (selectors and mutators both).
-public:
-  virtual void setRunNumber(uint32_t run);
-  virtual uint32_t getRunNumber() const;
-
-  virtual void setElapsedTime(uint32_t offset);
-  virtual uint32_t getElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
-  virtual float    computeElapsedTime() const;
-
-  virtual void setTitle(std::string title) ;
-  virtual std::string getTitle() const;
-
-  virtual void setTimestamp(time_t stamp);
-  virtual time_t getTimestamp() const;
-  virtual uint32_t getOriginalSourceId() const;
-  
-  // Virtual method overrides.
-
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
+    This object is suitable for use by both producers (who must create state change
+    items), and consumers (who must inspect the contents of such items after getting
+    them from a ring).
 
 
-  // Utitlity functions..
+  */
+  class CRingStateChangeItem : public CRingItem
+  {
 
-private:
-  void init();
-  bool isStateChange();
-  pStateChangeItemBody getStateChangeBody();
-  void fillStateChangeBody(
-        uint32_t run, uint32_t offset, uint32_t divisor, time_t timestamp,
-        const char* title, uint32_t  sid
-  );
-};
+    // construction and other canonicals
+  public:
+    CRingStateChangeItem(uint16_t reason = BEGIN_RUN);
+    CRingStateChangeItem(uint16_t reason,
+            uint32_t runNumber,
+            uint32_t timeOffset,
+            time_t   timestamp,
+            std::string title) ;
+    
+
+    virtual ~CRingStateChangeItem();
+  private:
+    CRingStateChangeItem(const CRingItem& item) ;
+    CRingStateChangeItem(const CRingStateChangeItem& rhs);
+
+    CRingStateChangeItem& operator=(const CRingStateChangeItem& rhs);
+    int operator==(const CRingStateChangeItem& rhs) const;
+    int operator!=(const CRingStateChangeItem& rhs) const;
+
+    // Accessors for elements of the item (selectors and mutators both).
+  public:
+    virtual void setRunNumber(uint32_t run);
+    virtual uint32_t getRunNumber() const;
+
+    virtual void setElapsedTime(uint32_t offset);
+    virtual uint32_t getElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
+    virtual float    computeElapsedTime() const;
+
+    virtual void setTitle(std::string title) ;
+    virtual std::string getTitle() const;
+
+    virtual void setTimestamp(time_t stamp);
+    virtual time_t getTimestamp() const;
+    virtual uint32_t getOriginalSourceId() const;
+    
+    // Virtual method overrides.
+
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                          uint32_t barrierType = 0);
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+
+
+    // Utitlity functions..
+
+  private:
+    void init();
+    bool isStateChange();
+    pStateChangeItemBody getStateChangeBody();
+    void fillStateChangeBody(
+          uint32_t run, uint32_t offset, uint32_t divisor, time_t timestamp,
+          const char* title, uint32_t  sid
+    );
+  };
+}
 #endif

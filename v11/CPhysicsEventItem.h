@@ -18,63 +18,65 @@
 
 #include <CPhysicsEventItem.h>
 
-namespace v11 {
+namespace ufmt {
 
-/**
- *  This class is a wrapper for physics events.
- *  It's mainly provided so that textual dumps
- *  can be performed as typeName and toString
- *  are the only substantive methods...everything
- *  else just delegates to the base class.
- */
+  namespace v11 {
 
-class CPhysicsEventItem : public ::CPhysicsEventItem
-{
-public:
-  CPhysicsEventItem(size_t maxBody=8192);
-  CPhysicsEventItem(                                 // Our factory can use this.
-       uint64_t timestamp, uint32_t source, uint32_t barrier,
-       size_t maxBody=8192
-   );
+  /**
+   *  This class is a wrapper for physics events.
+   *  It's mainly provided so that textual dumps
+   *  can be performed as typeName and toString
+   *  are the only substantive methods...everything
+   *  else just delegates to the base class.
+   */
 
-  virtual ~CPhysicsEventItem();
-private:
+  class CPhysicsEventItem : public ::ufmt::CPhysicsEventItem
+  {
+  public:
+    CPhysicsEventItem(size_t maxBody=8192);
+    CPhysicsEventItem(                                 // Our factory can use this.
+        uint64_t timestamp, uint32_t source, uint32_t barrier,
+        size_t maxBody=8192
+    );
 
-  CPhysicsEventItem(const CRingItem& rhs) ;
-  CPhysicsEventItem(const CPhysicsEventItem& rhs);
+    virtual ~CPhysicsEventItem();
+  private:
+
+    CPhysicsEventItem(const CRingItem& rhs) ;
+    CPhysicsEventItem(const CPhysicsEventItem& rhs);
 
 
-  CPhysicsEventItem& operator=(const CPhysicsEventItem& rhs);
-  int operator==(const CPhysicsEventItem& rhs) const;
-  int operator!=(const CPhysicsEventItem& rhs) const;
-public:
-  // We need to overrride these in ::CRingItem our ultimate
-  // base class.  We'll delegate them to v11::CRingItem.
-  //
-  virtual size_t getBodySize()    const;
-  virtual const void*  getBodyPointer() const;
-  virtual void* getBodyPointer();
-  virtual bool hasBodyHeader() const;
-  virtual uint64_t getEventTimestamp() const;
-  virtual uint32_t getSourceId() const;
-  virtual uint32_t getBarrierType() const;
+    CPhysicsEventItem& operator=(const CPhysicsEventItem& rhs);
+    int operator==(const CPhysicsEventItem& rhs) const;
+    int operator!=(const CPhysicsEventItem& rhs) const;
+  public:
+    // We need to overrride these in ::CRingItem our ultimate
+    // base class.  We'll delegate them to v11::CRingItem.
+    //
+    virtual size_t getBodySize()    const;
+    virtual const void*  getBodyPointer() const;
+    virtual void* getBodyPointer();
+    virtual bool hasBodyHeader() const;
+    virtual uint64_t getEventTimestamp() const;
+    virtual uint32_t getSourceId() const;
+    virtual uint32_t getBarrierType() const;
+
+    
+    
+    // Virtual methods that all ring items must provide:
+
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
+
+    virtual void* getBodyHeader() const;
+    virtual void setBodyHeader(
+          uint64_t timestamp, uint32_t sourceId,
+          uint32_t barrierType = 0
+    );
 
   
   
-  // Virtual methods that all ring items must provide:
-
-  virtual std::string typeName() const;	// Textual type of item.
-  virtual std::string toString() const; // Provide string dump of the item.
-
-  virtual void* getBodyHeader() const;
-  virtual void setBodyHeader(
-        uint64_t timestamp, uint32_t sourceId,
-        uint32_t barrierType = 0
-  );
-
- 
- 
-};
+  };
+  }
 }
-
 #endif

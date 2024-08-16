@@ -22,42 +22,43 @@
 #include <string>
 #include <typeinfo>
 
-struct _RingItem;
+namespace ufmt {
+    struct _RingItem;
 
-/**
- *  This class is a wrapper for physics events.
- *  It's mainly provided so that textual dumps
- *  can be performed as typeName and toString
- *  are the only substantive methods...everything
- *  else just delegates to the base class.
- */
+    /**
+     *  This class is a wrapper for physics events.
+     *  It's mainly provided so that textual dumps
+     *  can be performed as typeName and toString
+     *  are the only substantive methods...everything
+     *  else just delegates to the base class.
+     */
 
-class CPhysicsEventItem : public CRingItem
-{
-public:
-    CPhysicsEventItem(size_t maxBody=8192);
+    class CPhysicsEventItem : public CRingItem
+    {
+    public:
+        CPhysicsEventItem(size_t maxBody=8192);
+        
+        CPhysicsEventItem(const CRingItem& rhs) ;
+        CPhysicsEventItem(const CPhysicsEventItem& rhs);
+        virtual ~CPhysicsEventItem();
+    private:  
+        CPhysicsEventItem& operator=(const CPhysicsEventItem& rhs);
+        int operator==(const CPhysicsEventItem& rhs) const;
+        int operator!=(const CPhysicsEventItem& rhs) const;
+    public:
+        // Virtual methods that all ring items must provide:
     
-    CPhysicsEventItem(const CRingItem& rhs) ;
-    CPhysicsEventItem(const CPhysicsEventItem& rhs);
-    virtual ~CPhysicsEventItem();
-private:  
-    CPhysicsEventItem& operator=(const CPhysicsEventItem& rhs);
-    int operator==(const CPhysicsEventItem& rhs) const;
-    int operator!=(const CPhysicsEventItem& rhs) const;
-public:
-    // Virtual methods that all ring items must provide:
-  
-    virtual std::string typeName() const;	// Textual type of item.
-    virtual std::string toString() const; // Provide string dump of the item.
+        virtual std::string typeName() const;	// Textual type of item.
+        virtual std::string toString() const; // Provide string dump of the item.
 
+        
+        // Required virtual methods: pure virtual in the base class.
+        
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
     
-    // Required virtual methods: pure virtual in the base class.
-    
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  
-};
-
+    };
+}
 
 #endif

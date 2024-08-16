@@ -24,36 +24,36 @@
 
 #include "CRingItem.h"
 
+namespace ufmt {
+    class CAbnormalEndItem : public CRingItem
+    {
+    public:
+        CAbnormalEndItem();
+        virtual ~CAbnormalEndItem();
+    private:    
+        CAbnormalEndItem(const CAbnormalEndItem& rhs);
+        CAbnormalEndItem(const CRingItem& rhs);
+    public:
+        // pure virtual iplementations.
+        
+        virtual void* getBodyHeader() const;
+        virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+        
+    private:
+        CAbnormalEndItem& operator=(const CAbnormalEndItem& rhs);
+        int operator==(const CAbnormalEndItem& rhs) const;
+        int operator==(const CRingItem& rhs) const;
+        
+        int operator!=(const CAbnormalEndItem& rhs) const;
+        int operator!=(const CRingItem& rhs) const;
 
-class CAbnormalEndItem : public CRingItem
-{
-public:
-    CAbnormalEndItem();
-    virtual ~CAbnormalEndItem();
-private:    
-    CAbnormalEndItem(const CAbnormalEndItem& rhs);
-    CAbnormalEndItem(const CRingItem& rhs);
-public:
-    // pure virtual iplementations.
-    
-    virtual void* getBodyHeader() const;
-    virtual void  setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-    
-private:
-    CAbnormalEndItem& operator=(const CAbnormalEndItem& rhs);
-    int operator==(const CAbnormalEndItem& rhs) const;
-    int operator==(const CRingItem& rhs) const;
-    
-    int operator!=(const CAbnormalEndItem& rhs) const;
-    int operator!=(const CRingItem& rhs) const;
-
-    // Formatting:
-    
-public:
-    virtual std::string typeName() const;
-    virtual std::string toString() const;
-};
-
+        // Formatting:
+        
+    public:
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+    };
+}
 
 #endif

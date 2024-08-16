@@ -26,6 +26,8 @@
 #include "DataFormat.h"
 #include <string.h>
 
+using namespace ufmt;
+
 class v12fragtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12fragtest);
     CPPUNIT_TEST(construct_1);

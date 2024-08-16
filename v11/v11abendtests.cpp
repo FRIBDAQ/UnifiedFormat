@@ -24,6 +24,8 @@
 #include "CAbnormalEndItem.h"
 #include "DataFormat.h"
 
+using namespace ufmt;
+
 class v11abendtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11abendtest);
     CPPUNIT_TEST(construct);

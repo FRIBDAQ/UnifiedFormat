@@ -19,127 +19,128 @@
 
 #include <sstream>
 #include <stdio.h>
-
-namespace v10 {
-/*
- * All the canonical methods just delegate to the base class
- */
-
-
-CPhysicsEventItem::CPhysicsEventItem(size_t maxBody) :
-  ::CPhysicsEventItem(maxBody) {}
+namespace ufmt {
+  namespace v10 {
+  /*
+  * All the canonical methods just delegate to the base class
+  */
 
 
-CPhysicsEventItem::~CPhysicsEventItem() {}
+  CPhysicsEventItem::CPhysicsEventItem(size_t maxBody) :
+    ::ufmt::CPhysicsEventItem(maxBody) {}
 
 
-/*--------------------------------------------------
- *
- * Virtual method overrides.
- */
+  CPhysicsEventItem::~CPhysicsEventItem() {}
 
-/**
- *   getBodySize.
- *     sadly the hierarchy does not allow me to delegate as we descend from
- *     ::CPhysicsEventItem not from v10::CRingItem so:
- * @return number of bytes in the body
- */
-size_t
-CPhysicsEventItem::getBodySize() const
-{
-  auto cThis = const_cast<CPhysicsEventItem*>(this);
-  const uint8_t* pB = reinterpret_cast<const uint8_t*>(getBodyPointer());
-  const uint8_t* pC = reinterpret_cast<const uint8_t*>(cThis->getBodyCursor());
-  
-  return pC - pB;
-}
 
-/**
- * getBodyPointer
- *     Return a pointer to the body.
- *     sadly the hierarchy does not allow me to delegate as we descend from
- *     ::CPhysicsEventItem not from v10::CRingItem so:
- 
- *  @return void*
- */
-void*
-CPhysicsEventItem::getBodyPointer()
-{
-  RingItemHeader* pH = reinterpret_cast<RingItemHeader*>(getItemPointer());
-  return pH+1;
-}
-// same as above but const:
+  /*--------------------------------------------------
+  *
+  * Virtual method overrides.
+  */
 
-const void*
-CPhysicsEventItem::getBodyPointer() const
-{
-  const RingItemHeader* pH = reinterpret_cast<const RingItemHeader*>(getItemPointer());
-  return pH+1;   
-}
-/**
- * getBodyHeader - returns nullptr:
- *
- */
-void*
-CPhysicsEventItem::getBodyHeader() {
-  return nullptr;
-}
-/**
- *  setBodyHeader
- *     no-op
- */
-void
-CPhysicsEventItem::setBodyHeader(
-  uint64_t timestamp, uint32_t sid, uint32_t barrier
-)
-{}
-
-/**
- * typeName
- *    Returns the type name associated with the item.
- * 
- * @return std::string  - "Event ".
- */
-std::string
-CPhysicsEventItem::typeName() const
-{
-  return "Event (V10)";
-}
-
-/**
- * toString
- *
- *  Convert the event to a string.
- *
- * @return std::string - stringified versino of the event.
- */
-std::string
-CPhysicsEventItem::toString() const
-{
-  std::ostringstream out;
-  uint32_t  bytes = getBodySize();
-  uint32_t  words = bytes/sizeof(uint16_t);
-  const uint16_t* body  = reinterpret_cast<const uint16_t*>((const_cast<CPhysicsEventItem*>(this))->getBodyPointer());
-
-  out << "Event " << bytes << " bytes long\n";
-
-  int  w = out.width();
-  char f = out.fill();
-
-  
-  for (int i =1; i <= words; i++) {
-    char number[32];
-    sprintf(number, "%04x ", *body++);
-    out << number;
-    if ( (i%8) == 0) {
-      out << std::endl;
-    }
+  /**
+   *   getBodySize.
+   *     sadly the hierarchy does not allow me to delegate as we descend from
+   *     ::CPhysicsEventItem not from v10::CRingItem so:
+   * @return number of bytes in the body
+   */
+  size_t
+  CPhysicsEventItem::getBodySize() const
+  {
+    auto cThis = const_cast<CPhysicsEventItem*>(this);
+    const uint8_t* pB = reinterpret_cast<const uint8_t*>(getBodyPointer());
+    const uint8_t* pC = reinterpret_cast<const uint8_t*>(cThis->getBodyCursor());
+    
+    return pC - pB;
   }
-  out << std::endl;
-  
-  
-  return out.str();
 
-}
+  /**
+   * getBodyPointer
+   *     Return a pointer to the body.
+   *     sadly the hierarchy does not allow me to delegate as we descend from
+   *     ::CPhysicsEventItem not from v10::CRingItem so:
+   
+  *  @return void*
+  */
+  void*
+  CPhysicsEventItem::getBodyPointer()
+  {
+    RingItemHeader* pH = reinterpret_cast<RingItemHeader*>(getItemPointer());
+    return pH+1;
+  }
+  // same as above but const:
 
+  const void*
+  CPhysicsEventItem::getBodyPointer() const
+  {
+    const RingItemHeader* pH = reinterpret_cast<const RingItemHeader*>(getItemPointer());
+    return pH+1;   
+  }
+  /**
+   * getBodyHeader - returns nullptr:
+   *
+   */
+  void*
+  CPhysicsEventItem::getBodyHeader() {
+    return nullptr;
+  }
+  /**
+   *  setBodyHeader
+   *     no-op
+   */
+  void
+  CPhysicsEventItem::setBodyHeader(
+    uint64_t timestamp, uint32_t sid, uint32_t barrier
+  )
+  {}
+
+  /**
+   * typeName
+   *    Returns the type name associated with the item.
+   * 
+   * @return std::string  - "Event ".
+   */
+  std::string
+  CPhysicsEventItem::typeName() const
+  {
+    return "Event (V10)";
+  }
+
+  /**
+   * toString
+   *
+   *  Convert the event to a string.
+   *
+   * @return std::string - stringified versino of the event.
+   */
+  std::string
+  CPhysicsEventItem::toString() const
+  {
+    std::ostringstream out;
+    uint32_t  bytes = getBodySize();
+    uint32_t  words = bytes/sizeof(uint16_t);
+    const uint16_t* body  = reinterpret_cast<const uint16_t*>((const_cast<CPhysicsEventItem*>(this))->getBodyPointer());
+
+    out << "Event " << bytes << " bytes long\n";
+
+    int  w = out.width();
+    char f = out.fill();
+
+    
+    for (int i =1; i <= words; i++) {
+      char number[32];
+      sprintf(number, "%04x ", *body++);
+      out << number;
+      if ( (i%8) == 0) {
+        out << std::endl;
+      }
+    }
+    out << std::endl;
+    
+    
+    return out.str();
+
+  }
+
+  }
 }

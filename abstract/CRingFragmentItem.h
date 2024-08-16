@@ -21,64 +21,64 @@
 #include <typeinfo>
 
 
-
-// Forward definitions.
-
-
-typedef struct _EventBuilderFragment *pEventBuilderFragment;
+namespace ufmt {
+  // Forward definitions.
 
 
-/**
- * class to encapsulate ring items that are actually event builder output fragments.
- */
-class CRingFragmentItem : public CRingItem
-{
-  // Implemented canonical items:
+  typedef struct _EventBuilderFragment *pEventBuilderFragment;
 
-public:
-  CRingFragmentItem(uint64_t timestamp, 
-		    uint32_t source, 
-		    uint32_t payloadSize, 
-		    const void* pBody,
-		    uint32_t barrier=0);
-  virtual ~CRingFragmentItem();
-private:
-  CRingFragmentItem(const CRingItem& rhs) ;
-  CRingFragmentItem(const CRingFragmentItem& rhs);
 
-  
+  /**
+   * class to encapsulate ring items that are actually event builder output fragments.
+   */
+  class CRingFragmentItem : public CRingItem
+  {
+    // Implemented canonical items:
 
-  CRingFragmentItem& operator=(const CRingFragmentItem& rhs);
-  int operator==(const CRingFragmentItem& rhs) const;
-  int operator!=(const CRingFragmentItem& rhs) const;
+  public:
+    CRingFragmentItem(uint64_t timestamp, 
+          uint32_t source, 
+          uint32_t payloadSize, 
+          const void* pBody,
+          uint32_t barrier=0);
+    virtual ~CRingFragmentItem();
+  private:
+    CRingFragmentItem(const CRingItem& rhs) ;
+    CRingFragmentItem(const CRingFragmentItem& rhs);
 
-  // Accessor member functions:
+    
 
-public:
-  virtual uint64_t     timestamp() const;
-  virtual uint32_t     source() const;
-  virtual size_t       payloadSize() const;
-  virtual void*        payloadPointer();
-  virtual uint32_t     barrierType() const;
-  
+    CRingFragmentItem& operator=(const CRingFragmentItem& rhs);
+    int operator==(const CRingFragmentItem& rhs) const;
+    int operator!=(const CRingFragmentItem& rhs) const;
 
-  // Virtual method overrides:
+    // Accessor member functions:
 
-  virtual std::string typeName() const;
-  virtual std::string toString() const;
-  virtual uint32_t getBarrierType() const;
-  
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0) ;
-  
-  virtual void* getBodyHeader() const;
-  virtual bool hasBodyHeader() const;
-  // private utilities:
+  public:
+    virtual uint64_t     timestamp() const;
+    virtual uint32_t     source() const;
+    virtual size_t       payloadSize() const;
+    virtual void*        payloadPointer();
+    virtual uint32_t     barrierType() const;
+    
 
-private:
-  size_t bodySize(size_t payloadSize) const;
-  void   copyPayload(const void* pPayloadSource, size_t payloadSize);
-  void   init(size_t size);
-};
+    // Virtual method overrides:
 
+    virtual std::string typeName() const;
+    virtual std::string toString() const;
+    virtual uint32_t getBarrierType() const;
+    
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                          uint32_t barrierType = 0) ;
+    
+    virtual void* getBodyHeader() const;
+    virtual bool hasBodyHeader() const;
+    // private utilities:
+
+  private:
+    size_t bodySize(size_t payloadSize) const;
+    void   copyPayload(const void* pPayloadSource, size_t payloadSize);
+    void   init(size_t size);
+  };
+}
 #endif

@@ -19,58 +19,58 @@
 #include "CRingItem.h"            // Base class.
 #include <typeinfo>
 
+namespace ufmt {
+    /**
+     * @class CDataFormatItem
+     *
+     * This class encapsulates ring items of the type DataFormat (RING_FORMAT).
+     * It is used to provide an indicator to the user of the format of data that is
+     * being inserted into a ring.  This can be used by data decoders to determine
+     * how to handle the specific data types.  If a ring does not ever get a
+     * RING_FORMAT item, you can assume the format to be for NSCLDAQ-10.* as this
+     * ring type was added in NSCLDAQ 11.0.
+     * The ring format will contain the major and minor versions of the
+     * lowest NSCLDAQ version that can process this data format.
+     */
+    class CDataFormatItem : public CRingItem
+    {
+        // Canonical methods:
+    public:
+        CDataFormatItem();
+        virtual ~CDataFormatItem();
+        
+        CDataFormatItem(const CDataFormatItem& rhs);
+        CDataFormatItem(const CRingItem& rhs) ;
+        
+    private:
+        CDataFormatItem& operator=(const CDataFormatItem& rhs);
+        CDataFormatItem& operator=(const CRingItem& rhs) ;
 
-/**
- * @class CDataFormatItem
- *
- * This class encapsulates ring items of the type DataFormat (RING_FORMAT).
- * It is used to provide an indicator to the user of the format of data that is
- * being inserted into a ring.  This can be used by data decoders to determine
- * how to handle the specific data types.  If a ring does not ever get a
- * RING_FORMAT item, you can assume the format to be for NSCLDAQ-10.* as this
- * ring type was added in NSCLDAQ 11.0.
- * The ring format will contain the major and minor versions of the
- * lowest NSCLDAQ version that can process this data format.
- */
-class CDataFormatItem : public CRingItem
-{
-    // Canonical methods:
-public:
-    CDataFormatItem();
-    virtual ~CDataFormatItem();
-    
-    CDataFormatItem(const CDataFormatItem& rhs);
-    CDataFormatItem(const CRingItem& rhs) ;
-    
-private:
-    CDataFormatItem& operator=(const CDataFormatItem& rhs);
-    CDataFormatItem& operator=(const CRingItem& rhs) ;
+        int operator==(const CDataFormatItem& rhs) const;
+        int operator!=(const CDataFormatItem& rhs) const;
+        
+    public:
+        // Getters (these are useful when the item was created from a RingItem)
+        
+        virtual uint16_t getMajor() const;
+        virtual uint16_t getMinor() const;
 
-    int operator==(const CDataFormatItem& rhs) const;
-    int operator!=(const CDataFormatItem& rhs) const;
-    
-public:
-    // Getters (these are useful when the item was created from a RingItem)
-    
-    virtual uint16_t getMajor() const;
-    virtual uint16_t getMinor() const;
+        
+        // object methods:
 
-    
-    // object methods:
-
-    virtual std::string typeName() const;
-    virtual std::string toString() const;
-    
-    // Required virtual methods: pure virtual in the base class.
-    
-    virtual void* getBodyHeader() const;
-    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-    
-    // Private utilities
-private:
-    void init();
-    
-};
-
+        virtual std::string typeName() const;
+        virtual std::string toString() const;
+        
+        // Required virtual methods: pure virtual in the base class.
+        
+        virtual void* getBodyHeader() const;
+        virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                            uint32_t barrierType = 0);
+        
+        // Private utilities
+    private:
+        void init();
+        
+    };
+}
 #endif

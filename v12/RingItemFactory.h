@@ -22,105 +22,106 @@
 #define V12_RINGITEMFACTORY_H
 #include <RingItemFactoryBase.h>
 
-namespace v12 {
-    
-class RingItemFactory : public ::RingItemFactoryBase
-{
-public:
-    virtual ::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
-    virtual ::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
-            size_t maxBody, uint32_t barrierType = 0 ) ;
-    virtual ::CRingItem* makeRingItem(const ::CRingItem& rhs) ;
-    virtual ::CRingItem* makeRingItem(const ::RingItem* pRawRing) ;
+namespace ufmt {
+    namespace v12 {
+        
+    class RingItemFactory : public ::ufmt::RingItemFactoryBase
+    {
+    public:
+        virtual ::ufmt::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
+        virtual ::ufmt::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
+                size_t maxBody, uint32_t barrierType = 0 ) ;
+        virtual ::ufmt::CRingItem* makeRingItem(const ::ufmt::CRingItem& rhs) ;
+        virtual ::ufmt::CRingItem* makeRingItem(const ::ufmt::RingItem* pRawRing) ;
 
-#ifdef HAVE_NSCLDAQ    
-    virtual ::CRingItem* getRingItem(CRingBuffer& ringbuf) ;
-#endif
-    virtual ::CRingItem* getRingItem(int fd) ;
-    virtual ::CRingItem* getRingItem(std::istream& in) ;
+    #ifdef HAVE_NSCLDAQ    
+        virtual ::ufmt::CRingItem* getRingItem(ufmt::CRingBuffer& ringbuf) ;
+    #endif
+        virtual ::ufmt::CRingItem* getRingItem(int fd) ;
+        virtual ::ufmt::CRingItem* getRingItem(::std::istream& in) ;
 
-    virtual std::ostream& putRingItem(const ::CRingItem* pItem, std::ostream& out) ;
-    virtual void putRingItem(const ::CRingItem* pItem, int fd) ;
-#ifdef HAVE_NSCLDAQ    
-    virtual void putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf) ;
-#endif
+        virtual ::std::ostream& putRingItem(const ::ufmt::CRingItem* pItem, ::std::ostream& out) ;
+        virtual void putRingItem(const ::ufmt::CRingItem* pItem, int fd) ;
+    #ifdef HAVE_NSCLDAQ    
+        virtual void putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& ringbuf) ;
+    #endif
 
-    virtual ::CAbnormalEndItem* makeAbnormalEndItem() ;
-    virtual ::CAbnormalEndItem* makeAbnormalEndItem(const ::CRingItem& rhs) ;
+        virtual ::ufmt::CAbnormalEndItem* makeAbnormalEndItem() ;
+        virtual ::ufmt::CAbnormalEndItem* makeAbnormalEndItem(const ::ufmt::CRingItem& rhs) ;
 
-    virtual ::CDataFormatItem* makeDataFormatItem() ;
-    virtual ::CDataFormatItem* makeDataFormatItem(const ::CRingItem& rhs) ;
+        virtual ::ufmt::CDataFormatItem* makeDataFormatItem() ;
+        virtual ::ufmt::CDataFormatItem* makeDataFormatItem(const ::ufmt::CRingItem& rhs) ;
 
-    virtual ::CGlomParameters* makeGlomParameters(
-        uint64_t interval, bool isBuilding, uint16_t policy
-    )  ;
-    virtual ::CGlomParameters* makeGlomParameters(const ::CRingItem& rhs) ;
+        virtual ::ufmt::CGlomParameters* makeGlomParameters(
+            uint64_t interval, bool isBuilding, uint16_t policy
+        )  ;
+        virtual ::ufmt::CGlomParameters* makeGlomParameters(const ::ufmt::CRingItem& rhs) ;
 
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(
-        uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
-    ) ;
-    virtual ::CPhysicsEventItem* makePhysicsEventItem(const ::CRingItem& rhs) ;
+        virtual ::ufmt::CPhysicsEventItem* makePhysicsEventItem(size_t maxBody) ;
+        virtual ::ufmt::CPhysicsEventItem* makePhysicsEventItem(
+            uint64_t timestamp, uint32_t source, uint32_t barrier, size_t maxBody
+        ) ;
+        virtual ::ufmt::CPhysicsEventItem* makePhysicsEventItem(const ::ufmt::CRingItem& rhs) ;
 
-    virtual ::CRingFragmentItem* makeRingFragmentItem(
-        uint64_t timestamp, uint32_t source, uint32_t payloadSize,
-        const void* payload, uint32_t barrier=0
-    ) ;
-    virtual ::CRingFragmentItem* makeRingFragmentItem(const ::CRingItem& rhs) ;
-
-
-    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        uint64_t count, uint32_t timeoffset, time_t stamp,
-    int divisor=1
-    ) ;
-    virtual ::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
-        const ::CRingItem& rhs
-    ) ;
-
-    virtual ::CRingScalerItem* makeScalerItem(size_t numScalers) ;
-    virtual ::CRingScalerItem* makeScalerItem(
-        uint32_t startTime,
-        uint32_t stopTime,
-        time_t   timestamp,
-        std::vector<uint32_t> scalers,
-        bool                  isIncremental = true,
-        uint32_t              sid = 0,
-        uint32_t              timeOffsetDivisor = 1
-    ) ;
-    virtual ::CRingScalerItem* makeScalerItem(const ::CRingItem& rhs) ;
-
-    virtual ::CRingTextItem* makeTextItem(
-        uint16_t type,
-        std::vector<std::string> theStrings
-    ) ;
-    virtual ::CRingTextItem* makeTextItem(
-        uint16_t type,
-        std::vector<std::string> theStrings,
-        uint32_t                 offsetTime,
-        time_t                   timestamp,
-        uint32_t divisor 
-    ) ;
-    virtual ::CRingTextItem* makeTextItem(const ::CRingItem& rhs) ;
-
-    virtual ::CUnknownFragment* makeUnknownFragment(
-        uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
-        uint32_t size, void* pPayload
-    ) ;
-    virtual ::CUnknownFragment* makeUnknownFragment(const ::CRingItem& rhs) ;
-
-    virtual ::CRingStateChangeItem* makeStateChangeItem(
-        uint32_t itemType, uint32_t runNumber,
-        uint32_t timeOffset,
-        time_t   timestamp,
-        std::string title
-    ) ;
-    virtual ::CRingStateChangeItem* makeStateChangeItem(const ::CRingItem& rhs) ;
-
-private:
-    std::vector<std::string> marshallStrings(const void* p);
-};
-    
-}                     // V12 namespace.
+        virtual ::ufmt::CRingFragmentItem* makeRingFragmentItem(
+            uint64_t timestamp, uint32_t source, uint32_t payloadSize,
+            const void* payload, uint32_t barrier=0
+        ) ;
+        virtual ::ufmt::CRingFragmentItem* makeRingFragmentItem(const ::ufmt::CRingItem& rhs) ;
 
 
+        virtual ::ufmt::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            uint64_t count, uint32_t timeoffset, time_t stamp,
+        int divisor=1
+        ) ;
+        virtual ::ufmt::CRingPhysicsEventCountItem* makePhysicsEventCountItem(
+            const ::ufmt::CRingItem& rhs
+        ) ;
+
+        virtual ::ufmt::CRingScalerItem* makeScalerItem(size_t numScalers) ;
+        virtual ::ufmt::CRingScalerItem* makeScalerItem(
+            uint32_t startTime,
+            uint32_t stopTime,
+            time_t   timestamp,
+            ::std::vector<uint32_t> scalers,
+            bool                  isIncremental = true,
+            uint32_t              sid = 0,
+            uint32_t              timeOffsetDivisor = 1
+        ) ;
+        virtual ::ufmt::CRingScalerItem* makeScalerItem(const ::ufmt::CRingItem& rhs) ;
+
+        virtual ::ufmt::CRingTextItem* makeTextItem(
+            uint16_t type,
+            ::std::vector<::std::string> theStrings
+        ) ;
+        virtual ::ufmt::CRingTextItem* makeTextItem(
+            uint16_t type,
+            ::std::vector<::std::string> theStrings,
+            uint32_t                 offsetTime,
+            time_t                   timestamp,
+            uint32_t divisor 
+        ) ;
+        virtual ::ufmt::CRingTextItem* makeTextItem(const ::ufmt::CRingItem& rhs) ;
+
+        virtual ::ufmt::CUnknownFragment* makeUnknownFragment(
+            uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
+            uint32_t size, void* pPayload
+        ) ;
+        virtual ::ufmt::CUnknownFragment* makeUnknownFragment(const ::ufmt::CRingItem& rhs) ;
+
+        virtual ::ufmt::CRingStateChangeItem* makeStateChangeItem(
+            uint32_t itemType, uint32_t runNumber,
+            uint32_t timeOffset,
+            time_t   timestamp,
+            ::std::string title
+        ) ;
+        virtual ::ufmt::CRingStateChangeItem* makeStateChangeItem(const ::ufmt::CRingItem& rhs) ;
+
+    private:
+        ::std::vector<::std::string> marshallStrings(const void* p);
+    };
+        
+    }                     // V12 namespace.
+
+}
 #endif

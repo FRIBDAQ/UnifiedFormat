@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <stdexcept>
 
+using namespace ufmt;
 
 class counterabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(counterabtest);

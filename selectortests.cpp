@@ -29,6 +29,7 @@
 
 #include <memory>
 
+using namespace ufmt;
 
 class seltest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(seltest);

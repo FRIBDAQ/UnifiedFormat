@@ -22,9 +22,11 @@
  * @note Abstract base class for FdDataSource, StreamDataSource and RingDataSource
  */
 
-class CRingItem;
-class RingItemFactoryBase;
-
+namespace ufmt {
+    class CRingItem;
+    class RingItemFactoryBase;
+}
+using namespace ufmt;
 /**
  * @class DataSource
  *    Pure abstract data source which uses a factory's ring item getters to

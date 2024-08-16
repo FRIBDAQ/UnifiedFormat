@@ -26,7 +26,7 @@
 
 #include <time.h>
 #include <string.h>
-
+using namespace ufmt;
 class v10statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v10statetest);
     CPPUNIT_TEST(construct_1);

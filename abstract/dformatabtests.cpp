@@ -25,7 +25,7 @@
 #include "CDataFormatItem.h"
 #include <stdexcept>
 #include <string>
-
+using namespace ufmt;
 class dformatabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(dformatabtest);
     CPPUNIT_TEST(major);

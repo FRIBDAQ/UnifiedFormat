@@ -26,6 +26,7 @@
 #include <time.h>
 #include <string.h>
 
+using namespace ufmt;
 class abschangetest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(abschangetest);
     CPPUNIT_TEST(construct_1);

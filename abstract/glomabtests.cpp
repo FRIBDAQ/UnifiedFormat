@@ -27,7 +27,7 @@
 #include <string>
 #include <stdexcept>
 
-
+using namespace ufmt;
 class glomabtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(glomabtest);
     CPPUNIT_TEST(ticks);

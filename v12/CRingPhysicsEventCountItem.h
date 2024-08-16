@@ -24,85 +24,86 @@
 #include <typeinfo>
 #include <string>
 
-namespace v12 {
-/*!
-   The physics event count item provides periodic informatino about how
-   many events have been produced by the DAQ system.  This is provided
-   so that applications that sample event data can determine what fraction
-   of the data they've managed to keep up with.
-   Applications can count the physics events they've seen,
-   They can then divide this number by the number of events that
-   have actually been generated to get an analysis fraction.
+namespace ufmt {
+  namespace v12 {
+  /*!
+    The physics event count item provides periodic informatino about how
+    many events have been produced by the DAQ system.  This is provided
+    so that applications that sample event data can determine what fraction
+    of the data they've managed to keep up with.
+    Applications can count the physics events they've seen,
+    They can then divide this number by the number of events that
+    have actually been generated to get an analysis fraction.
 
-*/
-class CRingPhysicsEventCountItem : public ::CRingPhysicsEventCountItem
-{
+  */
+  class CRingPhysicsEventCountItem : public ::ufmt::CRingPhysicsEventCountItem
+  {
 
-  // constructors and other canonicals:
-public:
-  CRingPhysicsEventCountItem();
-  CRingPhysicsEventCountItem(uint64_t count,
-			     uint32_t timeOffset, unsigned divisor = 1);
-  CRingPhysicsEventCountItem(uint64_t count, 
-			     uint32_t timeoffset, 
-			     time_t stamp, uint32_t sid, unsigned divisor = 1);
-  CRingPhysicsEventCountItem(
-    uint64_t timestamp, uint32_t source, uint32_t barrier,
-    uint64_t count, uint32_t timeoffset, time_t stamp,
-    int divisor=1);
-  virtual ~CRingPhysicsEventCountItem();
-private:
-  CRingPhysicsEventCountItem(const CRingItem& rhs);
-  CRingPhysicsEventCountItem(const CRingPhysicsEventCountItem& rhs);
+    // constructors and other canonicals:
+  public:
+    CRingPhysicsEventCountItem();
+    CRingPhysicsEventCountItem(uint64_t count,
+            uint32_t timeOffset, unsigned divisor = 1);
+    CRingPhysicsEventCountItem(uint64_t count, 
+            uint32_t timeoffset, 
+            time_t stamp, uint32_t sid, unsigned divisor = 1);
+    CRingPhysicsEventCountItem(
+      uint64_t timestamp, uint32_t source, uint32_t barrier,
+      uint64_t count, uint32_t timeoffset, time_t stamp,
+      int divisor=1);
+    virtual ~CRingPhysicsEventCountItem();
+  private:
+    CRingPhysicsEventCountItem(const CRingItem& rhs);
+    CRingPhysicsEventCountItem(const CRingPhysicsEventCountItem& rhs);
 
-  
+    
 
-  CRingPhysicsEventCountItem& operator=(const CRingPhysicsEventCountItem& rhs);
-  int operator==(const CRingPhysicsEventCountItem& rhs) const;
-  int operator!=(const CRingPhysicsEventCountItem& rhs) const;
-
-
-  // public interface:
-public:
-  virtual uint32_t getTimeOffset() const;
-  virtual void     setTimeOffset(uint32_t offset);
-  virtual float    computeElapsedTime() const;
-  virtual uint32_t getTimeDivisor() const;
-
-  virtual time_t   getTimestamp() const;
-  virtual void     setTimestamp(time_t stamp);
-
-  virtual uint64_t getEventCount() const;
-  virtual void     setEventCount(uint64_t count);
-  
-  virtual uint32_t getOriginalSourceId() const;
+    CRingPhysicsEventCountItem& operator=(const CRingPhysicsEventCountItem& rhs);
+    int operator==(const CRingPhysicsEventCountItem& rhs) const;
+    int operator!=(const CRingPhysicsEventCountItem& rhs) const;
 
 
-  // Virtual method overrides:
+    // public interface:
+  public:
+    virtual uint32_t getTimeOffset() const;
+    virtual void     setTimeOffset(uint32_t offset);
+    virtual float    computeElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
+
+    virtual time_t   getTimestamp() const;
+    virtual void     setTimestamp(time_t stamp);
+
+    virtual uint64_t getEventCount() const;
+    virtual void     setEventCount(uint64_t count);
+    
+    virtual uint32_t getOriginalSourceId() const;
 
 
-  virtual std::string typeName() const;	// Textual type of item.
-  virtual std::string toString() const; // Provide string dump of the item.
-
-  // Delegates to v12::CRingItem.
-  
-  virtual size_t getBodySize()    const;
-  virtual const void*  getBodyPointer() const;
-  virtual void* getBodyPointer();
-  virtual bool hasBodyHeader() const;
-  virtual uint64_t getEventTimestamp() const;
-  virtual uint32_t getSourceId() const;
-  virtual uint32_t getBarrierType() const;
-  virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
-                         uint32_t barrierType = 0);
-  virtual void* getBodyHeader() const;
+    // Virtual method overrides:
 
 
+    virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string toString() const; // Provide string dump of the item.
 
-private:
+    // Delegates to v12::CRingItem.
+    
+    virtual size_t getBodySize()    const;
+    virtual const void*  getBodyPointer() const;
+    virtual void* getBodyPointer();
+    virtual bool hasBodyHeader() const;
+    virtual uint64_t getEventTimestamp() const;
+    virtual uint32_t getSourceId() const;
+    virtual uint32_t getBarrierType() const;
+    virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
+                          uint32_t barrierType = 0);
+    virtual void* getBodyHeader() const;
 
-};
 
+
+  private:
+
+  };
+
+  }
 }
-
 #endif

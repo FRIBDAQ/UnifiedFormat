@@ -19,51 +19,53 @@
 #include <string.h>
 #include <sstream>
 
+namespace ufmt {
 
-/*-----------------------------------------------------------------------------
- * Canonical methods.
- *---------------------------------------------------------------------------*/
+    /*-----------------------------------------------------------------------------
+    * Canonical methods.
+    *---------------------------------------------------------------------------*/
 
-/**
- * constructor
- *
- * This is the primary constructor.
- *
- * @param timestamp - Ticks that identify when this fragment was triggered.
- * @param sourceId  - Id of the source that created this fragment.
- * @param barrier   - Barrier id of the fragment o 0 if this was not part of a
- *                    barrier.
- * @param size      - Number of _bytes_ in the payload.
- * @param pPayload  - Pointer to the payload.
- */
-CUnknownFragment::CUnknownFragment(
-    uint64_t timestamp, uint32_t sourceId, uint32_t barrier, uint32_t size,
-    void* pPayload) :
-       CRingFragmentItem(timestamp, sourceId, size, pPayload, barrier)
-{
-    // The only thing left to do is fill in the correct type
-    
-    pRingItem pItem  = reinterpret_cast<pRingItem>(getItemPointer());
-    pItem->s_header.s_type = EVB_UNKNOWN_PAYLOAD;
+    /**
+     * constructor
+     *
+     * This is the primary constructor.
+     *
+     * @param timestamp - Ticks that identify when this fragment was triggered.
+     * @param sourceId  - Id of the source that created this fragment.
+     * @param barrier   - Barrier id of the fragment o 0 if this was not part of a
+     *                    barrier.
+     * @param size      - Number of _bytes_ in the payload.
+     * @param pPayload  - Pointer to the payload.
+     */
+    CUnknownFragment::CUnknownFragment(
+        uint64_t timestamp, uint32_t sourceId, uint32_t barrier, uint32_t size,
+        void* pPayload) :
+        CRingFragmentItem(timestamp, sourceId, size, pPayload, barrier)
+    {
+        // The only thing left to do is fill in the correct type
         
-}
-/**
- * destructor
- */
-CUnknownFragment::~CUnknownFragment()  {}
+        pRingItem pItem  = reinterpret_cast<pRingItem>(getItemPointer());
+        pItem->s_header.s_type = EVB_UNKNOWN_PAYLOAD;
+            
+    }
+    /**
+     * destructor
+     */
+    CUnknownFragment::~CUnknownFragment()  {}
 
 
-/*----------------------------------------------------------------------------
- * Virtual method overrides;
- *--------------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------------
+    * Virtual method overrides;
+    *--------------------------------------------------------------------------*/
 
-/**
- * typeName
- *
- * @return std::string textual version of item type.
- */
-std::string
-CUnknownFragment::typeName() const
-{
-    return "Fragment with unknown payload";
+    /**
+     * typeName
+     *
+     * @return std::string textual version of item type.
+     */
+    std::string
+    CUnknownFragment::typeName() const
+    {
+        return "Fragment with unknown payload";
+    }
 }

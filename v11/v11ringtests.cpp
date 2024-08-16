@@ -25,6 +25,8 @@
 #include "DataFormat.h"
 #include <stdexcept>
 
+using namespace ufmt;
+
 
 class v11ringtest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v11ringtest);
