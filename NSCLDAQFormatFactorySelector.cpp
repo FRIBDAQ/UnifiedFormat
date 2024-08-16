@@ -41,7 +41,7 @@ namespace ufmt {
         /**
          * cache of previously created ring item factories.
          */
-        static std::map<SupportedVersions, ::RingItemFactoryBase*> instantiatedFactories;
+        static std::map<SupportedVersions, ::ufmt::RingItemFactoryBase*> instantiatedFactories;
         /**
          * lookup table between version numbers and the version enumerator.
          */
@@ -60,13 +60,13 @@ namespace ufmt {
         static void createFactory(SupportedVersions v) {
             switch (v) {
                 case v10:
-                    instantiatedFactories[v10] = new v10::RingItemFactory;
+                    instantiatedFactories[v10] = new ::ufmt::v10::RingItemFactory;
                     break;
                 case v11:
-                    instantiatedFactories[v11] = new v11::RingItemFactory;
+                    instantiatedFactories[v11] = new ::ufmt::v11::RingItemFactory;
                     break;
                 case v12:
-                    instantiatedFactories[v12] = new v12::RingItemFactory;
+                    instantiatedFactories[v12] = new ::ufmt::v12::RingItemFactory;
                     break;
                 default:
                     throw std::invalid_argument(
@@ -86,7 +86,7 @@ namespace ufmt {
          *        the caller to delete this object.
          * @throw std::invalid_argument - if the version is not a valid/supported version.
          */
-        ::RingItemFactoryBase&
+        ::ufmt::RingItemFactoryBase&
         selectFactory(SupportedVersions version)
         {
             if (instantiatedFactories.count(version) == 0) {
@@ -106,8 +106,8 @@ namespace ufmt {
          *    - The version correspo;nsds to a SupportedVersion but we don't yet
          *      know how to create an appropriate factory.
          */
-        ::RingItemFactoryBase&
-        selectFactory(::CDataFormatItem& item)
+        ::ufmt::RingItemFactoryBase&
+        selectFactory(::ufmt::CDataFormatItem& item)
         {
             // we only care about the major version.
             

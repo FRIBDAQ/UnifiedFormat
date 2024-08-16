@@ -103,7 +103,7 @@ namespace ufmt {
      */
     ::ufmt::CRingItem*
     RingItemFactory::makeRingItem(
-        const ::RingItem* rhs
+        const ::ufmt::RingItem* rhs
     )
     {
         v12::CRingItem* pResult = new v12::CRingItem(
@@ -335,16 +335,16 @@ namespace ufmt {
     {
         // Validate the policy:
         
-        ::CGlomParameters::TimestampPolicy policySelector;
+        ::ufmt::CGlomParameters::TimestampPolicy policySelector;
         switch (policy) {
             case v12::GLOM_TIMESTAMP_FIRST:
-                policySelector = ::CGlomParameters::first;
+                policySelector = ::ufmt::CGlomParameters::first;
                 break;
             case v12::GLOM_TIMESTAMP_LAST:
-                policySelector = ::CGlomParameters::last;
+                policySelector = ::ufmt::CGlomParameters::last;
                 break;
             case v12::GLOM_TIMESTAMP_AVERAGE:
-                policySelector = ::CGlomParameters::average;
+                policySelector = ::ufmt::CGlomParameters::average;
                 break;
             default:
                 throw std::invalid_argument("Invalid timestamp policy value");
@@ -376,7 +376,7 @@ namespace ufmt {
         
         return new v12::CGlomParameters(
             pItem->s_coincidenceTicks, pItem->s_isBuilding,
-            static_cast<::CGlomParameters::TimestampPolicy>(pItem->s_timestampPolicy)
+            static_cast<::ufmt::CGlomParameters::TimestampPolicy>(pItem->s_timestampPolicy)
         );
     }
     /**
@@ -721,7 +721,7 @@ namespace ufmt {
             uint32_t size, void* pPayload
     )
     {
-        return reinterpret_cast<::CUnknownFragment*> (new 
+        return reinterpret_cast<::ufmt::CUnknownFragment*> (new 
             v12::CUnknownFragment(timestamp, sourceid, barrier, size, pPayload));
     }
     /**

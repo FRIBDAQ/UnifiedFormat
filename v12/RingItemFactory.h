@@ -25,7 +25,7 @@
 namespace ufmt {
     namespace v12 {
         
-    class RingItemFactory : public ::RingItemFactoryBase
+    class RingItemFactory : public ::ufmt::RingItemFactoryBase
     {
     public:
         virtual ::ufmt::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
