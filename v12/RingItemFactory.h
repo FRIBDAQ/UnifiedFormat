@@ -38,9 +38,9 @@ namespace ufmt {
         virtual ::ufmt::CRingItem* getRingItem(ufmt::CRingBuffer& ringbuf) ;
     #endif
         virtual ::ufmt::CRingItem* getRingItem(int fd) ;
-        virtual ::ufmt::CRingItem* getRingItem(std::istream& in) ;
+        virtual ::ufmt::CRingItem* getRingItem(::std::istream& in) ;
 
-        virtual std::ostream& putRingItem(const ::ufmt::CRingItem* pItem, std::ostream& out) ;
+        virtual ::std::ostream& putRingItem(const ::ufmt::CRingItem* pItem, ::std::ostream& out) ;
         virtual void putRingItem(const ::ufmt::CRingItem* pItem, int fd) ;
     #ifdef HAVE_NSCLDAQ    
         virtual void putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& ringbuf) ;
@@ -83,7 +83,7 @@ namespace ufmt {
             uint32_t startTime,
             uint32_t stopTime,
             time_t   timestamp,
-            std::vector<uint32_t> scalers,
+            ::std::vector<uint32_t> scalers,
             bool                  isIncremental = true,
             uint32_t              sid = 0,
             uint32_t              timeOffsetDivisor = 1
@@ -92,11 +92,11 @@ namespace ufmt {
 
         virtual ::ufmt::CRingTextItem* makeTextItem(
             uint16_t type,
-            std::vector<std::string> theStrings
+            ::std::vector<::std::string> theStrings
         ) ;
         virtual ::ufmt::CRingTextItem* makeTextItem(
             uint16_t type,
-            std::vector<std::string> theStrings,
+            ::std::vector<::std::string> theStrings,
             uint32_t                 offsetTime,
             time_t                   timestamp,
             uint32_t divisor 
@@ -113,12 +113,12 @@ namespace ufmt {
             uint32_t itemType, uint32_t runNumber,
             uint32_t timeOffset,
             time_t   timestamp,
-            std::string title
+            ::std::string title
         ) ;
         virtual ::ufmt::CRingStateChangeItem* makeStateChangeItem(const ::ufmt::CRingItem& rhs) ;
 
     private:
-        std::vector<std::string> marshallStrings(const void* p);
+        ::std::vector<::std::string> marshallStrings(const void* p);
     };
         
     }                     // V12 namespace.

@@ -27,7 +27,7 @@ namespace ufmt {
      * This class encapsulates ring items of type EVB_UNKNOWN_PAYLOAD. These are
      * event builder fragments where the payloads are pretty clearly not ring items.
      */
-    class CUnknownFragment : public ::v12::CRingFragmentItem
+    class CUnknownFragment : public ::ufmt::v12::CRingFragmentItem
     {
         // Canonical methods:
         

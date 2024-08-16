@@ -41,7 +41,7 @@ namespace ufmt {
     CUnknownFragment::CUnknownFragment(
         uint64_t timestamp, uint32_t sourceId, uint32_t barrier, uint32_t size,
         const void* pPayload) :
-        ::v12::CRingFragmentItem(timestamp, sourceId, size, pPayload, barrier)
+        ::ufmt::v12::CRingFragmentItem(timestamp, sourceId, size, pPayload, barrier)
     {
         // The only thing left to do is fill in the correct type
         

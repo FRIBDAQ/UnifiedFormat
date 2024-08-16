@@ -22,7 +22,7 @@
 #include <sstream>
 #include <stdexcept>
 
-using ufmt {
+namespace ufmt {
 
 	//Fakey body header we use to support this 'abstract' type:
 

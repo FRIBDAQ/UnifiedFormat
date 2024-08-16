@@ -192,7 +192,7 @@ namespace ufmt {
   )
 
   {
-    v12::CRingItem* pThis = reinterpret_cast<::v12::CRingItem*>(this);
+    v12::CRingItem* pThis = reinterpret_cast<v12::CRingItem*>(this);
     pThis->v12::CRingItem::setBodyHeader(tstamp, sourceId, barrierType);
   }
   /**

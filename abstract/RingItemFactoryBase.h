@@ -63,9 +63,9 @@ namespace ufmt {
         virtual CRingItem* getRingItem(CRingBuffer& ringbuf) = 0;
     #endif
         virtual CRingItem* getRingItem(int fd) = 0;
-        virtual CRingItem* getRingItem(std::istream& in) = 0;
+        virtual CRingItem* getRingItem(::std::istream& in) = 0;
         
-        virtual std::ostream& putRingItem(const CRingItem* pItem, std::ostream& out) = 0;
+        virtual ::std::ostream& putRingItem(const CRingItem* pItem, ::std::ostream& out) = 0;
         virtual void putRingItem(const CRingItem* pItem, int fd) = 0;
     #ifdef HAVE_NSCLDAQ
         virtual void putRingItem(const CRingItem* pItem, CRingBuffer& ringbuf) = 0;
@@ -106,7 +106,7 @@ namespace ufmt {
             uint32_t startTime,
             uint32_t stopTime,
             time_t   timestamp,
-            std::vector<uint32_t> scalers,
+            ::std::vector<uint32_t> scalers,
             bool                  isIncremental = true,
             uint32_t              sid = 0,
             uint32_t              timeOffsetDivisor = 1
@@ -115,11 +115,11 @@ namespace ufmt {
         
         virtual CRingTextItem* makeTextItem(
             uint16_t type,
-            std::vector<std::string> theStrings
+            ::std::vector<::std::string> theStrings
         ) = 0;
         virtual CRingTextItem* makeTextItem(
             uint16_t type,
-            std::vector<std::string> theStrings,
+            ::std::vector<::std::string> theStrings,
             uint32_t                 offsetTime,
             time_t                   timestamp, uint32_t divisor=1
         ) = 0;
@@ -135,7 +135,7 @@ namespace ufmt {
             uint32_t itemType, uint32_t runNumber,
             uint32_t timeOffset,
             time_t   timestamp,
-            std::string title
+            ::std::string title
         ) = 0;
         virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem& rhs) = 0;
         

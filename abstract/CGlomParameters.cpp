@@ -18,7 +18,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namepsace ufmt {
+namespace ufmt {
     /**
      * @note the definition below requires that the order of array elements matches
      *       the timestamp policy values

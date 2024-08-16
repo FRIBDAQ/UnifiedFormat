@@ -26,7 +26,7 @@
 
 using namespace std;
 
-using namespace ufmt {
+namespace ufmt {
   uint32_t CRingScalerItem::m_ScalerFormatMask(0xffffffff); // by default scalers are 32 bits wide.
 
   ///////////////////////////////////////////////////////////////////////////////////////

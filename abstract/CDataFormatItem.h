@@ -19,7 +19,7 @@
 #include "CRingItem.h"            // Base class.
 #include <typeinfo>
 
-namespace umft {
+namespace ufmt {
     /**
      * @class CDataFormatItem
      *
