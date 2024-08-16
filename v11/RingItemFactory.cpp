@@ -129,7 +129,7 @@ namespace ufmt {
      *  @note we will block as long as needed.
      */
     ::ufmt::CRingItem*
-    RingItemFactory::getRingItem(CRingBuffer& ringbuf)
+    RingItemFactory::getRingItem(::CRingBuffer& ringbuf)
     {
         v11::RingItemHeader hdr;
         ringbuf.get(&hdr, sizeof(hdr));
@@ -245,7 +245,7 @@ namespace ufmt {
      * @param rbuf  - Ring buffer reference.
      */
     void
-    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& rbuf)
+    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, ::CRingBuffer& rbuf)
     {
         rbuf.put(pItem->getItemPointer(), pItem->size());
     }

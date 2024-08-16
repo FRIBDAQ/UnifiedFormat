@@ -120,7 +120,7 @@ namespace ufmt {
      *  @return ::ufmt::CRingItem* - pointer to the dynamically created gotten item.
      */
     ::ufmt::CRingItem*
-    RingItemFactory::getRingItem(CRingBuffer& ringbuf)
+    RingItemFactory::getRingItem(::CRingBuffer& ringbuf)
     {
         v12::RingItemHeader hdr;
         ringbuf.get(&hdr, sizeof(hdr), sizeof(hdr));
@@ -243,7 +243,7 @@ namespace ufmt {
      * @param ring  - reference the ring buffer object.
      */
     void
-    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& ringbuf)
+    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, ::CRingBuffer& ringbuf)
     {
         const void* p = pItem->getItemPointer();
         size_t      n = pItem->size();

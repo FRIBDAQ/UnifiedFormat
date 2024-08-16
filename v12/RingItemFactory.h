@@ -35,7 +35,7 @@ namespace ufmt {
         virtual ::ufmt::CRingItem* makeRingItem(const ::ufmt::RingItem* pRawRing) ;
 
     #ifdef HAVE_NSCLDAQ    
-        virtual ::ufmt::CRingItem* getRingItem(ufmt::CRingBuffer& ringbuf) ;
+        virtual ::ufmt::CRingItem* getRingItem(CRingBuffer& ringbuf) ;
     #endif
         virtual ::ufmt::CRingItem* getRingItem(int fd) ;
         virtual ::ufmt::CRingItem* getRingItem(::std::istream& in) ;
@@ -43,7 +43,7 @@ namespace ufmt {
         virtual ::std::ostream& putRingItem(const ::ufmt::CRingItem* pItem, ::std::ostream& out) ;
         virtual void putRingItem(const ::ufmt::CRingItem* pItem, int fd) ;
     #ifdef HAVE_NSCLDAQ    
-        virtual void putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& ringbuf) ;
+        virtual void putRingItem(const ::ufmt::CRingItem* pItem, ::CRingBuffer& ringbuf) ;
     #endif
 
         virtual ::ufmt::CAbnormalEndItem* makeAbnormalEndItem() ;

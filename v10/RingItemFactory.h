@@ -22,6 +22,10 @@
 #define V10_RINGITEMFACTORY_H
 #include <RingItemFactoryBase.h>
 
+#ifdef HAVE_NSCLDAQ
+class CRingBuffer;
+#endif
+
 namespace ufmt {
     namespace v10 {
         /**
@@ -38,7 +42,7 @@ namespace ufmt {
             ::ufmt::CRingItem* makeRingItem(const ::ufmt::CRingItem& rhs);
             ::ufmt::CRingItem* makeRingItem(const ::ufmt::RingItem* pRawRing);
     #ifdef HAVE_NSCLDAQ  
-            virtual ::ufmt::CRingItem* getRingItem(CRingBuffer& ringbuf) ;
+            virtual ::ufmt::CRingItem* getRingItem(::CRingBuffer& ringbuf) ;
     #endif
             virtual ::ufmt::CRingItem* getRingItem(int fd) ;
             virtual ::ufmt::CRingItem* getRingItem(::std::istream& in);
@@ -46,7 +50,7 @@ namespace ufmt {
             virtual ::std::ostream& putRingItem(const ::ufmt::CRingItem* pItem, ::std::ostream& out) ;
             virtual void putRingItem(const ::ufmt::CRingItem* pItem, int fd) ;
     #ifdef HAVE_NSCLDAQ  
-            virtual void putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& ringbuf) ;
+            virtual void putRingItem(const ::ufmt::CRingItem* pItem, ::CRingBuffer& ringbuf) ;
     #endif
             // abnormal end items for 10.x:
             

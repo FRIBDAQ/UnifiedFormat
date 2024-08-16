@@ -122,7 +122,7 @@ namespace ufmt {
      */
     #ifdef HAVE_NSCLDAQ  
     ::ufmt::CRingItem*
-    RingItemFactory::getRingItem(CRingBuffer& ringbuf)
+    RingItemFactory::getRingItem(::CRingBuffer& ringbuf)
     {
         // Read the header, use it to create a v10 ring item
         // then read the body into it:
@@ -250,7 +250,7 @@ namespace ufmt {
      */
     #ifdef HAVE_NSCLDAQ  
     void
-    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& ringbuf)
+    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, ::CRingBuffer& ringbuf)
     {
         const v10::RingItemHeader* hdr =
             reinterpret_cast<const v10::RingItemHeader*>(pItem->getItemPointer());

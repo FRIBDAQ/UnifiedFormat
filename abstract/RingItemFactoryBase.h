@@ -25,11 +25,11 @@
 #include <iostream>
 #include <vector>
 #include <fmtconfig.h>
-
+class CRingBuffer;
 namespace ufmt {
     // Forward definitions
 
-    class CRingBuffer;
+
 
     class CRingItem;
     class CAbnormalEndItem;
