@@ -67,7 +67,7 @@ namespace ufmt {
           time_t   timestamp,
           std::vector<uint32_t> scalers,
           bool isIncremental, uint32_t sid, uint32_t timeOffsetDivisor) :
-    ::CRingScalerItem(startTime, stopTime, timestamp, scalers, isIncremental, sid, timeOffsetDivisor),
+    ::ufmt::CRingScalerItem(startTime, stopTime, timestamp, scalers, isIncremental, sid, timeOffsetDivisor),
     m_isIncremental(isIncremental)
   {
     init(scalers.size());

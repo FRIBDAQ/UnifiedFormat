@@ -65,7 +65,7 @@ namespace ufmt {
   void*
   CPhysicsEventItem::getBodyPointer()
   {
-    RingItemHeader* pH = reinterpret_cast<::ufmt::RingItemHeader*>(getItemPointer());
+    RingItemHeader* pH = reinterpret_cast<RingItemHeader*>(getItemPointer());
     return pH+1;
   }
   // same as above but const:
@@ -73,7 +73,7 @@ namespace ufmt {
   const void*
   CPhysicsEventItem::getBodyPointer() const
   {
-    const RingItemHeader* pH = reinterpret_cast<const ::ufmt::RingItemHeader*>(getItemPointer());
+    const RingItemHeader* pH = reinterpret_cast<const RingItemHeader*>(getItemPointer());
     return pH+1;   
   }
   /**

@@ -50,7 +50,7 @@ namespace ufmt {
   */
   CRingPhysicsEventCountItem::CRingPhysicsEventCountItem(uint64_t count,
                     uint32_t timeOffset) :
-    ::CRingPhysicsEventCountItem()
+    ::ufmt::CRingPhysicsEventCountItem()
   {
     init();
     v10::pPhysicsEventCountItem p =
@@ -68,7 +68,7 @@ namespace ufmt {
   CRingPhysicsEventCountItem::CRingPhysicsEventCountItem(uint64_t count,
                     uint32_t timeOffset,
                     time_t   stamp) :
-    ::CRingPhysicsEventCountItem()
+    ::ufmt::CRingPhysicsEventCountItem()
   {
     init();
     v10::pPhysicsEventCountItem p =

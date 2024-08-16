@@ -58,12 +58,12 @@ namespace ufmt {
      *  @param barrierType - Type of barrier (not used in v10).
      *  @param rhs      - Existing CRing item of some sort.
      *  @param pRawRing - Existing ring item that we will copy/wrap.
-     *  @return ::CRingItem* - pointer to a ring item that was created.
+     *  @return ::ufmt::CRingItem* - pointer to a ring item that was created.
      *                    this must eventually be destroyed via delete.
      */
     // From type and max size.
 
-    ::CRingItem*
+    ::ufmt::CRingItem*
     RingItemFactory::makeRingItem(uint16_t type, size_t maxBody)
     {
         return new v10::CRingItem(type, maxBody);
@@ -71,7 +71,7 @@ namespace ufmt {
     
     //  from event building parameters
     
-    ::CRingItem*
+    ::ufmt::CRingItem*
     RingItemFactory::makeRingItem(
         uint16_t type, uint64_t timestamp, uint32_t sourceId,
         size_t maxBody, uint32_t barrierType 
@@ -82,11 +82,11 @@ namespace ufmt {
     
     // From an existing item -
     
-    ::CRingItem*
-    RingItemFactory::makeRingItem(const ::CRingItem& rhs)
+    ::ufmt::CRingItem*
+    RingItemFactory::makeRingItem(const ::ufmt::CRingItem& rhs)
     {
-        const ::RingItem* pItem =
-            reinterpret_cast<const ::RingItem*>(rhs.getItemPointer());
+        const ::ufmt::RingItem* pItem =
+            reinterpret_cast<const ::ufmt::RingItem*>(rhs.getItemPointer());
         return makeRingItem(pItem);
 
         
@@ -94,8 +94,8 @@ namespace ufmt {
     }
     // From an existing raw item:
     
-    ::CRingItem*
-    RingItemFactory::makeRingItem(const ::RingItem* pRawItem)
+    ::ufmt::CRingItem*
+    RingItemFactory::makeRingItem(const ::ufmt::RingItem* pRawItem)
     {
         const v10::RingItemHeader* pHeader =
             reinterpret_cast<const v10::RingItemHeader*>(&(pRawItem->s_header));
@@ -117,11 +117,11 @@ namespace ufmt {
      * getRingItem (from CRingBuffer)
      *   @param ringbuf - references a ring buffer that must have been
      *                    created as a consumer.
-     *   @return ::CRingItem* pointer to a newly created ring item that must
+     *   @return ::ufmt::CRingItem* pointer to a newly created ring item that must
      *                   be deleted at some point.
      */
     #ifdef HAVE_NSCLDAQ  
-    ::CRingItem*
+    ::ufmt::CRingItem*
     RingItemFactory::getRingItem(CRingBuffer& ringbuf)
     {
         // Read the header, use it to create a v10 ring item
@@ -143,10 +143,10 @@ namespace ufmt {
     /**
      * getRingItem (from file descriptor)
      *    @param fd - file descriptor.
-     *    @return ::CRingItem* pointer to new ring itemthat must be
+     *    @return ::ufmt::CRingItem* pointer to new ring itemthat must be
      *              destroyed via delete.
      */
-    ::CRingItem*
+    ::ufmt::CRingItem*
     RingItemFactory::getRingItem(int fd)
     {
         // Read the header then the body:
@@ -174,12 +174,12 @@ namespace ufmt {
      * getRingItem (from ios::istream)
      *    @param in - input stream  (note that this must be opened with
      *                fmtio::binary set)
-     *     @return ::CRingItem* pointer to new ring itemthat must be
+     *     @return ::ufmt::CRingItem* pointer to new ring itemthat must be
      *              destroyed via delete.
      *     @retval nullptr - if the read could not be done;
      *              the stream will have the reason for that.
      */               
-    ::CRingItem*
+    ::ufmt::CRingItem*
     RingItemFactory::getRingItem(std::istream& in)
     {
         v10::RingItemHeader hdr;
@@ -217,10 +217,10 @@ namespace ufmt {
      *                 Errors etc. will be in the stream.
      */
     std::ostream&
-    RingItemFactory::putRingItem(const ::CRingItem* pItem, std::ostream& out)
+    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, std::ostream& out)
     {
-        const ::v10::RingItemHeader* hdr =
-            reinterpret_cast<const ::v10::RingItemHeader*>(pItem->getItemPointer());
+        const v10::RingItemHeader* hdr =
+            reinterpret_cast<const v10::RingItemHeader*>(pItem->getItemPointer());
         out.write(reinterpret_cast<const char*>(hdr), hdr->s_size);
         
         return out;
@@ -234,10 +234,10 @@ namespace ufmt {
      *         via exceptions.
      */
     void
-    RingItemFactory::putRingItem(const ::CRingItem* pItem, int fd)
+    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, int fd)
     {
-        const ::v10::RingItemHeader* hdr =
-            reinterpret_cast<const ::v10::RingItemHeader*>(pItem->getItemPointer());
+        const v10::RingItemHeader* hdr =
+            reinterpret_cast<const v10::RingItemHeader*>(pItem->getItemPointer());
         fmtio::writeData(fd, hdr, hdr->s_size);
         
     }
@@ -250,10 +250,10 @@ namespace ufmt {
      */
     #ifdef HAVE_NSCLDAQ  
     void
-    RingItemFactory::putRingItem(const ::CRingItem* pItem, CRingBuffer& ringbuf)
+    RingItemFactory::putRingItem(const ::ufmt::CRingItem* pItem, CRingBuffer& ringbuf)
     {
-        const ::v10::RingItemHeader* hdr =
-            reinterpret_cast<const ::v10::RingItemHeader*>(pItem->getItemPointer());
+        const v10::RingItemHeader* hdr =
+            reinterpret_cast<const v10::RingItemHeader*>(pItem->getItemPointer());
         ringbuf.put(hdr, hdr->s_size);
     }
     #endif
@@ -262,41 +262,41 @@ namespace ufmt {
     // Attempts to create them from scratch return nullptr.
     // Attempts to create from another CRingItem throw std::bad_cast
     
-    ::CAbnormalEndItem*
+    ::ufmt::CAbnormalEndItem*
     RingItemFactory::makeAbnormalEndItem()
     {
         return nullptr;
     }
-    ::CAbnormalEndItem*
-    RingItemFactory::makeAbnormalEndItem(const ::CRingItem& rhs)
+    ::ufmt::CAbnormalEndItem*
+    RingItemFactory::makeAbnormalEndItem(const ::ufmt::CRingItem& rhs)
     {
         throw std::bad_cast();
     }
     
     // Data format items Not supported in v10:
     
-    ::CDataFormatItem*
+    ::ufmt::CDataFormatItem*
     RingItemFactory::makeDataFormatItem()
     {
         return nullptr;
     }
-    ::CDataFormatItem*
-    RingItemFactory::makeDataFormatItem(const ::CRingItem& rhs)
+    ::ufmt::CDataFormatItem*
+    RingItemFactory::makeDataFormatItem(const ::ufmt::CRingItem& rhs)
     {
         throw std::bad_cast();
     }
     //////////////////////////////////////////////////////////////////
     // Glom parameters items - don't exist on V10.
     
-    ::CGlomParameters*
+    ::ufmt::CGlomParameters*
     RingItemFactory::makeGlomParameters(
             uint64_t interval, bool isBuilding, uint16_t policy
     )
     {
         return nullptr;
     }
-    ::CGlomParameters*
-    RingItemFactory::makeGlomParameters(const ::CRingItem& rhs)
+    ::ufmt::CGlomParameters*
+    RingItemFactory::makeGlomParameters(const ::ufmt::CRingItem& rhs)
     {
         throw std::bad_cast();
     }
@@ -317,13 +317,13 @@ namespace ufmt {
      *  @return ::CPhysicEventItem*
      */
     
-    ::CPhysicsEventItem*
+    ::ufmt::CPhysicsEventItem*
     RingItemFactory::makePhysicsEventItem(size_t maxBody)
     {
     return new v10::CPhysicsEventItem(maxBody);
     }
     
-    ::CPhysicsEventItem*
+    ::ufmt::CPhysicsEventItem*
     RingItemFactory::makePhysicsEventItem(
                 uint64_t timestamp, uint32_t source, uint32_t barrier,
                 size_t maxBody
@@ -332,8 +332,8 @@ namespace ufmt {
         return makePhysicsEventItem(maxBody);
     }
     
-    ::CPhysicsEventItem*
-    RingItemFactory::makePhysicsEventItem(const ::CRingItem& rhs)
+    ::ufmt::CPhysicsEventItem*
+    RingItemFactory::makePhysicsEventItem(const ::ufmt::CRingItem& rhs)
     {
         const v10::RingItemHeader* pHeader =
             reinterpret_cast<const v10::RingItemHeader*>(rhs.getItemPointer());
@@ -354,7 +354,7 @@ namespace ufmt {
     ///////////////////////////////////////////////////////////////
     
     
-    ::CRingFragmentItem*
+    ::ufmt::CRingFragmentItem*
     RingItemFactory::makeRingFragmentItem(
                 uint64_t timestamp, uint32_t source, uint32_t payloadSize,
                 const void* payload, uint32_t barrier
@@ -365,8 +365,8 @@ namespace ufmt {
         );
     }
     
-    ::CRingFragmentItem*
-    RingItemFactory::makeRingFragmentItem(const ::CRingItem& rhs)
+    ::ufmt::CRingFragmentItem*
+    RingItemFactory::makeRingFragmentItem(const ::ufmt::CRingItem& rhs)
     {
         if (rhs.type() == v10::EVB_FRAGMENT || rhs.type() == v10::EVB_UNKNOWN_PAYLOAD) {
         const v10::EventBuilderFragment* pSrc =
@@ -400,7 +400,7 @@ namespace ufmt {
      * @return CRingPhysicsEventCountItem*
      *     Pointer to a newly created ring item.
      */
-    ::CRingPhysicsEventCountItem*
+    ::ufmt::CRingPhysicsEventCountItem*
     RingItemFactory::makePhysicsEventCountItem(
         uint64_t count, uint32_t timeoffset, time_t stamp,
         int divisor
@@ -415,9 +415,9 @@ namespace ufmt {
      *    @return CRingPhysicsEventCountItem*
      *    @throw std::bad_cast if the rhs is not a physics event count item.
      */
-    ::CRingPhysicsEventCountItem*
+    ::ufmt::CRingPhysicsEventCountItem*
     RingItemFactory::makePhysicsEventCountItem(
-        const ::CRingItem& rhs
+        const ::ufmt::CRingItem& rhs
     )
     {
         const v10::RingItemHeader* pHeader =
@@ -453,13 +453,13 @@ namespace ufmt {
      *  @throw std::bad_cast if rhs is not INCREMENAL_SCALERS.
      */
 
-    ::CRingScalerItem*
+    ::ufmt::CRingScalerItem*
     RingItemFactory::makeScalerItem(size_t numScalers)
     {
         return new v10::CRingScalerItem(numScalers);
     }
     
-    ::CRingScalerItem*
+    ::ufmt::CRingScalerItem*
     RingItemFactory::makeScalerItem(
                 uint32_t startTime,
                 uint32_t stopTime,
@@ -476,8 +476,8 @@ namespace ufmt {
         );
     }
     
-    ::CRingScalerItem*
-    RingItemFactory::makeScalerItem(const ::CRingItem& rhs)
+    ::ufmt::CRingScalerItem*
+    RingItemFactory::makeScalerItem(const ::ufmt::CRingItem& rhs)
     {
         // Check for rhs being consistent with a v10 scaler item:
         
@@ -549,7 +549,7 @@ namespace ufmt {
          *         seem to be a valid text item.
          */
         
-        ::CRingTextItem*
+        ::ufmt::CRingTextItem*
         RingItemFactory::makeTextItem(
             uint16_t type,
             std::vector<std::string> theStrings
@@ -561,7 +561,7 @@ namespace ufmt {
         }
         
         
-        ::CRingTextItem*
+        ::ufmt::CRingTextItem*
         RingItemFactory::makeTextItem(
                 uint16_t type,
                 std::vector<std::string> theStrings,
@@ -576,8 +576,8 @@ namespace ufmt {
             );
         }
         
-        ::CRingTextItem*
-        RingItemFactory::makeTextItem(const ::CRingItem& rhs)
+        ::ufmt::CRingTextItem*
+        RingItemFactory::makeTextItem(const ::ufmt::CRingItem& rhs)
         {
             const v10::TextItem* pItem =
                 reinterpret_cast<const v10::TextItem*>(rhs.getItemPointer());
@@ -604,7 +604,7 @@ namespace ufmt {
         // Unknown fragments are not supported as a separate class in v10
         // but editing the type gets you there.
         
-        ::CUnknownFragment*
+        ::ufmt::CUnknownFragment*
         RingItemFactory::makeUnknownFragment(
             uint64_t timestamp, uint32_t sourceid, uint32_t barrier,
             uint32_t size, void* pPayload
@@ -618,12 +618,12 @@ namespace ufmt {
             v10::pRingItemHeader pHeader =
                 reinterpret_cast<v10::pRingItemHeader>(pResult->getItemPointer());
             pHeader->s_type = v10::EVB_UNKNOWN_PAYLOAD;
-            return reinterpret_cast<::CUnknownFragment*>(pResult);
+            return reinterpret_cast<::ufmt::CUnknownFragment*>(pResult);
         }
-        ::CUnknownFragment*
-        RingItemFactory::makeUnknownFragment(const ::CRingItem& rhs)
+        ::ufmt::CUnknownFragment*
+        RingItemFactory::makeUnknownFragment(const ::ufmt::CRingItem& rhs)
         {
-            return reinterpret_cast<::CUnknownFragment*>(makeRingFragmentItem(rhs));
+            return reinterpret_cast<::ufmt::CUnknownFragment*>(makeRingFragmentItem(rhs));
         }
         
         //////////////////////////////////////////////////////////
@@ -640,7 +640,7 @@ namespace ufmt {
          *  @return ::CRingStateChangeItem* pointer to new state change item.
          *  @throw std::bad_cast for a number of illegalities (e.g. bad type).
          */
-        ::CRingStateChangeItem*
+        ::ufmt::CRingStateChangeItem*
         RingItemFactory::makeStateChangeItem(
             uint32_t itemType, uint32_t runNumber,
             uint32_t timeOffset,
@@ -654,8 +654,8 @@ namespace ufmt {
             );
         }
         
-        ::CRingStateChangeItem*
-        RingItemFactory::makeStateChangeItem(const ::CRingItem& rhs)
+        ::ufmt::CRingStateChangeItem*
+        RingItemFactory::makeStateChangeItem(const ::ufmt::CRingItem& rhs)
         {
             const v10::StateChangeItem* pItem =
                 reinterpret_cast<const v10::StateChangeItem*>(rhs.getItemPointer());

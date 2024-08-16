@@ -235,7 +235,7 @@ namespace ufmt {
   size_t
   CRingFragmentItem::bodySize(size_t payloadSize) const
   {
-    return sizeof(v10::EventBuilderFragment) + (payloadSize-sizeof(uint32_t)) - sizeof(::ufmt::RingItemHeader);
+    return sizeof(v10::EventBuilderFragment) + (payloadSize-sizeof(uint32_t)) - sizeof(::ufmt::v10::RingItemHeader);
   }
   /**
    * copyPayload

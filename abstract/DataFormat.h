@@ -16,7 +16,7 @@
 	     Michigan State University
 	     East Lansing, MI 48824-1321
 */
-namespace ufmt {
+
   /*!
     \file DataFormat.h
     This file contains typedefs for the structures that will be put into
@@ -104,7 +104,7 @@ namespace ufmt {
   #define __CRT_TIME_H
   #endif
   #endif
-
+namespace ufmt {
   /*
       11.0 and later define a format item that starts the run.
       so that decoders know what format the ring is in.

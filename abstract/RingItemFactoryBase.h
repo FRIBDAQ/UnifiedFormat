@@ -21,7 +21,7 @@
 #ifndef RINGITEMFACTORYBASE_H
 #define RINGITEMFACTORYBASE_H
 #include "DataFormat.h"
-#include <stdint.h>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <fmtconfig.h>
