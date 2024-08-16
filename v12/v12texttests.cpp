@@ -26,6 +26,8 @@
 #include <time.h>
 
 
+using namespace ufmt;
+
 static std::vector<std::string> theStrings = {
     "one string", "two string", "three strings", "four",
     "five strings", "six strings", "seven strings", "no more"

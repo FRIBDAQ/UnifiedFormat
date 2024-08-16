@@ -26,6 +26,8 @@
 
 #include <time.h>
 
+using namespace ufmt;
+
 class v12counttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12counttest);
     CPPUNIT_TEST(construct_1);

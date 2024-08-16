@@ -25,6 +25,8 @@
 #include "DataFormat.h"
 #include <stdexcept>
 
+using namespace ufmt;
+
 class v12fmttest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12fmttest);
     CPPUNIT_TEST(construct);

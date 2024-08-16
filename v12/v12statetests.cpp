@@ -27,6 +27,8 @@
 #include <string.h>
 #include <stdexcept>
 
+using namespace ufmt;
+
 class v12statetest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12statetest);
     CPPUNIT_TEST(construct_1);

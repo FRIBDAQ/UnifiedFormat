@@ -49,6 +49,9 @@
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 #pragma GCC diagnostic ignored "-Wunused-result"
 
+
+using namespace ufmt;
+
 // In our tests, we use std::unique_ptr to ensure there's not
 // any memory leaking.
 

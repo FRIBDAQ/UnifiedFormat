@@ -27,6 +27,8 @@
 #include <string.h>
 
 
+using namespace ufmt;
+
 class v12scltest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(v12scltest);
     CPPUNIT_TEST(construct_1);
