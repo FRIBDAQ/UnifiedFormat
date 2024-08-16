@@ -22,7 +22,7 @@
  * @note Abstract base class for FdDataSource, StreamDataSource and RingDataSource
  */
 
-namespace umft {
+namespace ufmt {
     class CRingItem;
     class RingItemFactoryBase;
 }
