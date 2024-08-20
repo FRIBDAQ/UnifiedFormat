@@ -52,7 +52,8 @@ namespace ufmt {
         
     public:
         virtual std::string typeName() const;
-        virtual std::string toString() const;
+        virtual std::string headerToString() const;
+        virtual std::string bodyToString() const;
     };
 }
 

@@ -69,18 +69,30 @@ namespace ufmt {
         return "Abnormal End";
     }
     /**
-     * toString
-     *
-     *   Return a nicely formatted rendition of the ring item.
+     * headerToString
+     *    Format the header as a string - in this chase just indicate this is an abormal
+     * end item.
+     * 
      * @return std::string
      */
     std::string
-    CAbnormalEndItem::toString() const
-    {
+    CAbnormalEndItem::headerToString() const {
         std::string result = typeName();
         result += "\n";
         return result;
     }
+    /**
+     *  bodyToString
+     *    Format the body as a string -
+     * 
+     * @return std::string - an empty string as there is no body.
+     */
+    std::string
+    CAbnormalEndItem::bodyToString() const {
+        std::string result;
+        return result;
+    }
+    //Base class toString is fine now.
     // Implement pure virtuals from base class:
 
     /**
