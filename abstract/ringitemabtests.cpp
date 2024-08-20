@@ -523,7 +523,18 @@ void abringitemtest::typename_1()
 
 void abringitemtest::tostring()
 {
-    
+    CTestRingItem item(PHYSICS_EVENT);
+    uint16_t* p = reinterpret_cast<uint16_t*>(item.getBodyCursor());
+    for (int i =0; i < 8; i++) {
+        *p++ = i;
+    }
+    item.setBodyCursor(p);
+    item.updateSize();
+
+    auto sheader = item.headerToString();
+    std::string sb = "Size: 24 Type: Unknown (1e(\n";
+    EQ(sb, sheader);
+        
 }
 //
 void abringitemtest::append_1()
