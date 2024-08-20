@@ -111,24 +111,40 @@ namespace ufmt {
     {
         return std::string("Ring Item format version");
     }
-    /**
-     * toString
-     *
-     * @return std::string - text version of the body of the event.
+
+    /** 
+     * headerToString
+     *    In this case, just that we are a ring format item:
+     * @return std::string
+     * 
      */
     std::string
-    CDataFormatItem::toString() const
-    {
+    CDataFormatItem::headerToString() const {
+        return std::string("Data format:\n");
+    }
+    /**
+     *  bodyToSTring
+     *     Format the body of the item as a string.
+     * 
+     * @return std::string
+     * 
+     */
+    std::string
+    CDataFormatItem::bodyToString() const {
         CDataFormatItem* This = const_cast<CDataFormatItem*>(this);
         pDataFormat pItem = reinterpret_cast<pDataFormat>(This->getItemPointer());
         std::ostringstream out;
         
-        out << "Ring items formatted for: " << pItem->s_majorVersion << '.'
+        out << "Ring items are formatted for: " << pItem->s_majorVersion << '.'
             << pItem->s_minorVersion << std::endl;
             
-        return out.str();
+        auto result = out.str();
+        return result;
     }
-
+    /*
+     * toString:  base class version is fine.
+     *
+     */
     // The data format items don't have body headers so:
 
     void*
