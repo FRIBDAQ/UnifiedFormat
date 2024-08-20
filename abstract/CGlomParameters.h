@@ -60,7 +60,8 @@ namespace ufmt {
     // Object methods:
     public:
         virtual std::string typeName() const;  // "Glom Parameters"
-        virtual std::string toString() const;
+        virtual std::string headerToString() const;
+        virtual std::string bodyToString() const;
         
         // Implementation of pure virtual methods from the base class:
         
