@@ -532,7 +532,7 @@ void abringitemtest::tostring()
     item.updateSize();
 
     auto sheader = item.headerToString();
-    std::string sb = "Size: 24 Type: Unknown (1e(\n";
+    std::string sb = "Size: 24 Type: Unknown (1e)\n";
     EQ(sb, sheader);
         
 }
