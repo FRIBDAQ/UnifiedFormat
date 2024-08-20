@@ -163,25 +163,38 @@ namespace ufmt {
 	return "Event fragment";
 	}
 	/**
-	 * toString
-	 *
-	 *  Dumps the contents of a ring fragment.
-	 * @return std::string - the stringified version of the fragment.
+	 * headerToString
+	 * 
+	 * @return std::string - header of the fragment item.
+	 * 
 	 */
 	std::string
-	CRingFragmentItem::toString() const
+	CRingFragmentItem::headerToString() const {
+		std::ostringstream out;
+		CRingFragmentItem* This = const_cast<CRingFragmentItem*>(this);
+		
+		out << typeName() << ':' << std::endl;
+		out << "Fragment timestamp:    " << timestamp()   << std::endl;
+		out << "Source ID         :    " << source()      << std::endl;
+		out << "Payload size      :    " << This->payloadSize() << std::endl;
+		out << "Barrier type      :    " << barrierType() << std::endl;
+
+		auto result = out.str();
+		return result;
+	}
+	/**
+	 * bodyToString
+	 *
+	 *  Dumps the contents of a ring fragment.
+	 * @return std::string - the stringified version of the body.
+	 */
+	std::string
+	CRingFragmentItem::bodyToString() const
 	{
 	static const int perLine = 16;
 	std::ostringstream out;
 	CRingFragmentItem* This = const_cast<CRingFragmentItem*>(this);
 	
-	out << typeName() << ':' << std::endl;
-	out << "Fragment timestamp:    " << timestamp()   << std::endl;
-	out << "Source ID         :    " << source()      << std::endl;
-	out << "Payload size      :    " << This->payloadSize() << std::endl;
-	out << "Barrier type      :    " << barrierType() << std::endl;
-
-
 	out << "- - - - - -  Payload - - - - - - -\n";
 	
 		
@@ -197,10 +210,13 @@ namespace ufmt {
 			out << std::endl;		// if needed a trailing endl.
 		}
 
-		
+		auto result = out.str();
+		return result;	
 
-	return out.str();
+	
 	}
+	// to string his handled by the base class.
+
 	/**
 	 * getBodyHeader
 	 *    This is a bit tricky - really we should never get called however
