@@ -418,7 +418,7 @@ namespace ufmt {
   */
  std::string
  CRingItem::bodyToString() const {
-std::stringstream  dump;
+    std::stringstream  dump;
     const uint8_t*      p     = reinterpret_cast<const uint8_t*>(getBodyPointer());
     size_t              n     = getBodySize(); 
     int                 nPerLine(8);
