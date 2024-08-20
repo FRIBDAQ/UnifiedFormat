@@ -244,7 +244,24 @@ namespace ufmt {
     }
   }
   /**
-   * toString
+   * headerToString
+   * 
+   * @return std::string - stringified header.
+   */
+  std::string
+  CRingTextItem::headerToString() const {
+    std::ostringstream out;
+    time_t ts = getTimestamp();
+    string   time     = ctime(&ts);
+    
+    out << time << " : Documentation item ";
+    out << typeName() << std::endl;
+
+    auto result = out.str();
+    return result;
+  }
+  /**
+   * bodyToString
    *
    * Returns a stringified version of the item that can
    * be read by humans.
@@ -252,26 +269,22 @@ namespace ufmt {
    * @return std::string - stringified output.
    */
   std::string
-  CRingTextItem::toString() const
+  CRingTextItem::bodyToString() const
   {
     std::ostringstream out;
 
-    // uint32_t elapsed  = getTimeOffset();
-    time_t ts = getTimestamp();
-    string   time     = ctime(&ts);
     vector<string> strings = getStrings();
     uint32_t sid      = getOriginalSourceId();
 
-    out << time << " : Documentation item ";
-    out << typeName();
     out << "Originally emitted by source id: " << sid << " ";
     out << computeElapsedTime() << " seconds in to the run\n";
     for (int i = 0; i < strings.size(); i++) {
       out << strings[i] << endl;
     }
 
-
-    return out.str();
+    auto result = out.str();
+    return result;
+    
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
