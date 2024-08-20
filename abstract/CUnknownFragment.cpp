@@ -68,4 +68,16 @@ namespace ufmt {
     {
         return "Fragment with unknown payload";
     }
+    /**
+     *  headerToString()
+     *    Format the header
+     * @return std::string
+     */
+    std::string
+    CUnknownFragment::headerToString() const {
+        std::string result = typeName();
+        result += "\n";
+        return result;
+    }
+    // Body and full item can be dumped by ufmt::CRingItem.
 }

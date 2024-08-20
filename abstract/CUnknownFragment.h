@@ -47,6 +47,7 @@ namespace ufmt {
     public:
 
         std::string typeName() const;
+        std::string headerToString() const;
         
     };
 
