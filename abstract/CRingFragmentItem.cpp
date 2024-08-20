@@ -215,7 +215,7 @@ namespace ufmt {
 
 	
 	}
-	// to string his handled by the base class.
+	// to string is handled by the base class.
 
 	/**
 	 * getBodyHeader

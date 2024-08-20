@@ -248,15 +248,28 @@ namespace ufmt {
   {
     return std::string("Trigger count");
   }
+
   /**
-   * toString
-   *
-   * Returns a stringified version of the item.
-   *
-   * @return item - the string.
+   * headerToString 
+   *    Formatted dump of the header:
+   * 
+   * @return std::string
    */
   std::string
-  CRingPhysicsEventCountItem::toString() const
+  CRingPhysicsEventCountItem::headerToString() const {
+    std::string result = typeName();
+    result += '\n';
+    return result;
+  }
+  /**
+   * bodyToString
+   *
+   * Returns a stringified version of the item body.
+   *
+   * @return std::string - the string.
+   */
+  std::string
+  CRingPhysicsEventCountItem::bodyToString() const
   {
     std::ostringstream out;
     time_t tstamp = getTimestamp();
@@ -277,7 +290,7 @@ namespace ufmt {
 
     return out.str();
   }
-
+  //  ufmt::CRingItem::toString now works just fine.
   /////////////////////////////////////////////////////////////////////////////////
   //
   // Private utilities.
