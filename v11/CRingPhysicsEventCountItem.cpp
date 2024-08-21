@@ -378,7 +378,7 @@ namespace ufmt {
    * @return item - the string.
    */
   std::string
-  CRingPhysicsEventCountItem::toString() const
+  CRingPhysicsEventCountItem::bodyToString() const
   {
     std::ostringstream out;
     time_t t = getTimestamp();
