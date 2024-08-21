@@ -173,21 +173,20 @@ namespace ufmt {
   }
 
   /**
-   * toString
+   * bodyToString
    *
-   *  Convert the event to a string.
+   *  Convert the event body to a string.
    *
    * @return std::string - stringified versino of the event.
    */
   std::string
-  CPhysicsEventItem::toString() const
+  CPhysicsEventItem::bodyToString() const
   {
     std::ostringstream out;
     uint32_t  bytes = getBodySize();
     uint32_t  words = bytes/sizeof(uint16_t);
     const uint16_t* body  = reinterpret_cast<const uint16_t*>((const_cast<CPhysicsEventItem*>(this))->getBodyPointer());
 
-    out << "Event " << bytes << " bytes long\n";
     
     const v11::CRingItem* pItem = reinterpret_cast<const v11::CRingItem*>(this);
     out << pItem->bodyHeaderToString();
