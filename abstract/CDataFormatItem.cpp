@@ -120,7 +120,9 @@ namespace ufmt {
      */
     std::string
     CDataFormatItem::headerToString() const {
-        return std::string("Data format:\n");
+        std::string result = typeName();
+        result += '\n';
+        return result;
     }
     /**
      *  bodyToSTring
@@ -135,8 +137,8 @@ namespace ufmt {
         pDataFormat pItem = reinterpret_cast<pDataFormat>(This->getItemPointer());
         std::ostringstream out;
         
-        out << "Ring items are formatted for: " << pItem->s_majorVersion << '.'
-            << pItem->s_minorVersion << std::endl;
+        out << "Ring items are formatted for: " << getMajor() << '.'
+            << getMinor() << std::endl;
             
         auto result = out.str();
         return result;

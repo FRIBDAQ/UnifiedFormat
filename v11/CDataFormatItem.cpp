@@ -90,23 +90,7 @@ namespace ufmt {
     {
         return std::string("Ring Item format version");
     }
-    /**
-     * toString
-     *
-     * @return std::string - text version of the body of the event.
-     */
-    std::string
-    CDataFormatItem::toString() const
-    {
-        CDataFormatItem* This = const_cast<CDataFormatItem*>(this);
-        pDataFormat pItem = reinterpret_cast<pDataFormat>(This->getItemPointer());
-        std::ostringstream out;
-        
-        out << "Ring items formatted for: " << pItem->s_majorVersion << '.'
-            << pItem->s_minorVersion << std::endl;
-            
-        return out.str();
-    }
+    
     // There is no body header so:
 
     bool
