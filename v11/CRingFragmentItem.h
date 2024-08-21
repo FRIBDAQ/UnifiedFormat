@@ -70,7 +70,7 @@ namespace ufmt {
     // Virtual method overrides:
 
     virtual std::string typeName() const;
-    virtual std::string toString() const;
+    
   private:
       size_t bodySize(size_t payloadSize) const;
 
