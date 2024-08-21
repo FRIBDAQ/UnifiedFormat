@@ -103,7 +103,7 @@ namespace ufmt {
     // Virtual method overrides.
 
     virtual std::string typeName() const;
-    virtual std::string toString() const;
+    virtual std::string bodyToString() const;
 
     // Utitlity functions..
 
