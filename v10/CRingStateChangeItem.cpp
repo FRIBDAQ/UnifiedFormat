@@ -283,32 +283,7 @@ namespace ufmt {
       return "Unrecognized type for v10 state change item";
     }
   }
-  /**
-   * toString
-   *
-   * Returns a string that is the ascified body of the item.
-   *
-   * @return std::string - ascified version of the item.
-   */
-  std::string
-  CRingStateChangeItem::toString() const
-  {
-    std::ostringstream out;		//  Build up via outputting to this psuedo stream.
-
-    uint32_t run       = getRunNumber();
-    uint32_t elapsed   = getElapsedTime();
-    string   title     = getTitle();
-    time_t   t         = getTimestamp();
-    string   timestamp = ctime(&t);
-
-    out <<  timestamp << " : Run State change : " << typeName();
-    out << " at " << elapsed << " seconds into the run\n";
-    out << "Title     : " << title << std::endl;
-    out << "Run Number: " << run   << endl;
-
-
-    return out.str();
-  }
+  
       
   ///////////////////////////////////////////////////////////////////////////////
   // Private utilities.
