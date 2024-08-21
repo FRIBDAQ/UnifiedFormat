@@ -162,7 +162,9 @@ namespace ufmt {
      */
     std::string
     CGlomParameters::headerToString() const {
-        return std::string("Glom parameters\n");
+        std::string result = typeName();
+        result += "\n";
+        return result;
     }
     /**
      * bodyToSTring
