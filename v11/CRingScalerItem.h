@@ -96,7 +96,7 @@ namespace ufmt {
         uint32_t barrierType = 0
     );
     virtual std::string typeName() const;
-    virtual std::string toString() const;
+  
 
     // utility.
 
