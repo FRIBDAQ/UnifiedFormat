@@ -209,36 +209,7 @@ namespace ufmt {
       throw std::string("CRingTextItem::typeName - Invalid type!");
     }
   }
-  /**
-   * toString
-   *
-   * Returns a stringified version of the item that can
-   * be read by humans.
-   *
-   * @return std::string - stringified output.
-   */
-  std::string
-  CRingTextItem::toString() const
-  {
-    std::ostringstream out;
-
-    uint32_t elapsed  = getTimeOffset();
-    time_t t = getTimestamp();
-    string   time     = ctime(&t);
-    vector<string> strings = getStrings();
-
-    out << time << " : Documentation item ";
-    out << typeName();
-
-    out << elapsed << " seconds in to the run\n";
-    for (int i = 0; i < strings.size(); i++) {
-      out << strings[i] << endl;
-    }
-
-
-    return out.str();
-  }
-
+  
   //////////////////////////////////////////////////////////////////////////////////////////////
   //
   // Private utilities.
