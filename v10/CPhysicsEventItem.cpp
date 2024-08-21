@@ -106,41 +106,6 @@ namespace ufmt {
     return "Event (V10)";
   }
 
-  /**
-   * toString
-   *
-   *  Convert the event to a string.
-   *
-   * @return std::string - stringified versino of the event.
-   */
-  std::string
-  CPhysicsEventItem::toString() const
-  {
-    std::ostringstream out;
-    uint32_t  bytes = getBodySize();
-    uint32_t  words = bytes/sizeof(uint16_t);
-    const uint16_t* body  = reinterpret_cast<const uint16_t*>((const_cast<CPhysicsEventItem*>(this))->getBodyPointer());
-
-    out << "Event " << bytes << " bytes long\n";
-
-    int  w = out.width();
-    char f = out.fill();
-
-    
-    for (int i =1; i <= words; i++) {
-      char number[32];
-      sprintf(number, "%04x ", *body++);
-      out << number;
-      if ( (i%8) == 0) {
-        out << std::endl;
-      }
-    }
-    out << std::endl;
-    
-    
-    return out.str();
-
-  }
-
-  }
-}
+  
+  }     // v10 namespace
+}       // ufmt namespace.

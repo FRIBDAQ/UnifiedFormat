@@ -56,7 +56,8 @@ namespace ufmt {
     );
     
     virtual std::string typeName() const;	// Textual type of item.
-    virtual std::string toString() const; // Provide string dump of the item.
+    
+    // output is just fine using the base class stringifiers.
 
   
     

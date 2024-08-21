@@ -78,7 +78,7 @@ namespace ufmt {
   CPhysicsEventItem::headerToString() const {
     std::ostringstream out;
     uint32_t  bytes = getBodySize();
-    out << "Event " << bytes << " bytes long\n";
+    out << typeName() << bytes << " bytes long\n";
 
     auto result = out.str();
     return result;
