@@ -423,8 +423,8 @@ namespace ufmt {
     out << "Title     : " << title << std::endl;
     out << "Run Number: " << run   << endl;
 
-
-    return out.str();
+    auto result = out.str();
+    return result;
   }
       
   ///////////////////////////////////////////////////////////////////////////////
