@@ -81,7 +81,6 @@ namespace ufmt {
     // Virtual methods overriddent:
 
     virtual std::string typeName() const;
-    virtual std::string toString() const;
     
     virtual size_t getBodySize()    const;
     virtual const void*  getBodyPointer() const;
