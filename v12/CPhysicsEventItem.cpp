@@ -95,33 +95,19 @@ namespace ufmt {
    * @return std::string - stringified versino of the event.
    */
   std::string
-  CPhysicsEventItem::toString() const
+  CPhysicsEventItem::headerToString() const
   {
     std::ostringstream out;
     uint32_t  bytes = getBodySize();
     uint32_t  words = bytes/sizeof(uint16_t);
     const uint16_t* body  = reinterpret_cast<const uint16_t*>((const_cast<CPhysicsEventItem*>(this))->getBodyPointer());
 
-    out << "Event " << bytes << " bytes long\n";
+    out << typeName() << " " << bytes << " bytes long\n";
     const v12::CRingItem* This = reinterpret_cast<const v12::CRingItem*>(this);
     out << This->v12::CRingItem::bodyHeaderToString();
 
-    int  w = out.width();
-    char f = out.fill();
-
-    
-    for (int i =1; i <= words; i++) {
-      char number[32];
-      sprintf(number, "%04x ", *body++);
-      out << number;
-      if ( (i%8) == 0) {
-        out << std::endl;
-      }
-    }
-    out << std::endl;
-    
-    
-    return out.str();
+    auto result = out.str();
+    return result;
 
   }
   // These do a sort of sideways cast to v12::CRingItem to delegate to it.
