@@ -303,39 +303,6 @@ namespace ufmt {
   {
     return std::string("Trigger count");
   }
-  /**
-   * toString
-   *
-   * Returns a stringified version of the item.
-   *
-   * @return item - the string.
-   */
-  std::string
-  CRingPhysicsEventCountItem::toString() const
-  {
-    std::ostringstream out;
-
-    time_t t = getTimestamp();
-    string   time   = ctime(&t);
-    uint32_t offset = getTimeOffset();
-    uint32_t divisor= getTimeDivisor();
-    uint64_t events = getEventCount();
-    uint32_t sid    = getOriginalSourceId();
-    
-    float fOffset = static_cast<float>(offset)/static_cast<float>(divisor);
-    
-    const v12::CRingItem* This = reinterpret_cast<const v12::CRingItem*>(this);
-    out << This->v12::CRingItem::bodyHeaderToString();
-    out << time << " : " << events << " Triggers accepted as of " 
-        << fOffset << " seconds into the run\n";
-    out << " Average accepted trigger rate: " 
-        <<  static_cast<double>(events)/fOffset
-        << " events/second originally from sid: " << sid << std::endl;
-
-    return out.str();
-  }
-
-
   ////////////////////////////////////////////////////////////////////////////
   // Overrides that delegate to v12::CRingItem.
   //  These require a fancy sideways cast and force as we're in a parallel hierarchy
