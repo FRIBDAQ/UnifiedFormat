@@ -134,19 +134,6 @@ namespace ufmt {
     {
         return "Fragment with unknown payload";
     }
-    /**
-     * toString
-     *    Return a string rendering of this item...we defer this to
-     *    CRingFragmentItem via our usual dirty cast:
-     * @return std::string
-     */
-    std::string
-    CUnknownFragment::toString() const
-    {
-        const v11::CRingFragmentItem* pThis =
-            reinterpret_cast<const v11::CRingFragmentItem*>(this);
-        return pThis->v11::CRingFragmentItem::toString();
-    }
-
+    
     }
 }
