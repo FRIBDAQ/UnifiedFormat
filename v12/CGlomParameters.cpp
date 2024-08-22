@@ -22,15 +22,7 @@ namespace ufmt {
     namespace v12 {
 
 
-    /**
-     * @note the definition below requires that the order of array elements matches
-     *       the timestamp policy values
-     */
-
-    static const char* policyNames[4] = {
-        "first", "last" , "average", "Error - undefined"
-    };
-
+   
 
     /*-------------------------------------------------------------------------
     * Canonical methods
@@ -138,33 +130,7 @@ namespace ufmt {
     {
         return std::string("Glom Parameters");
     }
-    /**
-     * toSTring
-     *
-     * @return std::string - a textual dump of the ring item contents.
-     */
-    std::string
-    CGlomParameters::toString() const
-    {
-        CGlomParameters* This = const_cast<CGlomParameters*>(this);
-        pGlomParameters pItem =
-            reinterpret_cast<pGlomParameters>(This->getItemPointer());
-        std::stringstream    out;
-        
-        out << "Glom is " << (isBuilding() ? "" : " not ") << "building events\n";
-        if (isBuilding()) {
-            out << "Event building coincidence window is: "
-                << coincidenceTicks() << " timestamp ticks\n";
-        }
-        unsigned tsPolicy = static_cast<unsigned>(timestampPolicy());
-        if (tsPolicy >= sizeof(policyNames)/sizeof(char*)) {
-            tsPolicy = sizeof(policyNames)/sizeof(char*) - 1;
-        }
-        out << "TimestampPolicy : " << policyNames[tsPolicy] << std::endl;
-        
-        
-        return out.str();
-    }
+    
 
     /**
      * getBodyHeader
