@@ -300,7 +300,7 @@ namespace ufmt {
     return typeStr.str();
   }   
   /**
-   * toString
+   * headerToString
    *
    * Return an std::string that contains a formatted dump of the ring item
    * body. Default implementation just produces a hex-dump of the data
@@ -310,7 +310,7 @@ namespace ufmt {
    * @return std::string - the dump described above.
    */
   std::string
-  CRingItem::toString() const
+  CRingItem::headerToString() const
   {
     std::stringstream  dump;
     const uint8_t*      p     = reinterpret_cast<const uint8_t*>(getBodyPointer());
