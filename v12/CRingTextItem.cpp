@@ -306,39 +306,7 @@ namespace ufmt {
       throw std::string("CRingTextItem::typeName - Invalid type!");
     }
   }
-  /**
-   * toString
-   *
-   * Returns a stringified version of the item that can
-   * be read by humans.
-   *
-   * @return std::string - stringified output.
-   */
-  std::string
-  CRingTextItem::toString() const
-  {
-    std::ostringstream out;
-
-    // uint32_t elapsed  = getTimeOffset();
-    
-    time_t t = getTimestamp();
-    string   time     = ctime(&t);
-    vector<string> strings = getStrings();
-    uint32_t sid      = getOriginalSourceId();
-
-    out << time << " : Documentation item ";
-    out << typeName();
-    const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
-    out << pThis->v12::CRingItem::bodyHeaderToString();
-    out << "Originally emitted by source id: " << sid << " ";
-    out << computeElapsedTime() << " seconds in to the run\n";
-    for (int i = 0; i < strings.size(); i++) {
-      out << strings[i] << endl;
-    }
-
-
-    return out.str();
-  }
+  
 
   // Subsequent methods use our sideways cast to v12::CRingItem.. While
   // this class is not in our inheritance hierarchy (and to put it there will result
