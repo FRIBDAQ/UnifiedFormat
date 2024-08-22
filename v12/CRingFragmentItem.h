@@ -59,7 +59,6 @@ namespace ufmt {
     // Virtual method overrides:
 
     virtual std::string typeName() const;
-    virtual std::string toString() const;
 
   
     // methods that rely on side-casting.
