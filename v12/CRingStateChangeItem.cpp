@@ -328,36 +328,7 @@ namespace ufmt {
     }
     return "*Invalid State Change type*";
   }
-  /**
-   * toString
-   *
-   * Returns a string that is the ascified body of the item.
-   *
-   * @return std::string - ascified version of the item.
-   */
-  std::string
-  CRingStateChangeItem::toString() const
-  {
-    std::ostringstream out;		//  Build up via outputting to this psuedo stream.
-
-    uint32_t run       = getRunNumber();
-    uint32_t sid       = getOriginalSourceId();
-    string   title     = getTitle();
-    time_t   ts = getTimestamp();
-    string   timestamp = ctime(&ts);
-
-    out <<  timestamp << " : Run State change: " << typeName();
-    out << " originally from source id: " <<  sid;
-    out << " at " << computeElapsedTime() << " seconds into the run\n";
-    const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
-    out << pThis->v12::CRingItem::bodyHeaderToString();
-    out << "Title     : " << title << std::endl;
-    out << "Run Number: " << run   << endl;
-
-
-    return out.str();
-  }
-
+  
   /**
    * getBodySize
    *    Delegated to v12::CRingItem which works since the underlying stored
