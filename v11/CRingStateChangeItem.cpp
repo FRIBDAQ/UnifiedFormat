@@ -399,33 +399,7 @@ namespace ufmt {
     return "Unknown item type";
     
   }
-  /**
-   * bodyToString
-   *
-   * Returns a string that is the ascified body of the item.
-   *
-   * @return std::string - ascified version of the item.
-   */
-  std::string
-  CRingStateChangeItem::bodyToString() const
-  {
-    std::ostringstream out;		//  Build up via outputting to this psuedo stream.
-
-    uint32_t run       = getRunNumber();
-    
-    string   title     = getTitle();
-    time_t t = getTimestamp();
-    string   timestamp = ctime(&t);
-
-    
-    const v11::CRingItem* pThis = reinterpret_cast<const v11::CRingItem*>(this);
-    out << pThis->v11::CRingItem::bodyHeaderToString();
-    out << "Title     : " << title << std::endl;
-    out << "Run Number: " << run   << endl;
-
-    auto result = out.str();
-    return result;
-  }
+  
       
   ///////////////////////////////////////////////////////////////////////////////
   // Private utilities.
