@@ -20,13 +20,13 @@ namespace ufmt {
   * @param a pointer to the first word in the body (this is b/4 the first fragment)
   *
   */
-  FragmentIndex::FragmentIndex(uint16_t* data)
+  FragmentIndex::FragmentIndex(const uint16_t* data)
     : m_frags()
   {
 
     uint32_t max_bytes=0, temp;
 
-    max_bytes = *(reinterpret_cast<uint32_t*>(data));
+    max_bytes = *(reinterpret_cast<const uint32_t*>(data));
 
     indexFragments(
         data+sizeof(uint32_t)/sizeof(uint16_t),
@@ -39,7 +39,7 @@ namespace ufmt {
     @param data a pointer to the first fragment
     @param nbytes the number of bytes from start of first fragment to end of the body
   */
-  void FragmentIndex::indexFragments(uint16_t* begin, uint16_t* end)
+  void FragmentIndex::indexFragments(const uint16_t* begin, const uint16_t* end)
   {
 
     if (begin==0) {
@@ -52,7 +52,7 @@ namespace ufmt {
     // if we have no data to process, then do nothing!
     if (begin == end ) return;
 
-    uint16_t* data = begin;
+    const uint16_t* data = begin;
 
     size_t dist = 0;
     do {
@@ -63,7 +63,7 @@ namespace ufmt {
         throw std::runtime_error("FragmentIndex::indexFragments() insufficient data in buffer for next fragment!");
       }
 
-      FlatFragment* frag = reinterpret_cast<FlatFragment*>(data);
+      const FlatFragment* frag = reinterpret_cast<const FlatFragment*>(data);
 
       // Store the body of the fragment in a condensed version
       FragmentInfo info; 
@@ -71,7 +71,7 @@ namespace ufmt {
       info.s_sourceId  = frag->s_header.s_sourceId;
       info.s_size      = frag->s_header.s_size;
       info.s_barrier   = frag->s_header.s_barrier;
-      info.s_itemhdr   = reinterpret_cast<uint16_t*>(frag->s_body);
+      info.s_itemhdr   = reinterpret_cast<const uint16_t*>(frag->s_body);
       
       
       //daqdev/SpecTcl#378 - Compute the size of the header in
@@ -84,14 +84,10 @@ namespace ufmt {
       // in a special case. 
       
       size_t headerBytes = sizeof(::ufmt::RingItemHeader);
-      uint32_t* pBodyHeader = reinterpret_cast<uint32_t*>(
+      const uint32_t* pBodyHeader = reinterpret_cast<const uint32_t*>(
         info.s_itemhdr + sizeof(::ufmt::RingItemHeader)/sizeof(uint16_t)
       );
-      if (*pBodyHeader == 0) {
-        headerBytes += sizeof(uint32_t); 
-      } else {
-        headerBytes += *pBodyHeader;
-      }
+      
       // Now all this has to be in uint16_t scale:
       
       info.s_itembody = info.s_itemhdr + (headerBytes/sizeof(uint16_t));
@@ -104,7 +100,7 @@ namespace ufmt {
 
   }
 
-  size_t FragmentIndex::computeWordsToNextFragment(uint16_t* data) //This gives the total size of the fragment --JP
+  size_t FragmentIndex::computeWordsToNextFragment(const uint16_t* data) //This gives the total size of the fragment --JP
   {
     // For reference, a fragment looks like this:
     // struct FlatFragment {
@@ -116,7 +112,7 @@ namespace ufmt {
     //  }
     //
     
-    FlatFragment* frag = reinterpret_cast<FlatFragment*>(data);
+    const FlatFragment* frag = reinterpret_cast<const FlatFragment*>(data);
     uint32_t payload_size = frag->s_header.s_size; // in bytes
     uint32_t fraghdr_size = sizeof(FragmentHeader); // in bytes
 
