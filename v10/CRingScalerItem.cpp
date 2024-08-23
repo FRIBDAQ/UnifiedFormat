@@ -439,48 +439,7 @@ namespace ufmt {
       return std::string("Nonincremental Scalers");
     }
   }
-  /**
-   * toString
-   *
-   *  Return a textual human readable version of the data
-   *  in this item.
-   *
-   * @return std::string - the text string.
-   */
-
-  std::string
-  CRingScalerItem::toString() const
-  {
-    std::ostringstream out;
-
-    float end   = computeEndTime();
-    float start = computeStartTime();
-    time_t t = getTimestamp();
-    string   time  = ctime(&t);
-    vector<uint32_t> scalers = getScalers();
-
-    float   duration = static_cast<float>(end - start);
-
-    out << time << " : Incremental scalers:\n";
-    out << "Interval start time: " << start << " end: " << end << " seconds in to the run\n\n";
-    
-
-    out << "Index         Counts                 Rate\n";
-    for (int i=0; i < scalers.size(); i++) {
-      char line[128];
-      uint32_t scaler = (scalers[i] & m_ScalerFormatMask);
-      double rate = (static_cast<double>(scaler)/duration);
-
-      sprintf(line, "%5d      %9d                 %.2f\n",
-        i, scaler, rate);
-      out << line;
-    }
-
-
-    return out.str();
-    
-  }
-
+  
   /*-------------------------------------------------------
   ** Private utilities:
   *---------------------------------------------------------

@@ -87,7 +87,7 @@ namespace ufmt {
 
 
     virtual std::string typeName() const;
-    virtual std::string toString() const;
+    virtual std::string headerToString() const;
 
     //private utilities:
   private:

@@ -391,25 +391,39 @@ namespace ufmt {
     typeStr << "Unknown (" << std::hex << type() << ")"; 
     return typeStr.str();
   }   
+
   /**
-   * toString
-   *
-   * Return an std::string that contains a formatted dump of the ring item
-   * body. Default implementation just produces a hex-dump of the data
-   * the dump has 8 elements per line with spaces between each element
-   * and the format of each element is %02x.
-   *
-   * @return std::string - the dump described above.
+   * headerToString
+   *    Convert the header to a string.
+   *    The header consists of the ring item size and type:
+   * 
+   * @return std::string
    */
   std::string
-  CRingItem::toString() const
-  {
+  CRingItem::headerToString() const {
+    auto  pItem = getItemPointer();
+    std::stringstream s;
+    s << "Size: " << pItem->s_header.s_size;
+    s << " Type: " << typeName() << std::endl;
+    
+    auto result = s.str();
+    return result;
+
+  }
+
+  /** bodyToString 
+   *     Return a dump of the body of the ring item:
+   * 
+   * @return std::string
+  */
+ std::string
+ CRingItem::bodyToString() const {
     std::stringstream  dump;
     const uint8_t*      p     = reinterpret_cast<const uint8_t*>(getBodyPointer());
     size_t              n     = getBodySize(); 
     int                 nPerLine(8);
     
-    dump << std::hex << std::setfill('0');
+    dump << "Body\n" << std::hex << std::setfill('0');
 
     for (int i = 0; i < n; i++) {
       if ( ((i % nPerLine) == 0)) {
@@ -425,7 +439,24 @@ namespace ufmt {
     }
     
 
-    return dump.str();
+    auto result =  dump.str();
+    return result;
+ }
+
+  /**
+   * toString
+   *
+   * Return an std::string that contains a formatted dump of the ring item
+   * body. Default implementation just produces a hex-dump of the data
+   * the dump has 8 elements per line with spaces between each element
+   * and the format of each element is %02x.
+   *
+   * @return std::string - the dump described above.
+   */
+  std::string
+  CRingItem::toString() const
+  {
+    return headerToString() + bodyToString();
   }
   /**
    * appendBodyData

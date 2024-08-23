@@ -88,7 +88,8 @@ namespace ufmt {
     virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                           uint32_t barrierType = 0);
     virtual std::string typeName() const;
-    virtual std::string toString() const;
+    virtual std::string headerToString() const;
+    virtual std::string bodyToString() const;
 
 
     // Utitlity functions..

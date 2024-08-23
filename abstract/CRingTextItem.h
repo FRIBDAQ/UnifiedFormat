@@ -70,7 +70,8 @@ namespace ufmt {
           uint64_t timestamp, uint32_t sid, uint32_t barrierType= 0
     );
     virtual std::string typeName() const;
-    virtual std::string toString() const;
+    virtual std::string headerToString() const;
+    virtual std::string bodyToString() const;
     
 
     //private utilities:

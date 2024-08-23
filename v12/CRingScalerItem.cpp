@@ -382,52 +382,7 @@ namespace ufmt {
   {
     return std::string("Scaler");
   }
-  /**
-   * toString
-   *
-   *  Return a textual human readable version of the data
-   *  in this item.
-   *
-   * @return std::string - the text string.
-   */
-
-  std::string
-  CRingScalerItem::toString() const
-  {
-    std::ostringstream out;
-
-    float end   = computeEndTime();
-    float start = computeStartTime();
-    time_t ts  = getTimestamp();
-    string   time  = ctime(&ts);
-    uint32_t sid   = getOriginalSourceId();
-    vector<uint32_t> scalers = getScalers();
-    for (int i =0; i < scalers.size(); i++) {
-      scalers[i] = scalers[i] & m_ScalerFormatMask; // Mask off unused bits.
-    }
-
-    float   duration = end - start;
-
-    out << time << " : Scalers (original Source Id " << sid << "):\n";
-    out << "Interval start time: " << start << " end: " << end << " seconds in to the run\n\n";
-    const v12::CRingItem* pThis = reinterpret_cast<const v12::CRingItem*>(this);
-    out << pThis->v12::CRingItem::bodyHeaderToString();
-    out << (isIncremental() ? "Scalers are incremental" : "Scalers are not incremental") << std::endl;
-
-    out << "Index         Counts                 Rate\n";
-    for (int i=0; i < scalers.size(); i++) {
-      char line[128];
-      double rate = (static_cast<double>(scalers[i])/duration);
-
-      sprintf(line, "%5d      %9d                 %.2f\n",
-        i, scalers[i], rate);
-      out << line;
-    }
-
-
-    return out.str();
-    
-  }
+  
   /**
    * a word about the wonky casts in this section of code.
    * We derive from abstract's CRingScalerItem which,

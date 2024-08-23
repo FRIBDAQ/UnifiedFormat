@@ -52,7 +52,7 @@ namespace ufmt {
         
         
         virtual std::string typeName() const;
-        virtual std::string toString() const;
+        
     };
 
     }

@@ -83,7 +83,7 @@ namespace ufmt {
 
     
     virtual std::string typeName() const;	// Textual type of item.
-    virtual std::string toString() const; // Provide string dump of the item.
+    virtual std::string headerToString() const; // Provide string dump of the item.
 
 
     std::string bodyHeaderToString() const;

@@ -53,7 +53,7 @@ namespace ufmt {
         
 
         std::string typeName() const;
-        virtual std::string toString() const;   // Because we want the v11 one.
+        
         
     };
 

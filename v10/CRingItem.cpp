@@ -142,41 +142,6 @@ namespace ufmt {
     typeStr << "Unknown (" << std::hex << type() << ")"; 
     return typeStr.str();
   }   
-  /**
-   * toString
-   *
-   * Return an std::string that contains a formatted dump of the ring item
-   * body. Default implementation just produces a hex-dump of the data
-   * the dump has 8 elements per line with spaces between each element
-   * and the format of each element is %02x.
-   *
-   * @return std::string - the dump described above.
-   */
-  std::string
-  CRingItem::toString() const
-  {
-    std::stringstream  dump;
-    const v10::RingItem*  pItem = reinterpret_cast<const v10::RingItem*>(m_pItem);
-    const uint8_t*      p     = pItem->s_body;
-    size_t              n     = getBodySize(); 
-    int                 nPerLine(8);
-
-    dump << std::hex << std::setw(2) << std::setfill('0');
-
-    for (int i = 0; i < n; i++) {
-      dump << static_cast<unsigned int>(*p++) << " ";
-      if ((i > 0) && ((i % nPerLine) == 0)) {
-        dump << std::endl;
-      }
-    }
-    // If there's no trailing endl put one in.
-
-    if (n % nPerLine) {
-      dump << std::endl;
-    }
-    
-
-    return dump.str();
-  }
-  }
-}
+   
+  }              // v10 namespace
+}                // ufmt namespace.

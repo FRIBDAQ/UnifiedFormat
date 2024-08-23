@@ -176,48 +176,6 @@ namespace ufmt {
     return "Event fragment";
   }
 
-  /**
-   * toString
-   *
-   *  Dumps the contents of a ring fragment.
-   *  TODO:  Issue #1458 - use factory method if the body seems like a ring fragment
-   *         to dump the body.
-   * 
-   * @return std::string - the stringified version of the fragment.
-   */
-  std::string
-  CRingFragmentItem::toString() const
-  {
-    static const int perLine = 16;
-    std::ostringstream out;
-
-    out << typeName() << ':' << std::endl;
-    out << "Fragment timestamp:    " << timestamp()   << std::endl;
-    out << "Source ID         :    " << source()      << std::endl;
-    out << "Payload size      :    " << payloadSize() << std::endl;
-    out << "Barrier type      :    " << barrierType() << std::endl;
-
-    // TODO: Issue #1458 -- see above.
-
-    out << "- - - - - -  Payload - - - - - - -\n";
-    
-      out << std::hex << std::endl;
-      auto pThis = const_cast<v10::CRingFragmentItem*>(this);
-      uint8_t* p = reinterpret_cast<uint8_t*>(pThis->payloadPointer());
-      for (int i = 0; i < payloadSize(); i++) {
-        out << *p++ << ' ';
-        if (((i % perLine) == 0) && (i != 0)) {
-          out << std::endl;
-        }
-      }
-      if (payloadSize() % perLine) {
-        out << std::endl;		// if needed a trailing endl.
-      }
-    
-      
-
-    return out.str();
-  }
 
   /*---------------------------------------------------------------------------
   * Private utilities:

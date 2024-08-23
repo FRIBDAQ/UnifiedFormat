@@ -294,31 +294,43 @@ namespace ufmt {
     return "*Invalid State Change type*";
   }
   /**
-   * toString
+   * headerToString
+   *     @return std::string - stringified header.
+   */
+  std::string
+  CRingStateChangeItem::headerToString() const {
+    std::ostringstream out;		//  Build up via outputting to this psuedo stream.
+    time_t   t         = getTimestamp();
+    string   timestamp = ctime(&t);
+    out <<  timestamp << " : Run State change: " << typeName();
+
+    auto result = out.str();
+    return result;
+  }
+  /**
+   * bodyToString
    *
    * Returns a string that is the ascified body of the item.
    *
    * @return std::string - ascified version of the item.
    */
   std::string
-  CRingStateChangeItem::toString() const
+  CRingStateChangeItem::bodyToString() const
   {
     std::ostringstream out;		//  Build up via outputting to this psuedo stream.
 
     uint32_t run       = getRunNumber();
     uint32_t sid       = getOriginalSourceId();
     string   title     = getTitle();
-    time_t   t         = getTimestamp();
-    string   timestamp = ctime(&t);
-
-    out <<  timestamp << " : Run State change: " << typeName();
+    
     out << " originally from source id: " <<  sid;
     out << " at " << computeElapsedTime() << " seconds into the run\n";
     out << "Title     : " << title << std::endl;
     out << "Run Number: " << run   << endl;
 
-
-    return out.str();
+    auto result = out.str();
+    return result;
+    
   }
       
   ///////////////////////////////////////////////////////////////////////////////

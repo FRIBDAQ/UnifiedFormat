@@ -80,19 +80,7 @@ namespace ufmt {
     {
         return "Abnormal End";
     }
-    /**
-     * toString
-     *
-     *   Return a nicely formatted rendition of the ring item.
-     * @return ::std::string
-     */
-    ::std::string
-    CAbnormalEndItem::toString() const
-    {
-        ::std::string result = typeName();
-        result += "\n";
-        return result;
-    }
+    
 
     }                    // v12 namespace
 }

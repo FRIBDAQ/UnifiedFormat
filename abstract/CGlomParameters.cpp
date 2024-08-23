@@ -157,12 +157,22 @@ namespace ufmt {
         return std::string("Glom Parameters");
     }
     /**
-     * toSTring
-     *
-     * @return std::string - a textual dump of the ring item contents.
+     *  headerToString
+     *  @return std::string -string representatioin of the header:
      */
     std::string
-    CGlomParameters::toString() const
+    CGlomParameters::headerToString() const {
+        std::string result = typeName();
+        result += "\n";
+        return result;
+    }
+    /**
+     * bodyToSTring
+     *
+     * @return std::string - a textual dump of the ring item body.
+     */
+    std::string
+    CGlomParameters::bodyToString() const
     {
         CGlomParameters* This = const_cast<CGlomParameters*>(this);
         pGlomParameters pItem =
@@ -180,8 +190,8 @@ namespace ufmt {
         }
         out << "TimestampPolicy : " << policyNames[tsPolicy] << std::endl;
         
-        
-        return out.str();
+        auto result = out.str();
+        return result;
     }
     ///////////////////////////////////////////////////////////////////
     //  implementation of methods that are pure virtual in the base class.

@@ -166,42 +166,7 @@ namespace ufmt {
   {
     return "Event fragment";
   }
-  /**
-   * toString
-   *
-   *  Dumps the contents of a ring fragment.
-   * @return std::string - the stringified version of the fragment.
-   */
-  std::string
-  CRingFragmentItem::toString() const
-  {
-    static const int perLine = 16;
-    std::ostringstream out;
-    
-    v11::CRingFragmentItem* This = const_cast<v11::CRingFragmentItem*>(this);
-    out << typeName() << ':' << std::endl;
-    out << "Fragment timestamp:    " << timestamp()   << std::endl;
-    out << "Source ID         :    " << source()      << std::endl;
-    out << "Payload size      :    " << payloadSize() << std::endl;
-    out << "Barrier type      :    " << barrierType() << std::endl;
-
-
-    out << "- - - - - -  Payload - - - - - - -\n";
-      out << std::hex << std::endl;
-      const uint8_t* p = reinterpret_cast<const uint8_t*>(This->payloadPointer());
-      for (int i = 0; i < This->payloadSize(); i++) {
-        out << *p++ << ' ';
-        if (((i % perLine) == 0) && (i != 0)) {
-          out << std::endl;
-        }
-      }
-      if (payloadSize() % perLine) {
-        out << std::endl;		// if needed a trailing endl.
-      }
-      
-
-    return out.str();
-  }
+  
   /**
    * hasBodyHeader
    *    v11 ring fragment items always have body headers:

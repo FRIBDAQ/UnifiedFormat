@@ -81,7 +81,7 @@ namespace ufmt {
     virtual void* getBodyHeader() const; 
 
     virtual std::string typeName() const;	// Textual type of item.
-    virtual std::string toString() const; // Provide string dump of the item.
+    
 
 
   private:

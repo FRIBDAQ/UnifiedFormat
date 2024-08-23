@@ -300,7 +300,7 @@ namespace ufmt {
     return typeStr.str();
   }   
   /**
-   * toString
+   * headerToString
    *
    * Return an std::string that contains a formatted dump of the ring item
    * body. Default implementation just produces a hex-dump of the data
@@ -310,7 +310,7 @@ namespace ufmt {
    * @return std::string - the dump described above.
    */
   std::string
-  CRingItem::toString() const
+  CRingItem::headerToString() const
   {
     std::stringstream  dump;
     const uint8_t*      p     = reinterpret_cast<const uint8_t*>(getBodyPointer());
@@ -318,24 +318,7 @@ namespace ufmt {
     int                 nPerLine(8);
 
     dump << bodyHeaderToString();
-    
-    dump << std::hex << std::setfill('0');
-
-    for (int i = 0; i < n; i++) {
-      if ( ((i % nPerLine) == 0)) {
-        dump << std::endl;
-      }
-      dump   << std::setw(2)   << static_cast<unsigned int>(*p++) << " ";
-
-    }
-    // If there's no trailing endl put one in.
-
-    if (n % nPerLine) {
-      dump << std::endl;
-    }
-    
-
-    return dump.str();
+  
   }
 
 

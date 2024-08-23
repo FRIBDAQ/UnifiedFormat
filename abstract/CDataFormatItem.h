@@ -59,7 +59,8 @@ namespace ufmt {
         // object methods:
 
         virtual std::string typeName() const;
-        virtual std::string toString() const;
+        virtual std::string headerToString() const;
+        virtual std::string bodyToString() const;
         
         // Required virtual methods: pure virtual in the base class.
         

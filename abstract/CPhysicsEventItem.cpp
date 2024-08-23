@@ -69,22 +69,36 @@ namespace ufmt {
   }
 
   /**
-   * toString
+   * headerToString
+   *    STringify the header of the item.
+   * 
+   *  @return std::string
+   */
+  std::string
+  CPhysicsEventItem::headerToString() const {
+    std::ostringstream out;
+    uint32_t  bytes = getBodySize();
+    out << typeName() << " " << bytes << " bytes long\n";
+
+    auto result = out.str();
+    return result;
+  }
+
+  /**
+   * bodyToString
    *
-   *  Convert the event to a string.
+   *  Convert the event body to a string.
    *
    * @return std::string - stringified versino of the event.
    */
   std::string
-  CPhysicsEventItem::toString() const
+  CPhysicsEventItem::bodyToString() const
   {
     std::ostringstream out;
     uint32_t  bytes = getBodySize();
     uint32_t  words = bytes/sizeof(uint16_t);
     const uint16_t* body  = reinterpret_cast<const uint16_t*>((const_cast<CPhysicsEventItem*>(this))->getBodyPointer());
 
-    out << "Event " << bytes << " bytes long\n";
-  
 
     int  w = out.width();
     char f = out.fill();
@@ -100,11 +114,12 @@ namespace ufmt {
     }
     out << std::endl;
     
-    
-    return out.str();
+    auto result = out.str();
+    return result;
 
   }
-
+  // toString is adequately handled by the base class.
+  
   // In the abstract case, there's no body header so these two required
   // virtual methods throw std::logic_error
 

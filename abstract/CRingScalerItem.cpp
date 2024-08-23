@@ -351,24 +351,39 @@ namespace ufmt {
     return std::string("Scaler");
   }
   /**
-   * toString
-   *
-   *  Return a textual human readable version of the data
-   *  in this item.
-   *
-   * @return std::string - the text string.
+   * headerToString
+   *    Return a string corresponding to the header information
+   * of the item.
+   * 
+   * @return std::string
    */
-
   std::string
-  CRingScalerItem::toString() const
-  {
+  CRingScalerItem::headerToString() const {
     std::ostringstream out;
+    uint32_t sid   = getOriginalSourceId();
+    time_t tstamp = getTimestamp();
+    string   time  = ctime(&tstamp);
+
+    out << typeName() << ": " << time << "  : Scalers (original Source Id " << sid << "):\n";
+
+    auto result = out.str();
+    return result;
+  }
+
+  /**
+   *  bodyToString
+   *    Convert the body of the scaler item to a string:
+   * 
+   * @return string
+   */
+  std::string
+  CRingScalerItem::bodyToString() const {
+    std::ostringstream out; 
 
     float end   = computeEndTime();
     float start = computeStartTime();
-    time_t tstamp = getTimestamp();
-    string   time  = ctime(&tstamp);
-    uint32_t sid   = getOriginalSourceId();
+    
+    
     vector<uint32_t> scalers = getScalers();
     for (int i =0; i < scalers.size(); i++) {
       scalers[i] = scalers[i] & m_ScalerFormatMask; // Mask off unused bits.
@@ -376,7 +391,7 @@ namespace ufmt {
 
     float   duration = end - start;
 
-    out << time << " : Scalers (original Source Id " << sid << "):\n";
+   
     out << "Interval start time: " << start << " end: " << end << " seconds in to the run\n\n";
 
     out << (isIncremental() ? "Scalers are incremental" : "Scalers are not incremental") << std::endl;
@@ -392,9 +407,12 @@ namespace ufmt {
     }
 
 
-    return out.str();
-    
+    auto result = out.str();
+    return result;
   }
+  // note the base class toSTring works now since it only depends on the two
+  // virtual methods above.
+
 
   /*-------------------------------------------------------
   ** Private utilities:

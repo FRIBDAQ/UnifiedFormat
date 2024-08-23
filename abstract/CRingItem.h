@@ -99,6 +99,8 @@ namespace ufmt {
             // Virtual methods that all ring items must provide:
       
             virtual std::string typeName() const; // Textual type of item.
+            virtual std::string headerToString() const;   // Stringify ring item header.
+            virtual std::string bodyToString() const;     /// Stringify ring item body.
             virtual std::string toString() const; // Provide string dump of the item.
             virtual void* appendBodyData(const void* pSrc, uint32_t nBytes);
             
