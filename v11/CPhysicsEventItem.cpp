@@ -172,6 +172,22 @@ namespace ufmt {
     return "Event";
   }
 
+  /** 
+   * headerToString 
+   *    The base class producs much of what I want but we need to add the body header if there
+   * is one:
+   * 
+   * @return std:: string -formatted event header.
+   */
+  std::string
+  CPhysicsEventItem::headerToString() const {
+    std::string result = ::ufmt::CPhysicsEventItem::headerToString();
+    const v11::CRingItem* pItem = reinterpret_cast<const v11::CRingItem*>(this);
+    
+    result +=  pItem->bodyHeaderToString();
+
+    return result;
+  }
   /**
    * bodyToString
    *
@@ -188,8 +204,7 @@ namespace ufmt {
     const uint16_t* body  = reinterpret_cast<const uint16_t*>((const_cast<CPhysicsEventItem*>(this))->getBodyPointer());
 
     
-    const v11::CRingItem* pItem = reinterpret_cast<const v11::CRingItem*>(this);
-    out << pItem->bodyHeaderToString();
+    
 
     int  w = out.width();
     char f = out.fill();
