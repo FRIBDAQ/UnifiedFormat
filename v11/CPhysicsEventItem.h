@@ -66,6 +66,7 @@ namespace ufmt {
     // Virtual methods that all ring items must provide:
 
     virtual std::string typeName() const;	// Textual type of item.
+    virtual std::string headerToString() const;
     virtual std::string bodyToString() const; // Provide string dump of the item.
 
     virtual void* getBodyHeader() const;

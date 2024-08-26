@@ -21,9 +21,12 @@
 #include <stdint.h>
 #include <string>
 #include <typeinfo>
+#include <vector>
+#include "FragmentIndex.h"
 
 namespace ufmt {
     struct _RingItem;
+    
 
     /**
      *  This class is a wrapper for physics events.
@@ -48,9 +51,9 @@ namespace ufmt {
     public:
         // Virtual methods that all ring items must provide:
     
-        virtual std::string typeName() const;	// Textual type of item.
-        virtual std::string headerToString() const; // Provide string dump of the header of the item.
-        virtual std::string bodyToString() const; // String dump of the body.
+        virtual ::std::string typeName() const;	// Textual type of item.
+        virtual ::std::string headerToString() const; // Provide string dump of the header of the item.
+        virtual ::std::string bodyToString() const; // String dump of the body.
 
         
         // Required virtual methods: pure virtual in the base class.
@@ -58,7 +61,10 @@ namespace ufmt {
         virtual void* getBodyHeader() const;
         virtual void setBodyHeader(uint64_t timestamp, uint32_t sourceId,
                             uint32_t barrierType = 0);
-    
+        virtual ::std::vector<FragmentInfo>
+            getFragments() const;
+        
+
     };
 }
 
