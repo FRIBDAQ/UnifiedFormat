@@ -4,6 +4,7 @@ add_library(
     CPhysicsEventItem.cpp CRingFragmentItem.cpp
     CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp CRingTextItem.cpp
     CUnknownFragment.cpp CRingStateChangeItem.cpp io.cpp FragmentIndex.cpp
+    fragment.cpp
 )
 target_sources(
     AbstractFormat PUBLIC
