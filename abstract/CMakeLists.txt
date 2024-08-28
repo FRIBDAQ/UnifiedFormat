@@ -7,14 +7,14 @@ add_library(
     CPhysicsEventItem.cpp CRingFragmentItem.cpp
     CRingPhysicsEventCountItem.cpp CRingScalerItem.cpp CRingTextItem.cpp
     CUnknownFragment.cpp CRingStateChangeItem.cpp io.cpp FragmentIndex.cpp
-    fragment.cpp CMutex.cpp
+    fragment.cpp CMutex.cpp CMutex.h
 )
 target_sources(
     AbstractFormat PUBLIC
     CRingItem.h CAbnormalEndItem.h CDataFormatItem.h CGlomParameters.h
     CPhysicsEventItem.h CRingFragmentItem.h CRingPhysicsEventCountItem.h
     CRingScalerItem.h CRingTextItem.h CUnknownFragment.h RingItemFactoryBase.h
-    CRingStateChangeItem.h DataFormat.h io.h FragmentIndex.h fragment.h CMutex.h
+    CRingStateChangeItem.h DataFormat.h io.h FragmentIndex.h fragment.h 
 )
 get_target_property(ABSTRACT_FORMAT_PUBLIC_HEADERS AbstractFormat INTERFACE_SOURCES)
 set_target_properties(
