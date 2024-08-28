@@ -19,11 +19,12 @@
 
 #include <list>
 #include <vector>
-#include <CMutex.h>
+#include "CMutex.h"
 #include <thread>
 #include <iostream>
 #include <memory>
 
+using namespace ufmt;
 namespace ufmt::EVB {
 bool debug=false;
 bool threadsafe=true;   // By default threadsafe.
