@@ -167,9 +167,7 @@ namespace ufmt {
 
   /* Longest allowed title: */
 
-  //#ifndef TITLE_MAXSIZE
-  //#define TITLE_MAXSIZE 80
-  //#endif
+
   static const unsigned TITLE_MAXSIZE(80);
 
   /* Macro to make packed structs: */
