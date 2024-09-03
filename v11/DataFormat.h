@@ -157,11 +157,7 @@ namespace ufmt {
 
   /* Longest allowed title: */
 
-  #ifndef TITLE_MAXSIZE
-  #ifndef DATAFORMAT_H     // Abstract data format.h defines title as well.
-  #define TITLE_MAXSIZE 80
-  #endif
-  #endif
+    static const uint32_t TITLE_MAXSIZE(80);
 
 
   // Macro to make packed structs:
