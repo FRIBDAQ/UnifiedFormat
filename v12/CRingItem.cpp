@@ -318,6 +318,9 @@ namespace ufmt {
     int                 nPerLine(8);
 
     dump << bodyHeaderToString();
+
+    auto result = dump.str();
+    return result;
   
   }
 

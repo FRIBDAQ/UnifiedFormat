@@ -31,7 +31,8 @@
  */
 
 #ifdef __cplusplus
-namespace ufmt::EVB {
+namespace ufmt{
+  namespace EVB {
 #endif
   /*
    *  Below are valid barrier types.
@@ -97,7 +98,7 @@ namespace ufmt::EVB {
   } FlatFragment, *pFlatFragment;
 
 #ifdef __cplusplus
-}
+  }}
 #endif
   /**
    * Below are convenience functions for fragments:
