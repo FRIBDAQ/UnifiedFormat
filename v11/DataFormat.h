@@ -202,7 +202,7 @@ namespace ufmt {
       } u_noBodyHeader;
       struct {
           BodyHeader s_bodyHeader;
-          uint8_t s_body[];
+          uint8_t s_body[0];
       } u_hasBodyHeader;
     } s_body;
   } RingItem, *pRingItem;
@@ -260,7 +260,7 @@ namespace ufmt {
     uint32_t        s_intervalDivisor;  /* 11.0 sub second time intervals */
     uint32_t        s_scalerCount;
     uint32_t        s_isIncremental;    /* 11.0 non-incremental scaler flag */
-    uint32_t        s_scalers[];
+    uint32_t        s_scalers[0];
   } ScalerItemBody, *pScalerItemBody;
 
   typedef PSTRUCT _ScalerItem {
@@ -288,7 +288,7 @@ namespace ufmt {
     uint32_t       s_timestamp;
     uint32_t       s_stringCount;
     uint32_t       s_offsetDivisor;
-    char           s_strings[];
+    char           s_strings[0];
   } TextItemBody, *pTextItemBody;
 
   typedef PSTRUCT _TextItem {
@@ -315,11 +315,11 @@ namespace ufmt {
       union {
           struct {
               uint32_t      s_mbz;
-              uint16_t      s_body[];      /* Aribrtary length body */
+              uint16_t      s_body[0];      /* Aribrtary length body */
           } u_noBodyHeader;
           struct {
               BodyHeader    s_bodyHeader;
-              uint16_t      s_body[];
+              uint16_t      s_body[0];
           } u_hasBodyHeader;
       } s_body;
   } PhysicsEventItem, *pPhysicsEventItem;
@@ -358,7 +358,7 @@ namespace ufmt {
   typedef PSTRUCT _EventBuilderFragment {
     RingItemHeader s_header;
     BodyHeader     s_bodyHeader;
-    uint8_t       s_body[];	/* Really s_payload bytes of data.. */
+    uint8_t       s_body[0];	/* Really s_payload bytes of data.. */
   } EventBuilderFragment, *pEventBuilderFragment;
 
   /**
