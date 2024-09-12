@@ -20,13 +20,13 @@
 #include "CRingItem.h"
 #include "DataFormat.h"
 
-
 #include <string.h>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <stdexcept>
 #include <unistd.h>
+
 
 namespace ufmt {
   namespace v12 {
