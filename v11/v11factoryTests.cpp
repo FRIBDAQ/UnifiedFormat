@@ -1603,4 +1603,17 @@ void v11facttest::state_5() {
     );
     EQ(uint32_t(2), pItem->getTimeDivisor());
     EQ(float(5.0), pItem->computeElapsedTime());
+
+    // Now when the sourcde has a body header:
+
+    ufmt::v11::CRingStateChangeItem sbh(
+        0x124356789, 1, 1, BEGIN_RUN,
+        12, 10, now, "A title", 2
+    );
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeStateChangeItem(sbh))
+    );
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeStateChangeItem(src))
+    );
 }
