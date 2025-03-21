@@ -48,7 +48,7 @@ namespace ufmt {
             uint32_t runNumber,
             uint32_t timeOffset,
             time_t   timestamp,
-            std::string title) ;
+            std::string title, uint32_t divisor=1) ;
     CRingStateChangeItem(uint64_t eventTimestamp, uint32_t sourceId, uint32_t barrierType,
                         uint16_t reason,
             uint32_t runNumber,

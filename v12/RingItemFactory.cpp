@@ -811,13 +811,13 @@ namespace ufmt {
             return new v12::CRingStateChangeItem(
                 rhs.getEventTimestamp(), rhs.getSourceId(), rhs.getBarrierType(),
                 rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
-                pBody->s_Timestamp, pBody->s_title
+                pBody->s_Timestamp, pBody->s_title, pBody->s_offsetDivisor
             );
         } else {
             return new v12::CRingStateChangeItem(
                 rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
                 pBody->s_Timestamp,
-                pBody->s_title
+                pBody->s_title, pBody->s_offsetDivisor
             );
         }
         

@@ -133,6 +133,7 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(state_3);
     CPPUNIT_TEST(state_4);
     CPPUNIT_TEST(state_5);
+    CPPUNIT_TEST(state_6);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -229,6 +230,7 @@ protected:
     void state_3();
     void state_4();
     void state_5();
+    void state_6();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
 
@@ -1447,4 +1449,32 @@ void v12facttest::state_5()
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeStateChangeItem(item2), std::bad_cast
     );
+}
+// Making a state change item from a raw ring item should preserve the divisor.
+void v12facttest::state_6() {
+    auto now = time(nullptr);
+    v12::CRingStateChangeItem original(
+        0x1234567890, 2, 0, v12::PAUSE_RUN, 2, 5, now, "Some Title", 2
+    );
+    std::unique_ptr<::CRingStateChangeItem> item;
+    CPPUNIT_ASSERT_NO_THROW(
+        item.reset(m_pFactory->makeStateChangeItem(original))
+    );
+    EQ(uint32_t(2), item->getTimeDivisor());
+    EQ(float(2.5), item->computeElapsedTime());
+
+    // Shoulid be able to do the same thing with a non timestamped item:
+
+    v12::CRingStateChangeItem nots(
+        BEGIN_RUN,
+        124, 5, now, "This is a title", 2
+    );
+    std::unique_ptr<::CRingStateChangeItem> notsitem;
+    CPPUNIT_ASSERT_NO_THROW(
+      
+        notsitem.reset(m_pFactory->makeStateChangeItem(nots))
+    );
+
+    EQ(uint32_t(2), notsitem->getTimeDivisor());
+    EQ(float(2.5), notsitem->computeElapsedTime());
 }

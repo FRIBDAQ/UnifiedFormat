@@ -76,7 +76,7 @@ namespace ufmt {
               uint32_t runNumber,
               uint32_t timeOffset,
               time_t   timestamp,
-              std::string title) :
+              std::string title, uint32_t divisor) :
     ::ufmt::CRingStateChangeItem(reason)
 
   {
@@ -92,6 +92,9 @@ namespace ufmt {
     v12::pStateChangeItemBody pBody = &(pItem->s_body.u_noBodyHeader.s_body);
     fillStateChangeBody(pBody, runNumber, timeOffset, 1, timestamp, title.c_str(), 0);
     
+    // Patch in the divisor:
+
+    pBody->s_offsetDivisor = divisor;
     setBodyCursor(pBody+1);
     updateSize();
     
