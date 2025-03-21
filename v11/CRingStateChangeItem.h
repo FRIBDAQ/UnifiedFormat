@@ -51,7 +51,7 @@ namespace ufmt {
             uint32_t runNumber,
             uint32_t timeOffset,
             time_t   timestamp,
-            std::string title) ;
+            std::string title, uint32_t offsetDivisor = 1) ;
     CRingStateChangeItem(uint64_t eventTimestamp, uint32_t sourceId, uint32_t barrierType,
                         uint16_t reason,
             uint32_t runNumber,
@@ -78,6 +78,7 @@ namespace ufmt {
 
     virtual void setElapsedTime(uint32_t offset);
     virtual uint32_t getElapsedTime() const;
+    virtual uint32_t getTimeDivisor() const;
     virtual float    computeElapsedTime() const;
 
     virtual void setTitle(std::string title) ;
@@ -107,8 +108,8 @@ namespace ufmt {
 
     // Utitlity functions..
 
-  private:
-    bool isStateChange();
+
+    static bool isStateChange(uint32_t type) ;
     
   };
   }

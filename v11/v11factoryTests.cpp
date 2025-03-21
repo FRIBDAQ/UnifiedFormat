@@ -36,7 +36,7 @@
 #include <CRingScalerItem.h>
 #include <CRingTextItem.h>
 #include <CUnknownFragment.h>
-#include <CRingStateChangeItem.h>
+#include "CRingStateChangeItem.h"    // V11
 
 #include <string.h>
 #ifdef HAVE_NSCLDAQ    
@@ -132,6 +132,7 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(state_2);
     CPPUNIT_TEST(state_3);
     CPPUNIT_TEST(state_4);
+    CPPUNIT_TEST(state_5);   // issue #17 test.
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -204,6 +205,7 @@ protected:
     void state_2();
     void state_3();
     void state_4();
+    void state_5();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -1582,7 +1584,23 @@ void v11facttest::state_4()
     );
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeStateChangeItem(*pItem),
-        std::logic_error
+        std::bad_cast
     );
     
+}
+// state changes with non-unit divisor can be properly constructed.
+
+void v11facttest::state_5() {
+    time_t now = time(nullptr);
+    ::ufmt::v11::CRingStateChangeItem src(
+        1234, 2, 1, BEGIN_RUN,
+        1, 10, now, "This is a title", 2
+    );
+    
+    std::unique_ptr<::CRingStateChangeItem> pItem;
+    CPPUNIT_ASSERT_NO_THROW(
+        pItem.reset(m_pFactory->makeStateChangeItem(src))
+    );
+    EQ(uint32_t(2), pItem->getTimeDivisor());
+    EQ(float(5.0), pItem->computeElapsedTime());
 }

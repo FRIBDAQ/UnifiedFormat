@@ -784,49 +784,35 @@ namespace ufmt {
     ::ufmt::CRingStateChangeItem*
     RingItemFactory::makeStateChangeItem(const ::ufmt::CRingItem& rhs)
     {
-        const v11::StateChangeItem* pItem =
-            reinterpret_cast<const v11::StateChangeItem*>(rhs.getItemPointer());
+        if (!CRingStateChangeItem::isStateChange(rhs.type())) {
+            throw std::bad_cast();
+        }
+        // There are two valid sizes:
         
-        if (pItem->s_body.u_noBodyHeader.s_mbz) {
-            const v11::StateChangeItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
-            const v11::BodyHeader *pH = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
-            
-            auto pResult = makeStateChangeItem(
-                rhs.type(), pBody->s_runNumber, pBody->s_timeOffset, pBody->s_Timestamp,
-                pBody->s_title
+        size_t nobheaderSize = sizeof(v11::RingItemHeader) + sizeof(uint32_t) +
+            sizeof(v11::StateChangeItemBody);
+        size_t bodyHeaderSize = sizeof(v11::RingItemHeader) + sizeof(v11::BodyHeader) +
+            sizeof(v11::StateChangeItemBody);
+        if ((rhs.size() != nobheaderSize) && (rhs.size() != bodyHeaderSize)) {
+            throw std::bad_cast();
+        }
+        
+        const v11::StateChangeItemBody* pBody =
+            reinterpret_cast<const v11::StateChangeItemBody*>(rhs.getBodyPointer());
+        if (rhs.hasBodyHeader()) {
+            const v11::BodyHeader *pb = reinterpret_cast<const v11::BodyHeader*>(rhs.getBodyHeader());
+            return new v11::CRingStateChangeItem(
+                pb->s_timestamp, pb->s_sourceId, pb->s_barrier,
+                rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
+                pBody->s_Timestamp, pBody->s_title, pBody->s_offsetDivisor
             );
-            pResult->setBodyHeader(
-                pH->s_timestamp, pH->s_sourceId, pH->s_barrier
-            );
-            return pResult;
-            
         } else {
-            const v11::StateChangeItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
-            return makeStateChangeItem(
-                rhs.type(), pBody->s_runNumber, pBody->s_timeOffset, pBody->s_Timestamp,
-                pBody->s_title
+            return new v11::CRingStateChangeItem(
+                rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
+                pBody->s_Timestamp,
+                pBody->s_title, pBody->s_offsetDivisor
             );
         }
-        const ::ufmt::CRingStateChangeItem& item =
-            dynamic_cast<const ::ufmt::CRingStateChangeItem&>(rhs);
-        uint16_t type = item.type();
-        uint32_t run  = item.getRunNumber();
-        uint32_t offset = item.getElapsedTime();
-        time_t clock    = item.getTimestamp();
-        std::string title = item.getTitle();
-        
-        ::ufmt::CRingStateChangeItem* pResult =
-            makeStateChangeItem(type, run, offset, clock, title);
-        // If there is one, insert a body header:
-        
-        if (item.hasBodyHeader()) {
-            const v11::BodyHeader* pHdr =
-                reinterpret_cast<const v11::BodyHeader*>(item.getBodyHeader());
-            pResult->setBodyHeader(
-                pHdr->s_timestamp, pHdr->s_sourceId, pHdr->s_barrier
-            );
-        }
-        return pResult;
         
     }
     ////////////////////////////////////// private methods ///////////////////

@@ -49,7 +49,7 @@ namespace ufmt {
       sizeof(v11::RingItemHeader) + sizeof(uint32_t) +
       sizeof(v11::StateChangeItemBody);
     pItem->s_header.s_type = reason;
-    if(!isStateChange()) {
+    if(!isStateChange(reason)) {
       throw std::invalid_argument(
           "'reason' parameter is not a state change item type"
       );
@@ -86,7 +86,7 @@ namespace ufmt {
               uint32_t runNumber,
               uint32_t timeOffset,
               time_t   timestamp,
-              std::string title) :
+              std::string title, uint32_t divisor) :
     ::ufmt::v11::CRingStateChangeItem(reason)
 
   {
@@ -101,7 +101,7 @@ namespace ufmt {
     pItem->s_timeOffset= timeOffset;
     pItem->s_Timestamp = timestamp;
     setTitle(title);		// takes care of the exception.
-    pItem->s_offsetDivisor = 1;
+    pItem->s_offsetDivisor = divisor;
 
   }
   /**
@@ -137,7 +137,7 @@ namespace ufmt {
         sizeof(v11::StateChangeItemBody);
       pItem->s_header.s_type = reason;
       
-      if(!isStateChange()) {
+      if(!isStateChange(reason)) {
         throw std::invalid_argument(
             "reason is not a valid state change item type"
         );
@@ -224,7 +224,18 @@ namespace ufmt {
       return pItem->s_timeOffset;
   }
   /**
-   * getElapsedTime
+   *  \return uint32_t
+   *  \return Time divisor 
+   * 
+   */
+  uint32_t
+  CRingStateChangeItem::getTimeDivisor() const {
+    const v11::StateChangeItemBody* pItem =
+          reinterpret_cast<const v11::StateChangeItemBody*>(getBodyPointer());
+    return pItem->s_offsetDivisor;
+  }
+  /**
+   * computeElapsedTime
    *
    * @return float - Elapsed time taking into account the divisor.
    */
@@ -410,9 +421,9 @@ namespace ufmt {
   * a state change or not.
   */
   bool
-  CRingStateChangeItem::isStateChange()
+  CRingStateChangeItem::isStateChange(uint32_t t) 
   {
-    int t = type();
+    
     return (
       (t == BEGIN_RUN )              ||
       (t == END_RUN)                 ||
