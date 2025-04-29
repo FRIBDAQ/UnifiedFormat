@@ -20,7 +20,7 @@
  */
 
 #ifndef NSCLDAQFORMATFACTORYSELECTOR_H
-#define NSCLDAQFORMATFACTORYSELECTOR_h
+#define NSCLDAQFORMATFACTORYSELECTOR_H
 #include <fmtconfig.h>
 
 namespace ufmt {
