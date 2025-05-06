@@ -24,9 +24,9 @@ if(${NSCLDAQ_ROOT} STREQUAL _)
   target_include_directories(evtdump PRIVATE 
   ${CMAKE_CURRENT_SOURCE_DIR}/../../
   ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
-  ${CMAKE_BINARY_DIR}/examples/evtdump
   ${CMAKE_CURRENT_SOURCE_DIR}
-   ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
   )
 target_link_libraries(evtdump
   NSCLDAQFormat
@@ -51,9 +51,9 @@ else ()
   target_include_directories(evtdump PRIVATE 
   ${CMAKE_CURRENT_SOURCE_DIR}/../../
   ${CMAKE_CURRENT_SOURCE_DIR}/../../abstract
-  ${CMAKE_BINARY_DIR}/examples/evtdump
   ${NSCLDAQ_INC}
-   ${CMAKE_BINARY_DIR}
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
   )
   target_sources(evtdump PRIVATE RingDataSource.cpp)
 
