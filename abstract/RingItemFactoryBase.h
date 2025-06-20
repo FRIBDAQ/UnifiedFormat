@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <climits>
 #include <fmtconfig.h>
 class CRingBuffer;
 namespace ufmt {
@@ -60,7 +61,7 @@ namespace ufmt {
         virtual CRingItem* makeRingItem(const RingItem* pRawRing) = 0;
         
     #ifdef HAVE_NSCLDAQ
-        virtual CRingItem* getRingItem(CRingBuffer& ringbuf) = 0;
+        virtual CRingItem* getRingItem(CRingBuffer& ringbuf, unsigned long timeout=ULONG_MAX) = 0;
     #endif
         virtual CRingItem* getRingItem(int fd) = 0;
         virtual CRingItem* getRingItem(::std::istream& in) = 0;

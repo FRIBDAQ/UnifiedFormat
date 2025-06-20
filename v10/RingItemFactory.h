@@ -42,7 +42,7 @@ namespace ufmt {
             ::ufmt::CRingItem* makeRingItem(const ::ufmt::CRingItem& rhs);
             ::ufmt::CRingItem* makeRingItem(const ::ufmt::RingItem* pRawRing);
     #ifdef HAVE_NSCLDAQ  
-            virtual ::ufmt::CRingItem* getRingItem(::CRingBuffer& ringbuf) ;
+            virtual ::ufmt::CRingItem* getRingItem(::CRingBuffer& ringbuf, unsigned long timeout=ULONG_MAX) ;
     #endif
             virtual ::ufmt::CRingItem* getRingItem(int fd) ;
             virtual ::ufmt::CRingItem* getRingItem(::std::istream& in);

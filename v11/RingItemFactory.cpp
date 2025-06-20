@@ -129,10 +129,12 @@ namespace ufmt {
      *  @note we will block as long as needed.
      */
     ::ufmt::CRingItem*
-    RingItemFactory::getRingItem(::CRingBuffer& ringbuf)
+    RingItemFactory::getRingItem(::CRingBuffer& ringbuf, unsigned long timeout)
     {
         v11::RingItemHeader hdr;
-        ringbuf.get(&hdr, sizeof(hdr));
+        if (!ringbuf.get(&hdr, sizeof(hdr), sizeof(hdr), timeout)) {
+	    return nullptr;
+	}
         v11::CRingItem* pItem = new v11::CRingItem(hdr.s_type, hdr.s_size);
         size_t remaining = hdr.s_size - sizeof(v11::RingItemHeader);
         v11::pRingItem pItemStorage =

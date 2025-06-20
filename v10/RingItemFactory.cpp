@@ -122,13 +122,14 @@ namespace ufmt {
      */
     #ifdef HAVE_NSCLDAQ  
     ::ufmt::CRingItem*
-    RingItemFactory::getRingItem(::CRingBuffer& ringbuf)
+    RingItemFactory::getRingItem(::CRingBuffer& ringbuf, unsigned long timeout)
     {
         // Read the header, use it to create a v10 ring item
         // then read the body into it:
         v10::RingItemHeader hdr;
-        ringbuf.get(&hdr, sizeof(hdr));
-        
+        if (!ringbuf.get(&hdr, sizeof(hdr), sizeof(hdr), timeout)) {
+	    return nullptr;
+	}	
         auto result = makeRingItem(hdr.s_type, hdr.s_size);
         uint8_t* p  = reinterpret_cast<uint8_t*>(result->getBodyCursor());
         size_t bodySize = hdr.s_size - sizeof(v10::RingItemHeader);
