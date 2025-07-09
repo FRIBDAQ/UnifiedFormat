@@ -120,10 +120,12 @@ namespace ufmt {
      *  @return ::ufmt::CRingItem* - pointer to the dynamically created gotten item.
      */
     ::ufmt::CRingItem*
-    RingItemFactory::getRingItem(::CRingBuffer& ringbuf)
+    RingItemFactory::getRingItem(::CRingBuffer& ringbuf, unsigned long timeout)
     {
         v12::RingItemHeader hdr;
-        ringbuf.get(&hdr, sizeof(hdr), sizeof(hdr));
+        if (!ringbuf.get(&hdr, sizeof(hdr), sizeof(hdr), timeout)) {
+	    return nullptr;
+	}
         v12::CRingItem* pResult = new CRingItem(hdr.s_type, hdr.s_size);
         
         // Read the remainder of the item:
