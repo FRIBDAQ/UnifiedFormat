@@ -117,7 +117,8 @@ namespace ufmt {
      * getRingItem
      *    Get a ring item from a ring buffer.
      *  @param ringbuf -references a ring buffer from which the ring item will be gotten.
-     *  @return ::ufmt::CRingItem* - pointer to the dynamically created gotten item.
+     *   @param timeout - seconds to wait for data before timeout
+     *  @return ::ufmt::CRingItem* - pointer to the dynamically created gotten item or nullptr if timed out.
      */
     ::ufmt::CRingItem*
     RingItemFactory::getRingItem(::CRingBuffer& ringbuf, unsigned long timeout)

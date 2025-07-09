@@ -125,7 +125,8 @@ namespace ufmt {
      *     Get a ring item from a ringbuffer (we must be attached as
      *     a consumer).
      *  @param ringbuf - reference to the ring buffer.
-     *  @return ::ufmt::CRingItem* newly allocated ring item.
+     *   @param timeout - seconds to wait for data before timeout
+     *  @return ::ufmt::CRingItem* newly allocated ring item or nullptr if timed out
      *  @note we will block as long as needed.
      */
     ::ufmt::CRingItem*
