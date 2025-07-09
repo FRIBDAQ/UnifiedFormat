@@ -117,8 +117,9 @@ namespace ufmt {
      * getRingItem (from CRingBuffer)
      *   @param ringbuf - references a ring buffer that must have been
      *                    created as a consumer.
+     *   @param timeout - seconds to wait for data before timeout
      *   @return ::ufmt::CRingItem* pointer to a newly created ring item that must
-     *                   be deleted at some point.
+     *                   be deleted at some point or nullptr if timed out.
      */
     #ifdef HAVE_NSCLDAQ  
     ::ufmt::CRingItem*
