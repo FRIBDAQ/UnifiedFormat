@@ -93,6 +93,12 @@ namespace ufmt {
     {
         v12::CRingItem* pResult = new v12::CRingItem(rhs.type(), rhs.size());
         memcpy(pResult->getItemPointer(), rhs.getItemPointer(), rhs.size());
+
+        // Figure out where the cursor should be:
+        // Should be rhs.size() bytes past the itempointer.
+        auto pItem = reinterpret_cast<char*>(pResult->getItemPointer());
+        pResult->setBodyCursor(pItem + rhs.size());  // To make the body size computation work.
+
         return pResult;
     }
     /**
@@ -109,7 +115,14 @@ namespace ufmt {
         v12::CRingItem* pResult = new v12::CRingItem(
             rhs->s_header.s_type, rhs->s_header.s_size
         );
+
         memcpy(pResult->getItemPointer(), rhs, rhs->s_header.s_size);
+
+        // Set the body cursor properly:
+
+        auto pItem = reinterpret_cast<char*>(pResult->getItemPointer());
+        pResult->setBodyCursor(pItem + rhs->s_header.s_size);  // To make the body size computation work.
+
         return pResult;
     }
     #ifdef HAVE_NSCLDAQ    

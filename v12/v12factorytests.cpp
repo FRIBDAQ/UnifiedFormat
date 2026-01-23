@@ -72,7 +72,8 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(mkringitem_4);
     CPPUNIT_TEST(mkringitem_5);
     CPPUNIT_TEST(mkringitem_6);
-    
+    CPPUNIT_TEST(mkringitem_7);
+
     CPPUNIT_TEST(get_1);
     CPPUNIT_TEST(get_2);
     CPPUNIT_TEST(get_3);
@@ -169,6 +170,7 @@ protected:
     void mkringitem_4();
     void mkringitem_5();
     void mkringitem_6();
+    void mkringitem_7();   // Issue #27
     
     void get_1();
     void get_2();
@@ -377,6 +379,7 @@ void v12facttest::mkringitem_6()
     src->updateSize();
     size_t srcSize = src->size();
     
+    
     const ::RingItem* pItem = reinterpret_cast<const ::RingItem*>(
         src->getItemPointer()
     );
@@ -398,6 +401,30 @@ void v12facttest::mkringitem_6()
     }
     
     
+}
+// Issue #27 Make sure that the output ring item body size is correct:
+
+void v12facttest::mkringitem_7() {
+    std::unique_ptr<::CRingItem> src(
+        m_pFactory->makeRingItem(
+            v12::PHYSICS_EVENT, 0x1234567890, 1, 100, 2
+        )
+    );
+    uint8_t* pBody = reinterpret_cast<uint8_t*>(src->getBodyPointer());
+    for(int i =0; i < 10; i++) {
+        *pBody++ = i;
+    }
+    src->setBodyCursor(pBody);
+    src->updateSize();
+
+    auto original_size = src->getBodySize();
+    EQ(size_t(10), original_size);
+
+    std::unique_ptr<::CRingItem> dest(
+        m_pFactory->makeRingItem(src->getItemPointer())
+    );
+
+    EQ(original_size, dest->getBodySize());
 }
 
 // Get a ring item from a ringbufer (no body header).
