@@ -313,9 +313,15 @@ namespace ufmt {
   CRingItem::headerToString() const
   {
     std::stringstream  dump;
+
+    auto  pItem = reinterpret_cast<const ufmt::v12::RingItem*>(getItemPointer());
+    dump << "Size: " << pItem->s_header.s_size;
+    dump << " Type: " << typeName() << std::endl;
+
     const uint8_t*      p     = reinterpret_cast<const uint8_t*>(getBodyPointer());
     size_t              n     = getBodySize(); 
     int                 nPerLine(8);
+
 
     dump << bodyHeaderToString();
 

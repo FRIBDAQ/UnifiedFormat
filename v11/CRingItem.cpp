@@ -333,6 +333,11 @@ namespace ufmt {
     size_t              n     = getBodySize(); 
     int                 nPerLine(8);
 
+    auto  pItem = reinterpret_cast<const ufmt::v11::RingItem*>(getItemPointer());
+    
+    dump << "Size: " << pItem->s_header.s_size;
+    dump << " Type: " << typeName() << std::endl;
+
     dump << bodyHeaderToString();
     
     dump << std::hex << std::setfill('0');
