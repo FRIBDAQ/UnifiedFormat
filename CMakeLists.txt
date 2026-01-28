@@ -5,6 +5,10 @@ set(NSCLDAQ_ROOT "_"  CACHE STRING "_")
 set(NSCLDAQ_INC ${NSCLDAQ_ROOT}/include CACHE STRING "${NSCLDAQ_ROOT}/include")
 set(NSCLDAQ_LIB ${NSCLDAQ_ROOT}/lib CACHE STRING "${NSCLDAQ_ROOT}/lib")
 
+#option to build unit test and documentation, always ON by default
+option(BUILD_TESTS "Build unit tests" ON)
+option(BUILD_DOCS "Build project documentation" ON)
+
 # Make the fmtconfig.h header:
 
 file(WRITE ${CMAKE_BINARY_DIR}/fmtconfig.h "#ifndef FMTCONFIG_H\n")
@@ -16,7 +20,9 @@ endif()
 file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#endif\n")
 
 install(FILES ${CMAKE_BINARY_DIR}/fmtconfig.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
-enable_testing()
+if(BUILD_TESTS)
+	enable_testing()
+endif()
 
 
 
@@ -31,7 +37,9 @@ add_subdirectory(v10)
 add_subdirectory(v11)
 add_subdirectory(v12)
 add_subdirectory(examples)
-add_subdirectory(docs)
+if(BUILD_DOCS)
+	add_subdirectory(docs)
+endif()
 
 #  Now the top level library target:
 
@@ -68,22 +76,24 @@ target_include_directories(
 
 ## Unit tests
 
-add_executable(selectortests
-TestRunner.cpp
-selectortests.cpp
-)
-target_include_directories(selectortests PRIVATE
-${CMAKE_CURRENT_SOURCE_DIR}/abstract
-${CMAKE_CURRENT_SOURCE_DIR}
- ${CMAKE_BINARY_DIR}
-)
+if(BUILD_TESTS)
+	add_executable(selectortests
+		TestRunner.cpp
+		selectortests.cpp
+	)
+	target_include_directories(selectortests PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/abstract
+		${CMAKE_CURRENT_SOURCE_DIR}
+		 ${CMAKE_BINARY_DIR}
+	)
 
-target_compile_options(selectortests PRIVATE -g -O2)
-target_link_options(selectortests PRIVATE -g)
+	target_compile_options(selectortests PRIVATE -g -O2)
+	target_link_options(selectortests PRIVATE -g)
 
-target_link_libraries(selectortests
-  NSCLDAQFormat V10Format V11Format V12Format
-  AbstractFormat
-    cppunit
-)
-add_test(NAME selector COMMAND selectortests)
+	target_link_libraries(selectortests
+		NSCLDAQFormat V10Format V11Format V12Format
+		AbstractFormat
+		cppunit
+	)
+	add_test(NAME selector COMMAND selectortests)
+endif()

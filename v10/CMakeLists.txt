@@ -43,21 +43,23 @@ install(FILES DataFormat.h CRingItem.h CPhysicsEventItem.h
   CRingStateChangeItem.h CRingTextItem.h RingItemFactory.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v10 )
 
-add_executable(v10unittests
-  TestRunner.cpp v10rbuftests.cpp v10phystests.cpp v10fragtests.cpp
-  v10counttests.cpp v10scalertests.cpp v10statetests.cpp v10txttests.cpp
-  v10factorytests.cpp 
-)
-target_link_libraries(v10unittests 
-  NSCLDAQFormat V10Format V11Format V12Format  AbstractFormat 
-  cppunit 
-)
-target_include_directories(v10unittests PRIVATE
-${CMAKE_CURRENT_SOURCE_DIR}/../abstract
-${CMAKE_CURRENT_SOURCE_DIR}/..
-${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
-)
-target_compile_options(v10unittests PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
-target_link_options(v10unittests PRIVATE -g)
+if(BUILD_TESTS)
+	add_executable(v10unittests
+		TestRunner.cpp v10rbuftests.cpp v10phystests.cpp v10fragtests.cpp
+		v10counttests.cpp v10scalertests.cpp v10statetests.cpp v10txttests.cpp
+		v10factorytests.cpp
+	)
+	target_link_libraries(v10unittests
+		NSCLDAQFormat V10Format V11Format V12Format  AbstractFormat
+		cppunit
+	)
+	target_include_directories(v10unittests PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/../abstract
+		${CMAKE_CURRENT_SOURCE_DIR}/..
+		${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
+	)
+	target_compile_options(v10unittests PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+	target_link_options(v10unittests PRIVATE -g)
 
-add_test(NAME v10Format COMMAND v10unittests)
+	add_test(NAME v10Format COMMAND v10unittests)
+endif()

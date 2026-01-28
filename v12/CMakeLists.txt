@@ -63,31 +63,33 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include/v12
 )
 
-add_executable(v12unittests
-  TestRunner.cpp
-  v12ringtest.cpp
-  v12abend.cpp
-  v12fmttests.cpp
-  v12glomtests.cpp
-  v12phystests.cpp
-  v12counttests.cpp
-  v12scltests.cpp
-  v12statetests.cpp
-  v12texttests.cpp
-  v12fragtests.cpp
-  v12factorytests.cpp
-)
+if(BUILD_TESTS)
+	add_executable(v12unittests
+		TestRunner.cpp
+		v12ringtest.cpp
+		v12abend.cpp
+		v12fmttests.cpp
+		v12glomtests.cpp
+		v12phystests.cpp
+		v12counttests.cpp
+		v12scltests.cpp
+		v12statetests.cpp
+		v12texttests.cpp
+		v12fragtests.cpp
+		v12factorytests.cpp
+	)
 
-target_link_libraries(v12unittests
-    NSCLDAQFormat V10Format V11Format V12Format  AbstractFormat 
-    cppunit 
-)
-target_include_directories(v12unittests PRIVATE
-${CMAKE_CURRENT_SOURCE_DIR}/../abstract
-${CMAKE_CURRENT_SOURCE_DIR}/..
-${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
-)
+	target_link_libraries(v12unittests
+		NSCLDAQFormat V10Format V11Format V12Format  AbstractFormat
+		cppunit
+	)
+	target_include_directories(v12unittests PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/../abstract
+		${CMAKE_CURRENT_SOURCE_DIR}/..
+		${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
+	)
 
-target_compile_options(v12unittests PRIVATE -g -O2  -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
-target_link_options(v12unittests PRIVATE -g)
-add_test(NAME v12unittests COMMAND v12unittests)
+	target_compile_options(v12unittests PRIVATE -g -O2  -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')
+	target_link_options(v12unittests PRIVATE -g)
+	add_test(NAME v12unittests COMMAND v12unittests)
+endif()
