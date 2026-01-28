@@ -818,6 +818,13 @@ namespace ufmt {
         }
         
     }
+    /** Return format factory version: */
+
+    
+
+    ufmt::FormatSelector::SupportedVersions  RingItemFactory::version() {
+            return ufmt::FormatSelector::SupportedVersions::v11;
+        }
     ////////////////////////////////////// private methods ///////////////////
 
     /**

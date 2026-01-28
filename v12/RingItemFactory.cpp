@@ -838,6 +838,11 @@ namespace ufmt {
         }
         
     }
+    /** Return format version: */
+    ufmt::FormatSelector::SupportedVersions 
+    RingItemFactory::version() {
+        return ufmt::FormatSelector::SupportedVersions::v12;
+    }
     ///////////////////////////////////// Private methds ///////////////////////
 
     std::vector<std::string>

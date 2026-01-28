@@ -117,6 +117,7 @@ namespace ufmt {
             std::string title
         ) ;
         virtual ::ufmt::CRingStateChangeItem* makeStateChangeItem(const ::ufmt::CRingItem& rhs) ;
+        virtual ufmt::FormatSelector::SupportedVersions version();
     private:
         std::vector<std::string> marshallStrings(const void* p);
         

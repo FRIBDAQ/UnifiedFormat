@@ -133,6 +133,8 @@ class v11facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(state_3);
     CPPUNIT_TEST(state_4);
     CPPUNIT_TEST(state_5);   // issue #17 test.
+
+    CPPUNIT_TEST(version_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -206,6 +208,8 @@ protected:
     void state_3();
     void state_4();
     void state_5();
+
+    void version_1();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(v11facttest);
@@ -1616,4 +1620,9 @@ void v11facttest::state_5() {
     CPPUNIT_ASSERT_NO_THROW(
         pItem.reset(m_pFactory->makeStateChangeItem(src))
     );
+}
+// check the version.
+
+void v11facttest::version_1() {
+    EQ(ufmt::FormatSelector::SupportedVersions::v11, m_pFactory->version());
 }

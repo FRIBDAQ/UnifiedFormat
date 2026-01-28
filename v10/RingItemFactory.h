@@ -142,6 +142,8 @@ namespace ufmt {
             );
             virtual ::ufmt::CRingStateChangeItem* makeStateChangeItem(const ::ufmt::CRingItem& rhs);
         
+
+            virtual ufmt::FormatSelector::SupportedVersions version();
             
         private:
             static bool isValidTextItemType(uint32_t itemType);
@@ -152,7 +154,7 @@ namespace ufmt {
             static bool isValidStateChangeType(uint32_t reason);
         };
             
-            
+        
             
 
     }                            // V10

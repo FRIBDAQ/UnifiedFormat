@@ -29,6 +29,7 @@ target_sources(
 )
 target_include_directories(V11Format PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
+      ${CMAKE_CURRENT_SOURCE_DIR}/..
       ${CMAKE_BINARY_DIR}
 )
 
@@ -70,6 +71,7 @@ v11factoryTests.cpp
 target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
 target_include_directories(v11unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
+${CMAKE_CURRENT_SOURCE_DIR}/..
 ${NSCLDAQ_INC}
 ${CMAKE_BINARY_DIR}
 )
