@@ -43,6 +43,10 @@ class seltest : public CppUnit::TestFixture {
     CPPUNIT_TEST(cache_1);
     CPPUNIT_TEST(cache_2);
     CPPUNIT_TEST(cache_3);
+    
+    CPPUNIT_TEST(destructor_1);
+    CPPUNIT_TEST(destructor_2);
+    CPPUNIT_TEST(destructor_3);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -64,6 +68,10 @@ protected:
     void cache_1();
     void cache_2();
     void cache_3();
+
+    void destructor_1();
+    void destructor_2();
+    void destructor_3();
 
 };
 
@@ -143,4 +151,46 @@ void seltest::cache_3()
     auto& sel2 = FormatSelector::selectFactory(FormatSelector::v12);
     EQ(&sel1, &sel2);
     delete &sel1;
+}
+// Test destrutors remove from cache, though if they didn't probably all thisd
+// would have crashed by now(?).
+
+void seltest::destructor_1() {
+    auto& sel1 = FormatSelector::selectFactory(FormatSelector::v10);
+    auto* pSel1 = &sel1;
+    delete pSel1;
+
+    // We need to disturb the heap a bit:
+    auto& dummy = FormatSelector::selectFactory(FormatSelector::v11);
+
+    auto& sel2 = FormatSelector::selectFactory(FormatSelector::v10);
+    ASSERT(pSel1 != &sel2);
+    delete &sel2;
+    delete &dummy;
+}
+void seltest::destructor_2() {
+    auto& sel1 = FormatSelector::selectFactory(FormatSelector::v11);
+    auto* pSel1 = &sel1;
+    delete pSel1;
+
+    // We need to disturb the heap a bit else we'll get allocated the same storage.
+    auto& dummy = FormatSelector::selectFactory(FormatSelector::v10);
+
+    auto& sel2 = FormatSelector::selectFactory(FormatSelector::v11);
+    ASSERT(pSel1 != &sel2);
+    delete &sel2;
+    delete &dummy;
+}
+void seltest::destructor_3() {
+    auto& sel1 = FormatSelector::selectFactory(FormatSelector::v12);
+    auto* pSel1 = &sel1;
+    delete pSel1;
+
+    // We need to disturb the heap a bit:
+    auto& dummy = FormatSelector::selectFactory(FormatSelector::v11);
+
+    auto& sel2 = FormatSelector::selectFactory(FormatSelector::v12);
+    ASSERT(pSel1 != &sel2);
+    delete &sel2;
+    delete &dummy;
 }
