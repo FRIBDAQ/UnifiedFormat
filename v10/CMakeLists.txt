@@ -12,7 +12,9 @@ target_sources(
 )
 
 target_include_directories(V10Format PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/../abstract ${NSCLDAQ_INC}
+  ${CMAKE_CURRENT_SOURCE_DIR}/../abstract 
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
+  ${NSCLDAQ_INC}
   ${CMAKE_BINARY_DIR}
   )
 if(${NSCLDAQ_ROOT} STREQUAL _)
@@ -49,6 +51,7 @@ add_executable(v10unittests
 target_link_libraries(v10unittests AbstractFormat V10Format cppunit)
 target_include_directories(v10unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
+${CMAKE_CURRENT_SOURCE_DIR}/..
 ${NSCLDAQ_INC} ${CMAKE_BINARY_DIR}
 )
 target_compile_options(v10unittests PRIVATE -g -O2 -DNSCLDAQ_ROOT='${NSCLDAQ_ROOT}')

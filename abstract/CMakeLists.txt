@@ -21,7 +21,10 @@ set_target_properties(
     AbstractFormat PROPERTIES PUBLIC_HEADER "${ABSTRACT_FORMAT_PUBLIC_HEADERS}"
 )
 
-target_include_directories(AbstractFormat PRIVATE ${CMAKE_BINARY_DIR})
+target_include_directories(AbstractFormat PRIVATE 
+    ${CMAKE_BINARY_DIR} 
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    )
 
 target_compile_options(AbstractFormat PRIVATE -g -O2 -DDNSCLDAQROOT=${NSCLDAQ_ROOT})
 target_link_options(AbstractFormat PRIVATE -g)
