@@ -49,7 +49,7 @@ private:
 
 public:
     void setUp() {
-        FormatSelector::clearCache();    /// empty factory cache.
+        
     }
     void tearDown() {
         
@@ -76,6 +76,7 @@ void seltest::v10_1()
 {
     auto& fact = FormatSelector::selectFactory(::FormatSelector::v10);
     ASSERT(fact.makeDataFormatItem() == nullptr);
+    delete &fact;
 }
 // v11 - format item major version is 11.
 
@@ -84,6 +85,7 @@ void seltest::v11_1()
     auto& fact = FormatSelector::selectFactory(::FormatSelector::v11);
     std::unique_ptr<::CDataFormatItem> item(fact.makeDataFormatItem());
     EQ(uint16_t(11), item->getMajor());
+    delete &fact;
 }
 // v12 format item major is 12
 void seltest::v12_1()
@@ -91,6 +93,7 @@ void seltest::v12_1()
     auto& fact = FormatSelector::selectFactory(::FormatSelector::v12);
     std::unique_ptr<::CDataFormatItem> item(fact.makeDataFormatItem());
     EQ(uint16_t(12), item->getMajor());
+    delete &fact;
 }
 
 // construct a v11 factory from a format item.
@@ -103,6 +106,7 @@ void seltest::v11_2()
     auto& selfact = FormatSelector::selectFactory(*pItem);
     std::unique_ptr<::CDataFormatItem> item(selfact.makeDataFormatItem());
     EQ(uint16_t(11), item->getMajor());
+    delete &selfact;
 }
 // similarly from v12:
 
@@ -114,6 +118,7 @@ void seltest::v12_2()
     auto& selfact = FormatSelector::selectFactory(*pItem);
     std::unique_ptr<::CDataFormatItem> item(selfact.makeDataFormatItem());
     EQ(uint16_t(12), item->getMajor());
+    delete &selfact;
 }
 // Asking for the same version factory gives the same actual factory (v10).
 
@@ -122,6 +127,7 @@ void seltest::cache_1()
     auto& sel1 = FormatSelector::selectFactory(FormatSelector::v10);
     auto& sel2 = FormatSelector::selectFactory(FormatSelector::v10);
     EQ(&sel1, &sel2);
+    delete &sel1;
 }
 
 void seltest::cache_2()
@@ -129,10 +135,12 @@ void seltest::cache_2()
     auto& sel1 = FormatSelector::selectFactory(FormatSelector::v11);
     auto& sel2 = FormatSelector::selectFactory(FormatSelector::v11);
     EQ(&sel1, &sel2);
+    delete &sel1;
 }
 void seltest::cache_3()
 {
     auto& sel1 = FormatSelector::selectFactory(FormatSelector::v12);
     auto& sel2 = FormatSelector::selectFactory(FormatSelector::v12);
     EQ(&sel1, &sel2);
+    delete &sel1;
 }
