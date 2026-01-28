@@ -135,6 +135,8 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(state_4);
     CPPUNIT_TEST(state_5);
     CPPUNIT_TEST(state_6);
+
+    CPPUNIT_TEST(version_1);
     CPPUNIT_TEST_SUITE_END();
     
 private:
@@ -233,6 +235,8 @@ protected:
     void state_4();
     void state_5();
     void state_6();
+
+    void version_1();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(v12facttest);
 
@@ -1504,4 +1508,9 @@ void v12facttest::state_6() {
 
     EQ(uint32_t(2), notsitem->getTimeDivisor());
     EQ(float(2.5), notsitem->computeElapsedTime());
+}
+// ensure the version method returns the correct value:
+
+void v12facttest::version_1() {
+    EQ(ufmt::FormatSelector::SupportedVersions::v12, m_pFactory->version());
 }

@@ -138,6 +138,8 @@ class v10factorytest : public CppUnit::TestFixture {
     CPPUNIT_TEST(state_6);
     CPPUNIT_TEST(state_7);
     CPPUNIT_TEST(state_8);
+
+    CPPUNIT_TEST(version_1);
     CPPUNIT_TEST_SUITE_END();
     
 protected:
@@ -204,7 +206,10 @@ protected:
     void state_6();
     void state_7();
     void state_8();
-    private:
+
+    void version_1();
+private:
+
     v10::RingItemFactory* m_pFactory;
 #ifdef HAVE_NSCLDAQ  
     CRingBuffer*          m_pProducer;
@@ -1579,3 +1584,9 @@ void v10factorytest::state_8()
     );
 }
 
+
+// check the factory version:
+
+void v10factorytest::version_1() {
+    EQ(ufmt::FormatSelector::SupportedVersions::v10, m_pFactory->version());
+}
