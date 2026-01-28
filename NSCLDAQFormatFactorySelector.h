@@ -37,8 +37,8 @@ namespace ufmt {
         
         RingItemFactoryBase& selectFactory(SupportedVersions version);
         RingItemFactoryBase& selectFactory(CDataFormatItem& item);
-        
-        void clearCache();                // For testing...users must not call this.
+        void unregisterFactory(RingItemFactoryBase& fact);     // Remove a factory from the cache if it's in.
+
     }                          // End namespace FormatSelector
 
 }                             // End namespace ufmt.

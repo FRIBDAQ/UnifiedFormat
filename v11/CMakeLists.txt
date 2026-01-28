@@ -68,7 +68,11 @@ v11unktests.cpp
 v11factoryTests.cpp
 )
 
-target_link_libraries(v11unittests AbstractFormat V11Format cppunit)
+target_link_libraries(
+  v11unittests 
+  V11Format  AbstractFormat NSCLDAQFormat  V10Format V12Format 
+  cppunit
+)
 target_include_directories(v11unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${CMAKE_CURRENT_SOURCE_DIR}/..

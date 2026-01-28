@@ -23,6 +23,7 @@
 #include <v10/RingItemFactory.h>
 #include <v11/RingItemFactory.h>
 #include <v12/RingItemFactory.h>
+#include <abstract/RingItemFactoryBase.h>
 #include <map>
 #include <stdexcept>
 #include <stdint.h>
@@ -119,18 +120,28 @@ namespace ufmt {
             }
         }
         /**
-         * clearCache
-         *   only should be used for testing...destroys the map of existing
-         *   factory instances.  This invalidates existing references hence only
-         *   use in testing.
+         * unregisterFactory
+         *   This is called by concrete class destructors.  If the factory is in the
+         * cache, it is removed.
+         * @param fact - reference to a factory instance.
+         * @note THis is a silent no-op if fact is not in the map because it is possible
+         * that the fractory was directly instantiated.
          */
-        void
-        clearCache()
-        {
-            while (!instantiatedFactories.empty()) {
-                delete instantiatedFactories.begin()->second;
-                instantiatedFactories.erase(instantiatedFactories.begin());
+        void unregisterFactory(RingItemFactoryBase& fact) {
+            // Note we can't use the version because the base class destructor
+            // can't call it and that's what call us.  Fortunately, there's
+            // not so many pointers:
+
+
+            for (auto p : instantiatedFactories) {
+                if (p.second == &fact) {   // contents matched.
+                    auto iter = instantiatedFactories.find(p.first); // has to exist.
+                    instantiatedFactories.erase(iter);
+                    break;
+                }
             }
         }
+
+        
     }   // FormatSelector
 }       // ufmt
