@@ -28,6 +28,8 @@ namespace ufmt {
     class RingItemFactory : public ::ufmt::RingItemFactoryBase
     {
     public:
+        virtual ~RingItemFactory() {}          // Base class unregisters us.
+    public:
         virtual ::ufmt::CRingItem* makeRingItem(uint16_t type, size_t maxBody) ;
         virtual ::ufmt::CRingItem* makeRingItem(uint16_t type, uint64_t timestamp, uint32_t sourceId,
                 size_t maxBody, uint32_t barrierType = 0 ) ;
