@@ -26,6 +26,7 @@
 #include <vector>
 #include <climits>
 #include <fmtconfig.h>
+#include <NSCLDAQFormatFactorySelector.h>
 class CRingBuffer;
 namespace ufmt {
     // Forward definitions
@@ -140,6 +141,7 @@ namespace ufmt {
         ) = 0;
         virtual CRingStateChangeItem* makeStateChangeItem(const CRingItem& rhs) = 0;
         
+        virtual ufmt::FormatSelector::SupportedVersions version() = 0;
     };
 }
 

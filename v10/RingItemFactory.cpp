@@ -671,6 +671,12 @@ namespace ufmt {
                 pItem->s_Timestamp, std::string(pItem->s_title)
             );
         }
+        /** Return the factory format version */
+
+        ufmt::FormatSelector::SupportedVersions  
+        RingItemFactory::version() {
+            return ufmt::FormatSelector::SupportedVersions::v10;
+        }
         //////////////////////////////////////////////////////////
         // Private utilities
         
@@ -734,5 +740,7 @@ namespace ufmt {
         
             return validStateChangeType.count(reason) > 0;
         }
+        
     }                          // v10 namespace.
 }
+
