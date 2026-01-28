@@ -78,7 +78,10 @@ add_executable(v12unittests
   v12factorytests.cpp
 )
 
-target_link_libraries(v12unittests AbstractFormat V12Format cppunit)
+target_link_libraries(v12unittests
+    NSCLDAQFormat V10Format V11Format V12Format  AbstractFormat 
+    cppunit 
+)
 target_include_directories(v12unittests PRIVATE
 ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
 ${CMAKE_CURRENT_SOURCE_DIR}/..
