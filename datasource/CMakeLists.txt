@@ -2,7 +2,6 @@ add_library(
     DataSources SHARED
     DataSource.cpp
     FdDataSource.cpp
-    RingDataSource.cpp
     StreamDataSource.cpp
     URL.cpp
     SourceSelector.cpp
@@ -12,7 +11,6 @@ target_sources(
     DataSources PRIVATE
     DataSource.h
     FdDataSource.h
-    RingDataSource.h
     StreamDataSource.h
     URL.h
     SourceSelector.h
@@ -37,6 +35,10 @@ if(NOT ${NSCLDAQ_ROOT} STREQUAL _)
         DataSources PRIVATE
         ${NSCLDAQ_INC}
     )
+    target_sources (
+        DataSources PRIVATE
+        RingDataSource.h RingDataSource.cpp
+    )
     target_link_libraries(
         DataSources 
         ${NSCLDAQ_LIB}/libdaqshm.so
@@ -48,12 +50,15 @@ if(NOT ${NSCLDAQ_ROOT} STREQUAL _)
         DataSources PUBLIC
         -L${NSCLDAQ_LIB} -Wl,-rpath=${NSCLDAQ_LIB}
     )
+    install(FILES
+        RingDataSource.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+    )
 endif()
 install(TARGETS DataSources
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
 install(FILES 
-    DataSource.h FdDataSource.h RingDataSource.h StreamDataSource.h
+    DataSource.h FdDataSource.h StreamDataSource.h
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )

@@ -33,7 +33,6 @@ target_link_libraries(evtdump
   V10Format
   V11Format
   V12Format
-  DataFormat
   )
   target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib )
 else ()
