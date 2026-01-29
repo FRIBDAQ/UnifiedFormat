@@ -37,22 +37,24 @@ PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
 
 #  Unit tests:
 
-add_executable(
-    unittests
-    TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
-    glomabtests.cpp physabtests.cpp fragabtests.cpp counterabtests.cpp
-    scabtests.cpp textabtest.cpp unkabtests.cpp sabchangetests.cpp
-    CRingItem.h CAbnormalEndItem.h CGlomParameters.h CPhysicsEventItem.h
-    CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
-    CRingTextItem.h CUnknownFragment.h  CRingStateChangeItem.h
-    Asserts.h DataFormat.h 
-)
+if(CppUnit_FOUND)
+	add_executable(
+		unittests
+		TestRunner.cpp ringitemabtests.cpp abendabtests.cpp dformatabtests.cpp
+		glomabtests.cpp physabtests.cpp fragabtests.cpp counterabtests.cpp
+		scabtests.cpp textabtest.cpp unkabtests.cpp sabchangetests.cpp
+		CRingItem.h CAbnormalEndItem.h CGlomParameters.h CPhysicsEventItem.h
+		CRingFragmentItem.h CRingPhysicsEventCountItem.h CRingScalerItem.h
+		CRingTextItem.h CUnknownFragment.h  CRingStateChangeItem.h
+		Asserts.h DataFormat.h
+	)
 
-target_include_directories(unittests PRIVATE ${CMAKE_BINARY_DIR})
+	target_include_directories(unittests PRIVATE ${CMAKE_BINARY_DIR})
 
-target_link_libraries(unittests AbstractFormat cppunit)
-target_compile_options(unittests PRIVATE -g -O2)
-target_link_options(unittests PRIVATE -g)
+	target_link_libraries(unittests AbstractFormat cppunit)
+	target_compile_options(unittests PRIVATE -g -O2)
+	target_link_options(unittests PRIVATE -g)
 
 
-add_test(NAME abstract COMMAND unittests)
+	add_test(NAME abstract COMMAND unittests)
+endif()
