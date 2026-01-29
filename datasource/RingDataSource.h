@@ -22,10 +22,10 @@
  */
 
 #include "DataSource.h"
-using namespace ufmt;
+
 
 class CRingBuffer;
-
+namespace ufmt {
 
 class RingDataSource : public DataSource
 {
@@ -36,5 +36,5 @@ public:
     virtual ~RingDataSource();
     virtual CRingItem* getItem();
 };
-
+}                                     // ufmt namespace.
 #endif

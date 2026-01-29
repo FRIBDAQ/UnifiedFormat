@@ -323,7 +323,7 @@ int main(int argc, char** argv)
         // Now we need to take the URI and the factory and create a data source:
         
         
-        std::unique_ptr<DataSource> pSource(makeDataSource(&fact, dataSource));
+        std::unique_ptr<ufmt::DataSource> pSource(ufmt::makeDataSource(&fact, dataSource));
         
         // Proces the scalerBits value into a ::CRingScalerItem::m_ScalerFormatMask
         

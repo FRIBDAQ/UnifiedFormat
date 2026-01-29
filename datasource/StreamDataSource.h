@@ -22,7 +22,7 @@
 #include "DataSource.h"
 #include <istream>
 
-using namespace ufmt;
+namespace ufmt {
 
 class StreamDataSource : public DataSource
 {
@@ -34,5 +34,5 @@ public:
     virtual CRingItem* getItem();
 };
 
-
+}                    // namespace ufmt
 #endif
