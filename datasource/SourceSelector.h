@@ -4,7 +4,7 @@
 class DataSource;
 class RingItemFactoryBase;
 
-namespac ufmt {
+namespace ufmt {
     DataSource*
     makeDataSource(RingItemFactoryBase* pFactory, const std::string& strUrl);
 }

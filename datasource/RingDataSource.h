@@ -26,12 +26,13 @@ using namespace ufmt;
 
 class CRingBuffer;
 
+
 class RingDataSource : public DataSource
 {
 private:
     CRingBuffer& m_ring;
 public:
-    RingDataSource(RingItemFactoryBase* pFact, CRingBuffer& ring);
+    RingDataSource(ufmt::RingItemFactoryBase* pFact, CRingBuffer& ring);
     virtual ~RingDataSource();
     virtual CRingItem* getItem();
 };

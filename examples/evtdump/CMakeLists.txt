@@ -11,7 +11,6 @@ add_custom_target(
 add_executable(
   evtdump
   evtdump.cpp cmdline.o cmdline.h
-  URL.cpp
 )
 
 target_compile_options(evtdump PUBLIC -g -O2)
@@ -60,7 +59,8 @@ else ()
   )
 
 
-  target_link_options(evtdump PUBLIC -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${NSCLDAQ_LIB})
+  target_link_options(evtdump PUBLIC 
+    -g -Wl,-rpath=${CMAKE_INSTALL_PREFIX}/lib -Wl,-rpath=${NSCLDAQ_LIB})
 
 endif()
 
