@@ -20,7 +20,7 @@
  */
 #include "StreamDataSource.h"
 #include <RingItemFactoryBase.h>
-using namespace ufmt;
+namespace ufmt {
 
 /**
  * constructor
@@ -46,3 +46,5 @@ StreamDataSource::getItem()
 {
     return m_pFactory->getRingItem(m_str);
 }
+
+}                 // namespace ufmt

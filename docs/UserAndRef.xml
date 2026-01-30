@@ -70,6 +70,13 @@
                </para>
             </listitem>
             <listitem>
+                <para>
+                    <link linkend="ch.datasource" endterm='ch.datasource.title' />
+                    Describes a scheme for manufacturing a source of ring items
+                    from an arbitrary data source.
+                </para>
+            </listitem>
+            <listitem>
                <para>
                   <link linkend='ch.reference' endterm='ch.reference.title' />
                   Provides detailed reference pages.
@@ -110,7 +117,7 @@
             <informalexample>
                 <programlisting>
 -L$INSTALL_ROOT/lib -lNSCLDAQFormat \
-    -lV10Format -lV11Format -lV12Format -lAbstractFormat \
+    -lDataSources -lV10Format -lV11Format -lV12Format -lAbstractFormat \
     -Wl,-rpath=$INSTALL_ROOT/lib
                 </programlisting>
             </informalexample>
@@ -165,6 +172,13 @@
               provide an instance of the appropriate factory.
            </para>
         </listitem>
+        <listitem>
+            <para>
+                Given a factory and a URI that descsribes it, the library provides
+                a mechanism to create a <emphasis>DataSource</emphasis> object
+                that can be used to consume ring items from some generator.
+            </para>
+        </listitem>
        </orderedlist>
        <para>
         In this way a program is not looking at the actual data but simply getting or
@@ -186,9 +200,14 @@
            <para>
               <link linkend='sec.factories' endterm='sec.factories.title' />
               The factory classes see, however
-              <link linkend='ch.factories' endterm='ch.factories.title' /> for more.
-              
+              <link linkend='ch.factories' endterm='ch.factories.title' /> for more.     
            </para>
+        </listitem>
+        <listitem>
+            <para>
+                <link linkend='sec.datasources' endterm='sec.datasources.title' />
+                descsribes how to create and use data sources.
+            </para>
         </listitem>
        </itemizedlist>
        <section id='sec.ringitems'>
@@ -754,6 +773,169 @@ RingItemFactoryBase&amp; fact(*pFactory);               <co id='fmt.makereferenc
         produced the data we're processing; if the streamof data we're processing
         has a format item (comes from NSCLDAQ-11 or later).
        </para>
+    </chapter>
+    <chapter id="ch.datasource">
+        <title id="ch.datasource.title">Getting data from various sources</title>
+        <para>
+            Ring items can come from various data sources.  The unified format library
+            provides several classes that can read ring items from a C++ stream, from 
+            a file descriptor (e.g. STDIN_FILENO for stdin) or, if the library was built
+            with access to an NSCLDAQ distribution, to from a local or remote ring buffer
+            in a live data acquisition system. See the <link linkend='ch.reference' endterm='ch.reference.title' /> for
+            detailed information.
+        </para>
+        <para>
+            ufmt Data sources are paired with a data source factory to provide ring item
+            types from the appropriate format version.  In most cases, you will not need
+            to explictly instantiate a data source.  To make your program as general as
+            possible, you can use <function>ufmt::makeDataSource</function> to get a pointer
+            to a data source given a factory instance to specify the format of the ring items
+            from the source and a URL to specify the actual source and type.
+        </para>
+        <para>
+            URLs that specify ring item sources come in three forms:
+        </para>
+        <variablelist>
+            <varlistentry>
+                <term>
+                    <literal>file:</literal>
+                </term>
+                <listitem><para>
+                    Specifies a file data source.  The remainder of the URI is the path
+                    to the file. Note that ~ expansions are not done.  For example.
+                    <literal>file://users/ron/somedata.evt</literal> specifies a file data
+                    source in <filename>/users/ron/somedata.evt</filename>.  This generates
+                    a stream data source.
+                </para></listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>tcp:</term><term> ring:</term>
+                <listitem><para>
+                    Specifies an online ring buffer data source.  This option is only avaialable
+                    if the unified format library was built linked to NSCLDAQ.  If you are not sure
+                    if this is the case, examine the <filename>fmtconfig.h</filename> filename.
+                    It will have the symbol HAVE_NSCLDAQ defined if this is the case.
+                </para>
+                <para>
+                    for TCP data sources a host and ringname are required.  These specify the
+                    source of the ringbuffer. For example:
+                    <literal>tcp://spdaq09/myring</literal> specifies the ring buffer named
+                    <literal>myring</literal> in the system <literal>spdaq09</literal>
+                
+                </para></listitem>
+            </varlistentry>
+            <varlistentry>
+                <term>-</term>
+                <listitem><para>
+                    This special url value specifies that stdin will be used as the
+                    data source.  This generates a file descriptor data source.
+                </para></listitem>
+            </varlistentry>
+        </variablelist>
+        <para>
+            Let's look at a simple code fragment that creates a data source
+            and consumes data from it.
+        </para>
+        <example>
+            <title>Creating a data sourcde and consuming ring items from it</title>
+            <programlisting>
+#include &lt;SourceSelector.h&gt;
+#include &lt;DataSource.h&gt;             <co id='ex.source.includes' />
+#include &lt;abstract/RingFactoryBase.h&gt;
+#include &lt;NSCLDAQFormatFactorySelector.h&gt;
+...
+using namespace ufmt;                     <co id='ex.source.usingns' />
+...
+
+auto&amp; fact = FormatSelector::selectFactory(defaultVersion); <co id='ex.source.selfactory' />
+std::unique_ptr&lt;ufmt::DataSource&gt; pSource(   
+    ufmt::makeDataSource(&amp;fact, dataSource)                 <co id='ex.source.make' />
+);
+
+...
+while(1) {
+    std::unique_ptrf&lt;CRingItem&gt; pItem(pSource-&gt;getItem());    <co id='ex.source.get' />
+    if (!pitem.get()) break;                                 <co id='ex.source.done' />
+    ...
+}
+
+
+
+            </programlisting>
+        </example>
+        <para>
+            In the explanation below, the numbers refer to the callout numbers in the example above.
+        </para>
+        <calloutlist>
+            <callout arearefs='ex.source.includes'>
+                <para>
+                    This is the minimal set of headers that must be included to 
+                    use data sources. <filename>SourceSelector.h</filename> provides
+                    the factory <function>makeDataSource</function> definition.
+                    <filename>NSCLDAQFormatFactorySelector.h</filename> provides
+                    the definition for <function>selectFactory</function> which provides
+                    ring item factories for the various format levels.
+                </para>
+            </callout>
+            <callout arearefs='ex.source.usingns'>
+                <para>
+                    This allows us to refer to things that are in the <literal>ufmt</literal>
+                    namespace without adding the <literal>ufmt::</literal> prefix....mostly.
+                    Some bits of the STL still seem to need that to do template type deduction as
+                    we will see.
+                </para>
+            </callout>
+            <callout arearefs='ex.source.selfactory'>
+                <para>
+                    Assuming the variable <varname>defaultVersion</varname> has been
+                    set elsewhere with an NSCLDAQ version specifier, this code
+                    returns a reference to a ring item factory for that version.  In general,
+                    the ring item factory will need to be used to take generic ringitems, get their
+                    type and convert them into specific ring items.
+                </para>
+                <para>
+                    Note that the factory is not put in a unique_ptr because in general it's storage
+                    is managed by the <function>selectFactory</function> function. You should not
+                    delete the factory instance that was returned as it is posslbe that instance was
+                    returned from another call to <function>selectFactory</function>
+                </para>
+            </callout>
+            <callout arearefs='ex.source.make'>
+                <para>
+                    This actually gets a pointer to a new data source. The
+                    first parmeter is a pointer to the factory that should be used to
+                    create ring items from what's read from the data source.  The second
+                    paramater is the URL that describes the data source.  
+                </para>
+                <para>
+                    Since the data source is dynamically allocated it is wrapped in a
+                    <classname>unique_ptr</classname> so that is automatically deleted
+                    when the <classname>unique_ptr</classname> goes out of scope.
+                    The data source object returned will be used to get the actual ring
+                    items from whatever the URL specifies.
+                </para>
+            </callout>
+            <callout arearefs='ex.source.get'>
+                <para>
+                    The data source's virtual <methodname>getItem</methodname> returns
+                    the next ring item.  This too is dynamically allocated, so the return
+                    value is wrapped in a <classname>unique_ptr</classname> to ensure
+                    it gets deleted on the next loop pass or when the loop is exited.
+                </para>
+            </callout>
+            <callout arearefs='ex.source.done'>
+                <para>
+                    If the data source is a finite source (e.g. a file), if there are
+                    no more ring items, the pointer returned will be null.  The
+                    <methodname>get</methodname> of <classname>unique_ptr</classname>
+                    returns the actual raw pointer wrapped by the object.  If it is null,
+                    the loop is exited.
+                </para>
+                <para>
+                    The remainder of the  loop, not shown, would process the ring items.
+                </para>
+            </callout>
+        </calloutlist>
     </chapter>
     <chapter id='ch.reference'>
        <title id='ch.reference.title'>Reference pages</title>
@@ -16830,6 +17012,441 @@ namespace ufmt {
                       </para>
                 </refsect1>
             </refentry>
+       </section>
+       <section id='sec.datasources'>
+        <title id='sec.datasources.title'>The data source classes</title>
+        <para>
+            This section provides reference material for the data souce subsystem.  This
+            subsystem in the shared library <filename>libDataSources.so</filename>.
+        </para>
+        <refentry>
+            <refmeta>
+                <refentrytitle>ufmt::DataSource</refentrytitle>
+                <manvolnum>3formmat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ufmt::DataSource</refname>
+                <refpurpose>Abstract base class for ring item data sources</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;DataSource.h&gt;
+
+namespace ufmt {
+    class DataSource {
+    public:
+        DataSource(RingItemFactoryBase* pFactory);
+        virtual CRingItem* getItem() = 0;
+        void setFactory(RingItemFactoryBase* pFactory);
+    };
+}
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    This class provides the interface for data sources.
+                    In most programs you will use <function>ufmt::makeDataSource</function>
+                    to get a concrete data source.   There is, however, nothing to stop
+                    an application from instantiating a concrete data source object. 
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term>
+                                <constructorsynopsis>
+                                    <methodname>DataSource</methodname>
+                                    <methodparam>
+                                        <type>ufmt::RingItemFactoryBase*</type> <parameter>pFactory</parameter>
+                                    </methodparam>
+                                </constructorsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Constructor.  The <parameter>pFactory</parameter> pointer will be stored in the 
+                                    data source and used to create ring items from the data read by the concrete
+                                    data source.  the caller retains ownership and must ensure that the factory
+                                    has a lifetime at least as long as the data source itelf.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term>
+                                <methodsynopsis>
+                                    <type>CRingItem*</type><methodname>getItem</methodname>
+                                    <void />
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    This is a pure virtual method that must be implemented by 
+                                    all concrete data sources.  It will return the next ring item
+                                    from the data source.  Note that a <literal>nullptr</literal>
+                                    is returned if there are no more items in the source.
+                                    The retunred item is an undifferentiated ring item. Normally,
+                                    after interrogating the type, the ring item factory is then used
+                                    to produce a specific ring item type.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>
+                            <methodsynopsis>
+                                <type>void</type><methodname>setFactory</methodname>
+                                <methodparam>
+                                    <type>ufmt::RingItemFactoryBase*</type> <parameter>pFactory</parameter>
+                                </methodparam>
+                            </methodsynopsis>
+                        </term>
+                        <listitem><para>
+                            Replaces the ring item factory currently being used by the data source. One use
+                            case for this is on reading a ring format item and discovering the actual data
+                            are of a different format than expected by the ring item factory used to
+                            construct the data source.
+                        </para></listitem>  
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <function>ufmt::makeDataSource</function>
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <classname>FdDataSource</classname>
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                        <classname>RingDataSource</classname>
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                        <classname>StreamDataSource</classname>
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry>
+            <refmeta>
+                <refentrytitle>ufmt::makeDataSource</refentrytitle>
+                <manvolnum>3format</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ufmt::MakeDataSource</refname>
+                <refpurpose>Select and construct a data source</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;SourceSelector.h&gt;
+namespace ufmt {
+    DataSource*
+    makeDataSource(RingItemFactoryBase* pFactory, const std::string&amp; strUrl);
+}
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>Description</title>
+                <para>
+                    This unbound function is a factory function that produces
+                    datasources given a URL.  The return value is a pointer to
+                    a dynamically allocated <classname>ufmt::DataSource</classname>.
+                    The data source must be deleted by the caller when it is no longer
+                    needed.  If the program structure allows, this can be automated
+                    by storing in in one of the standard library smart pointer objects like
+                    <classname>std::unique_ptr</classname>
+                </para>
+                <para>
+                    The parameters are as follows:
+                </para>
+                <variablelist>
+                    <varlistentry>
+                            <term><type>ufmt::RingItemFactoryBase*</type> <parameter>pFactory</parameter></term>
+                            <listitem>
+                                <para>
+                                    A pointer to a concrete ring item factory that will be used by the
+                                    data source to generate ring items from the data accepted by
+                                    the source.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><type>const std::string&amp;</type><parameter>strUrl</parameter></term>
+                            <listitem>
+                                <para>
+                                    The URI that describes the desired data source. The URI protocol
+                                    is used to determine the type of data source.  
+                                    <literal>tcp:</literal> or <literal>ring:</literal> protocols
+                                    are live ring buffers. The host field of the URI determines the host 
+                                    in which the ringbuffer lives and the path, the name of the ringbuffer
+                                    within that host.  <literal>file:</literal> protocols represent a file
+                                    data source and the path of that URI is the path to the file.
+                                    The special value <literal>-</literal> generates a data source on
+                                    the program's  current stdin.
+                                </para>
+                                <para>
+                                    Note that ring buffer data sources are only supported if
+                                    the unified formatting libraries were built with an
+                                    NSCLDAQ_ROOT definition.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+            <refmeta>
+                <refentrytitle>ufmt::FdDataSource</refentrytitle>
+                <manvolnum>3format</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ufmt::FdDataSource</refname>
+                <refpurpose>Data source attached to a file descriptor</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;FdDataSource&gt;
+namespace ufmt {
+
+class FdDataSource : public DataSource
+{
+
+public:
+    FdDataSource(RingItemFactoryBase* pFactory, int fd);
+    virtual CRingItem* getItem();
+};
+
+}           // ufmt namespace.
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    Instances of this class accept ring items from file descsriptors
+                    (e.g. returned from open(2), pipe(2) or socket(2). 
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term>
+                                <constructorsynopsis>
+                                    <methodname>FdDataSource</methodname>
+                                    <methodparam>
+                                        <type>ufmt::RingItemFactoryBase*</type>
+                                        <parameter>pFactory</parameter>
+                                    </methodparam>
+                                    <methodparam>
+                                        <type>int</type> <parameter>fd</parameter>
+                                    </methodparam>
+                                </constructorsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    In addition to the ring item factory <parameter>pFactory</parameter>
+                                    used to construct the data source, the <parameter>fd</parameter>
+                                    parameter is an open file descriptor.  Data will be taken
+                                    from whatever the file descriptor is opened on.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term>
+                                <methodsynopsis>
+                                    <type>ufmt::CRingItem*</type>
+                                    <methodname>getItem</methodname>
+                                    <void />
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Returns the next ring item from the file-descriptor.  If there
+                                    are no more ring items, a <literal>nullptr</literal> is
+                                    returned.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+            <refmeta>
+                <refentrytitle>ufmt::RingDataSource</refentrytitle>
+                <manvolnum>3format</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ufmt::RingDataSource</refname>
+                <refpurpose>Data source from a ringbuffer</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;RingDataSource.h&gt;
+namespace ufmt {
+
+class RingDataSource : public DataSource
+{
+public:
+    RingDataSource(ufmt::RingItemFactoryBase* pFact, CRingBuffer&amp; ring);
+    virtual CRingItem* getItem();
+};
+}                                     // ufmt namespace.
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    First note that this data source is only available if the
+                    library was built with an NSCLDAQ_ROOT definition.  
+                    The data source takes ring items from an NSCL/FRIBDAQ ringbuffer
+                    which is the data distribution mechanism for live data.
+                </para>
+                <para>
+                    Note that it is possible for the ring buffer to be a proxy ring
+                    buffer for a remote ringbuffer created using the FRIB/NSCLDAQ
+                    remote access package and, this is how 
+                    <function>ufmt::makeDataSource</function> contructs ring data sources
+                    for URIs that use e.g. <literal>tcp:</literal> or <literal>ring:</literal> 
+                    protocols.
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term>
+                                <constructorsynopsis>
+                                    <methodname>RingDataSource</methodname>
+                                    <methodparam>
+                                        <type>ufmt::RingItemFactoryBase*</type>
+                                        <parameter>pFact</parameter>
+                                    </methodparam>
+                                    <methodparam>
+                                        <type>CRingBuffer&amp;</type>
+                                         <parameter>ring</parameter>
+                                    </methodparam>
+                                </constructorsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    In addition to the usual ring item factory,
+                                    the constructor requires a reference to a ringbuffer.
+                                    Data will be consumed from that ringbuffer. 
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term>
+                                <methodsynopsis>
+                                    <type>ufmt::CRingItem*</type>
+                                    <methodname>getItem</methodname>
+                                    <void />
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Returns the next ring item from the ring buffer.  If 
+                                    there are no items for this consumer in the ringbuffer,
+                                    this function will block until one is inserted by the
+                                    producer.  Ring buffers are not finite sources so a null
+                                    pointer will never be returned.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
+        <refentry>
+            <refmeta>
+                <refentrytitle>ufmt::StreamDataSource</refentrytitle>
+                <manvolnum>3format</manvolnum>
+            </refmeta>
+            <refnamediv>    
+                <refname>ufmt::StreamDataSource</refname>
+                <refpurpose>Accept ring items from C++ stream</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+#include &lt;StreamDataSource.h&gt;
+namespace ufmt {
+
+class StreamDataSource : public DataSource
+{
+public:
+    StreamDataSource(RingItemFactoryBase* pFactory, std::istream&amp; str);
+    virtual CRingItem* getItem();
+};
+}
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    This data source class provides a mechanism to get ring items
+                    from a C++ <classname>std::istream</classname>, and therefore, anything
+                    an input stream can be connected to.
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term>
+                                <constructorsynopsis>
+                                    <methodname>StreamDataSource</methodname>
+                                    <methodparam>
+                                        <type>ufmt:::RingItemFactoryBase*</type>
+                                        <parameter>pFactory</parameter>
+                                    </methodparam>
+                                    <methodparam>
+                                        <type>std::istream&amp;</type>
+                                        <parameter>str</parameter>
+                                    </methodparam>
+                                </constructorsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    In addition to the usual ring item factory 
+                                    (<parameter>PFactory</parameter>), the constructor
+                                    requires a reference to the input stream,
+                                    <parameter>str</parameter> from which data will be read.
+                                    This stream must be open by the time the first item is
+                                    requested from it.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term>
+                                <methodsynopsis>
+                                    <type>ufmt::CRingItem</type>
+                                    <methodname>getItem</methodname>
+                                    <void />
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Returns the next ring item that is read from the stream.
+                                    If the stream has no more ring items to produce, this
+                                    returns a <literal>nullptr</literal>
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+        </refentry>
        </section>
        <section>
         <title>Sample Program(s)</title>

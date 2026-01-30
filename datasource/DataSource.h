@@ -25,8 +25,8 @@
 namespace ufmt {
     class CRingItem;
     class RingItemFactoryBase;
-}
-using namespace ufmt;
+
+
 /**
  * @class DataSource
  *    Pure abstract data source which uses a factory's ring item getters to
@@ -46,5 +46,5 @@ public:
     void setFactory(RingItemFactoryBase* pFactory);
 };
 
-
+}   // ufmt namespace.
 #endif

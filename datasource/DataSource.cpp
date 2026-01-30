@@ -21,12 +21,13 @@
 
 #include "DataSource.h"
 #include <RingItemFactoryBase.h>
-using namespace ufmt;
+
 /**
  * constructor
  *  Just saves the factory pointer - note that we gain ownershp of the factory and,
  *  therefore, it's deleted on our destruction.
  */
+namespace ufmt {
 DataSource::DataSource(RingItemFactoryBase* pFactory) :
     m_pFactory(pFactory)
 {}
@@ -51,3 +52,4 @@ DataSource::setFactory(RingItemFactoryBase* pFactory)
     delete m_pFactory;
     m_pFactory = pFactory;
 }
+}  // ufmt namespace.

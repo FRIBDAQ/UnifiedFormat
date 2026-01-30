@@ -22,7 +22,7 @@
  */
 #include "DataSource.h"
 
-using namespace ufmt;
+namespace ufmt {
 
 class FdDataSource : public DataSource
 {
@@ -34,4 +34,5 @@ public:
     virtual CRingItem* getItem();
 };
 
+}           // ufmt namespace.
 #endif

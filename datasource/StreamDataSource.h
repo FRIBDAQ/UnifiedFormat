@@ -14,26 +14,25 @@
 	     Michigan State University
 	     East Lansing, MI 48824-1321
 */
-#ifndef RINGDATASOURCE_H
-#define RINGDATASOURCE_H
-
-/** @file:  RingDataSource.h
- *  @brief: Provide ring items from a ringbuffer.
+#ifndef STREAMDATASOURCE_H
+#define STREAMDATASOURCE_H
+/** @file:  StreamDataSource.h
+ *  @brief: Defines a class that gets ring items from a stream.
  */
-
 #include "DataSource.h"
-using namespace ufmt;
+#include <istream>
 
-class CRingBuffer;
+namespace ufmt {
 
-class RingDataSource : public DataSource
+class StreamDataSource : public DataSource
 {
 private:
-    CRingBuffer& m_ring;
+    std::istream& m_str;
 public:
-    RingDataSource(RingItemFactoryBase* pFact, CRingBuffer& ring);
-    virtual ~RingDataSource();
+    StreamDataSource(RingItemFactoryBase* pFactory, std::istream& str);
+    virtual ~StreamDataSource();
     virtual CRingItem* getItem();
 };
 
+}                    // namespace ufmt
 #endif
