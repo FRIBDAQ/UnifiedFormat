@@ -5,6 +5,19 @@ set(NSCLDAQ_ROOT "_"  CACHE STRING "_")
 set(NSCLDAQ_INC ${NSCLDAQ_ROOT}/include CACHE STRING "${NSCLDAQ_ROOT}/include")
 set(NSCLDAQ_LIB ${NSCLDAQ_ROOT}/lib CACHE STRING "${NSCLDAQ_ROOT}/lib")
 
+# 1. Detect CppUnit to decide on building tests
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+find_package(CppUnit)
+if(NOT CppUnit_FOUND)
+    message(STATUS "CppUnit not found. Unit tests will be skipped.")
+endif()
+
+# 2. Detect docbook2html to decide on building docs
+find_program(DOCBOOK_GENERATOR docbook2html)
+if(NOT DOCBOOK_GENERATOR)
+    message(STATUS "docbook2html not found. Documentation will be skipped.")
+endif()
+
 # Make the fmtconfig.h header:
 
 file(WRITE ${CMAKE_BINARY_DIR}/fmtconfig.h "#ifndef FMTCONFIG_H\n")
@@ -16,7 +29,9 @@ endif()
 file(APPEND ${CMAKE_BINARY_DIR}/fmtconfig.h "#endif\n")
 
 install(FILES ${CMAKE_BINARY_DIR}/fmtconfig.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
-enable_testing()
+if(CppUnit_FOUND)
+	enable_testing()
+endif()
 
 
 
@@ -32,7 +47,9 @@ add_subdirectory(v11)
 add_subdirectory(v12)
 add_subdirectory(datasource)
 add_subdirectory(examples)
-add_subdirectory(docs)
+if(DOCBOOK_GENERATOR)
+	add_subdirectory(docs)
+endif()
 
 #  Now the top level library target:
 
@@ -68,23 +85,23 @@ target_include_directories(
 )
 
 ## Unit tests
+if(CppUnit_FOUND)
+	add_executable(selectortests
+		TestRunner.cpp
+		selectortests.cpp
+	)
+	target_include_directories(selectortests PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/abstract
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${CMAKE_BINARY_DIR}
+	)
+	target_compile_options(selectortests PRIVATE -g -O2)
+	target_link_options(selectortests PRIVATE -g)
 
-add_executable(selectortests
-TestRunner.cpp
-selectortests.cpp
-)
-target_include_directories(selectortests PRIVATE
-${CMAKE_CURRENT_SOURCE_DIR}/abstract
-${CMAKE_CURRENT_SOURCE_DIR}
- ${CMAKE_BINARY_DIR}
-)
-
-target_compile_options(selectortests PRIVATE -g -O2)
-target_link_options(selectortests PRIVATE -g)
-
-target_link_libraries(selectortests
-  NSCLDAQFormat V10Format V11Format V12Format
-  AbstractFormat
-    cppunit
-)
-add_test(NAME selector COMMAND selectortests)
+	target_link_libraries(selectortests
+		NSCLDAQFormat V10Format V11Format V12Format
+		AbstractFormat
+		cppunit
+	)
+	add_test(NAME selector COMMAND selectortests)
+endif()
