@@ -717,7 +717,7 @@ namespace ufmt {
                 pBody->s_offsetDivisor
             );
             result->setBodyHeader(pH->s_timestamp, pH->s_sourceId, pH->s_barrier);
-            return result;
+    
         } else {
             const v12::TextItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
             auto strings = marshallStrings(pBody);
