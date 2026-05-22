@@ -35,8 +35,10 @@
 #include "CPhysicsEventItem.h"
 #include <CRingFragmentItem.h>
 #include <CRingPhysicsEventCountItem.h>
+#include "CRingPhysicsEventCountItem.h"   // the v12 one.
 #include <CRingScalerItem.h>
 #include <CRingTextItem.h>
+#include "CRingTextItem.h"   // Need the v12 one too.
 #include <CUnknownFragment.h>
 #include "CRingStateChangeItem.h"
 #include <iostream>
@@ -114,16 +116,19 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(ecount_1);
     CPPUNIT_TEST(ecount_2);
     CPPUNIT_TEST(ecount_3);
+    CPPUNIT_TEST(ecount_4);
     
     CPPUNIT_TEST(scaler_1);
     CPPUNIT_TEST(scaler_2);
     CPPUNIT_TEST(scaler_3);
     CPPUNIT_TEST(scaler_4);
+    CPPUNIT_TEST(scaler_5);  // Issue #36 test original sourcde id
     
     CPPUNIT_TEST(text_1);
     CPPUNIT_TEST(text_2);
     CPPUNIT_TEST(text_3);
     CPPUNIT_TEST(text_4);
+    CPPUNIT_TEST(text_5);
     
     CPPUNIT_TEST(unk_1);
     CPPUNIT_TEST(unk_2);
@@ -135,6 +140,7 @@ class v12facttest : public CppUnit::TestFixture {
     CPPUNIT_TEST(state_4);
     CPPUNIT_TEST(state_5);
     CPPUNIT_TEST(state_6);
+    CPPUNIT_TEST(state_7);   // Make ring item with non-zero original sid.
 
     CPPUNIT_TEST(version_1);
     CPPUNIT_TEST_SUITE_END();
@@ -214,16 +220,19 @@ protected:
     void ecount_1();
     void ecount_2();
     void ecount_3();
+    void ecount_4();
     
     void scaler_1();
     void scaler_2();
     void scaler_3();
     void scaler_4();
+    void scaler_5();
     
     void text_1();
     void text_2();
     void text_3();
     void text_4();
+    void text_5();
     
     void unk_1();
     void unk_2();
@@ -235,6 +244,7 @@ protected:
     void state_4();
     void state_5();
     void state_6();
+    void state_7();
 
     void version_1();
 };
@@ -1098,6 +1108,16 @@ void v12facttest::ecount_3()
     
     
 }
+void v12facttest::ecount_4() 
+{
+    // Ensure the original sid is retained on copy factory Issue #36
+
+    v12::CRingPhysicsEventCountItem rhs(0x1234, 42, 0, 100, 10, time(nullptr));
+    std::unique_ptr<CRingPhysicsEventCountItem> copy(m_pFactory->makePhysicsEventCountItem(rhs));
+
+    EQ(uint32_t(42), copy->getOriginalSourceId());
+
+}
 // Simple scaler creation:
 
 void v12facttest::scaler_1()
@@ -1205,6 +1225,17 @@ void v12facttest::scaler_4()
         m_pFactory->makeScalerItem(*original), std::bad_cast
     );
 }
+void v12facttest::scaler_5() {
+    // Ensure that the original source id is ok in Issue #36.
+
+    auto now = time(nullptr);
+    std::vector<uint32_t> scalers = {1};
+    std::unique_ptr<ufmt::CRingScalerItem> rhs(m_pFactory->makeScalerItem(0, 10, now, scalers, true, 666));
+    std::unique_ptr<ufmt::CRingScalerItem> copy (m_pFactory->makeScalerItem(*rhs));
+
+    EQ(uint32_t(666), copy->getOriginalSourceId());
+
+}
 // minimal text item construction.
 void v12facttest::text_1()
 {
@@ -1279,6 +1310,16 @@ void v12facttest::text_4()
     CPPUNIT_ASSERT_THROW(
         m_pFactory->makeTextItem(*badType), std::bad_cast
     );
+}
+void v12facttest::text_5() {
+    // issue #36 - check copy construction presevers the osid:
+
+    std::vector<std::string> strings = {std::string("a string")};
+    v12::CRingTextItem rhs(MONITORED_VARIABLES, 0x1234, 789, 0, strings, 10, time(nullptr));
+    EQ(uint32_t(789), rhs.getOriginalSourceId());
+    std::unique_ptr<CRingTextItem> copy(m_pFactory->makeTextItem(rhs));
+
+    EQ(uint32_t(789), copy->getOriginalSourceId());
 }
 // construction from parameters: (we use that unknown fragment is atype
 // of fragment item.)
@@ -1509,6 +1550,24 @@ void v12facttest::state_6() {
     EQ(uint32_t(2), notsitem->getTimeDivisor());
     EQ(float(2.5), notsitem->computeElapsedTime());
 }
+
+void v12facttest::state_7() {
+    // Issue #36 - The original source id of the rhs must be
+    // transferred to the new item:
+
+    auto now = time(nullptr);
+    v12::CRingStateChangeItem original(
+        0x12345, 123, 0, v12::PAUSE_RUN, 2, 5, now, "Some Title", 2
+    );
+
+    // The source id should be in the original source id too: but:
+
+    std::unique_ptr<::CRingStateChangeItem> item(m_pFactory->makeStateChangeItem(original));
+
+    EQ(uint32_t(123), item->getOriginalSourceId());
+
+}
+
 // ensure the version method returns the correct value:
 
 void v12facttest::version_1() {
