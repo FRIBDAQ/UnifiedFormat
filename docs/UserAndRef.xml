@@ -76,10 +76,21 @@
                     from an arbitrary data source.
                 </para>
             </listitem>
+            
+            <listitem>
+                <para>
+                    <link linkend='ch.python' endterm='ch.python.title' />
+                    Describes how to use the Python module that wraps
+                    this library. This modules is available as of 
+                    version 2.4-000
+                </para>
+            </listitem>
             <listitem>
                <para>
                   <link linkend='ch.reference' endterm='ch.reference.title' />
-                  Provides detailed reference pages.
+                  Provides detailed reference pages.  Reference pages inlude
+                  reference information for the pytyhon module in manual section
+                  3pythonformat
                </para>
             </listitem>
         </itemizedlist>
@@ -936,6 +947,129 @@ while(1) {
                 </para>
             </callout>
         </calloutlist>
+    </chapter>
+    <chapter id='ch.python'>
+        <title id='ch.python.title'>The Python unified format module</title>
+        <para>
+            Beginning version 2.4-000, the unified format library installs a
+            Python3 module that can be used to handle ring items from FRIB/NSCLDAQ
+            from within Python scripts.   This section shows how to import that module
+            and discusses a bit about how it is intended to be used.
+        </para>
+        <para>
+            The module is installed in the <filename>python</filename> subdirectory
+            of the unified format installation tree.  If, for example, the library is installed
+            in /usr/opt/daqformat/2.4-000, you can import the library as follows:
+        </para>
+        <informalexample>
+            <programlisting>
+PYTHONPATH=/usr/opt/daqformat/2.4-000/python
+python3
+>>> import daqformat
+
+            </programlisting>
+        </informalexample>
+        <para>
+            The module revolves around the use of factories.  The idea is that you
+            will read a ring item from some source into a bytearray.  Next you'll use the 
+            factory to create a raw ring item.  After analyzing the type of the
+            ring item, you'll pass it into another factory method to get the detailed
+            ring item type which you an then interrogate using its methods. 
+        </para>
+        <para>
+            Note that the encpasulation is read-only at present. That is you cannot
+            use it to modify exising ring items.  
+        </para>
+        <para>
+            The code fragment below shows how to search some input source for
+            state transition items and print out the item type, run number and title.
+        </para>
+        <informalexample>
+            <programlisting language='python'>
+import daqformat
+...
+factory = daqformat.ringitemfactory(12)   <co id='python.factory' />
+
+with src=open_datasource('somedatasource'): <co id='python.detailnotshown' />
+    raw_bytes = src.get_ringitem()
+    raw_item  = factory.makeRingitem()      <co id='python.makeraw' />
+    transition = None
+    match raw_item.type():                   <co id='python.matchtype' />
+        case daqformat.BEGIN_RUN:            <co id='python.transition' />
+            transition = factory.makeStateChangeItem(raw_item)
+            transtionType = 'Begin run'
+        case daqformat.END_RUN:
+            transition = factory.makeStateChangeItem(raw_item)
+            transitionType = 'End run'
+        case daqformat.PAUSE_RUN:
+            transition = factory.makeStateChangeItem(raw_item)
+            transitionType = 'Pause run'
+        case daqformat.RESUME_RUN:
+            transition = factory.makeStateChangeItem(raw_item)
+            transitionType = 'Resume run'
+        case _:
+            pass
+
+    if transition is not None:              <co id='python.handletransition' />
+
+        print('state transition:')
+        print ('transition type: ', transitionType)
+        print('   run title: ', transition.getTitle())
+        print ('  run number:', transitino.getRun())
+
+            </programlisting>
+        </informalexample>
+        <calloutlist>
+            <callout arearefs='python.factory'>
+                <para>
+                    After importing the module, a ring item factory is created
+                    for FRIB/NSCLDAQ version 12.
+                </para>
+            </callout>
+            <callout arearefs='python.detailnotshown'>
+                <para>
+                    This code fragment assumes the existence of some
+                    way to get ring items from some source into byte arrays.
+                    <literal>open_datasource</literal> opens the data source and
+                    <literal>get_ringitem</literal> gets a ring item into a 
+                    bytarray.   The data source implments the resource manager protocol
+                    and the man program is, therefore a loop over all items in the data
+                    source, getting them one at a time.
+                </para>
+            </callout>
+            <callout arearefs='python.matchtype'>
+                <para>
+                    The ring item <methodname>type</methodname> returns the ring item type
+                    as an integer.  Each of the match arms handles one of the possible
+                    ring item types that represent a state transition and all other cases as well.
+                </para>
+            </callout>
+            <callout arearefs='python.transition'>
+                <para>
+                    This is an example match arm for begin run item types.
+                    Note tha the daqformat module defines constants for all of the defined
+                    ring item types.  These are described in the reference material.
+                    For a state transition item, the transition variable is set to tbe
+                    a state transition object by passing the raw_item into the factory's
+                    <methodname>makeStateChangeItem</methodname>.  The resulting object has
+                    methods that allow the properties of the item to be queried.
+                </para>
+                <para>
+                    Additionally, the transitionType variable is set to a string-ified version
+                    of the transition type.
+                </para>
+            </callout>
+            <callout arearefs='python.handletransition'>
+                <para> 
+                    If the transition variable was set (It's initialized to None each loop pass), it
+                    information about the transition is printed out.
+                </para>
+            </callout>
+        </calloutlist>
+        <para>
+            See the 3pythonformat section of the <link linkend='ch.reference'>reference</link>
+            pages for detailed descriptions of the module, factory and objects it can create.
+        </para>
     </chapter>
     <chapter id='ch.reference'>
        <title id='ch.reference.title'>Reference pages</title>
@@ -17661,6 +17795,68 @@ evtdump <replaceable>option...</replaceable>
             </refsect1>
         </refentry>
        </section>
-
+       <section>
+        <title>Python unified format module reference</title>
+        <para>
+            The capabilites of the Python module closely match those of the C++ libaries.  
+            Where possible, the interfaces have been made more python like.  As
+            described previously, normally, you have a ring item as a bytearray, you then
+            make a raw ring item with the factory and, after analyzing the type, you
+            use the factory again, to create the proper type of ring item subclass.
+            You can then do natural interrogations of the ring item.
+        </para>
+        <para>
+            Note that the <classname>ringite</classname> class is the base class
+             of all of the other, more, speciic ring item classes.  Thus for
+             any specific ring item class, you can all any of the ringitem methods.
+        </para>
+        <refentry>
+            <refmeta>
+                <refentrytitle>daqformat module</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>daqformat</refname>
+                <refpurpose>Module for FRIB/NSCLDAQ ringitems.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+import daqformat
+# Integers defined by the module.
+daqformat.BEGIN_RUN
+daqformat.END_RUN
+daqformat.PAUSE_RUN
+daqformat.RESUME_RUN
+daqformat.ABNORMAL_ENDRUN
+daqformat.PERIODIC_SCALERS
+daqformat.INCREMENTAL_SCALERS
+daqformat.TIMESTAMPED_NONINCR_SCALERS
+daqformat.EVB_GLOM_INFO
+daqformat.PHYSICS_EVENT
+daqformat.EVB_FRAGMENT
+daqformat.PHYSICS_EVENT_COUNT
+daqformat.PACKET_TYPES
+daqformat.MONITORED_VARIABLES
+daqformat.RING_FORMAT
+daqformat.EVB_UNKNOWN_PAYLOAD
+            </programlisting>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>DESCRIPTION</title>
+            <para>  
+                This is the module that contains all of the classes described in this
+                section.  Normally you can import this, build a <classname>ringitemfactory</classname>
+                and then just use its methods and the methods of the objects it creates.  It's important
+                to note that ring item classes are not meant to be directly instantiated.  You <emphasis>must</emphasis>
+                use the methods of the <classname>ringitemfactory</classname> to create instances of them.
+            </para>
+            <para>
+                The names in the synopsis above are symbolic ring item types.  They are typically used to
+                determine which factory method to invoke to take a raw ring item, created from a byte array
+                and create a specific ring item object.
+            </para>
+        </refsect1>
+        </refentry>
+       </section>
     </chapter>
 </book>
