@@ -529,28 +529,35 @@ namespace ufmt {
         
         // Could have a body header:
         
+        const v12::PhysicsEventCountItemBody* pBody =
+             reinterpret_cast<const v12::PhysicsEventCountItemBody*>(rhs.getBodyPointer());
+        ufmt::CRingPhysicsEventCountItem* result;
         if (pItem->s_body.u_noBodyHeader.s_empty > sizeof(uint32_t)) {
             const v12::BodyHeader* pH = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
             const v12::PhysicsEventCountItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
             
             // Make the base item:
             
-            auto result = makePhysicsEventCountItem(
+            result = reinterpret_cast<v12::CRingPhysicsEventCountItem*>(makePhysicsEventCountItem(
                 pBody->s_eventCount, pBody->s_timeOffset, pBody->s_timestamp,
                 pBody->s_offsetDivisor
-            );
+            ));
             // Add in the body header:
             
             result->setBodyHeader(pH->s_timestamp, pH->s_sourceId, pH->s_barrier);
-            return result;
+            
         } else {
             const v12::PhysicsEventCountItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
-            return makePhysicsEventCountItem(
+            result =  (makePhysicsEventCountItem(
                 pBody->s_eventCount, pBody->s_timeOffset, pBody->s_timestamp,
                 pBody->s_offsetDivisor
-            );
+            ));
         }
-        
+        v12::pPhysicsEventCountItemBody resultBody = 
+            reinterpret_cast<v12::pPhysicsEventCountItemBody>(result->getBodyPointer());
+        resultBody->s_originalSid = pBody->s_originalSid;
+ 
+        return result;
     }
     /**
      * makeScalerItem
@@ -698,11 +705,14 @@ namespace ufmt {
         }
         const v12::TextItem* pItem =
             reinterpret_cast<const v12::TextItem*>(rhs.getItemPointer());
+        ufmt::CRingTextItem* result;
+        const v12::TextItemBody* pBody = 
+            reinterpret_cast<const v12::TextItemBody*>(rhs.getBodyPointer());
         if (pItem->s_body.u_noBodyHeader.s_empty > sizeof(uint32_t)) {
             const v12::BodyHeader* pH = &(pItem->s_body.u_hasBodyHeader.s_bodyHeader);
-            const v12::TextItemBody* pBody = &(pItem->s_body.u_hasBodyHeader.s_body);
+            
             auto strings = marshallStrings(pBody);
-            auto result = makeTextItem(
+            result = makeTextItem(
                 rhs.type(), strings, pBody->s_timeOffset, pBody->s_timestamp,
                 pBody->s_offsetDivisor
             );
@@ -711,11 +721,17 @@ namespace ufmt {
         } else {
             const v12::TextItemBody* pBody = &(pItem->s_body.u_noBodyHeader.s_body);
             auto strings = marshallStrings(pBody);
-            return makeTextItem(
+            result =  makeTextItem(
                 rhs.type(), strings, pBody->s_timeOffset, pBody->s_timestamp,
                 pBody->s_offsetDivisor
             );
         }
+        // Put in the original source id:
+
+        v12::TextItemBody* resultBody = reinterpret_cast<TextItemBody*>(result->getBodyPointer());
+        resultBody->s_originalSid = pBody->s_originalSid;
+
+        return result;
         
     }
     /**
@@ -823,19 +839,28 @@ namespace ufmt {
         
         const v12::StateChangeItemBody* pBody =
             reinterpret_cast<const v12::StateChangeItemBody*>(rhs.getBodyPointer());
+        
+            v12::CRingStateChangeItem* pResult;
         if (rhs.hasBodyHeader()) {
-            return new v12::CRingStateChangeItem(
+            pResult =  new v12::CRingStateChangeItem(
                 rhs.getEventTimestamp(), rhs.getSourceId(), rhs.getBarrierType(),
                 rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
                 pBody->s_Timestamp, pBody->s_title, pBody->s_offsetDivisor
             );
         } else {
-            return new v12::CRingStateChangeItem(
+            pResult =  new v12::CRingStateChangeItem(
                 rhs.type(), pBody->s_runNumber, pBody->s_timeOffset,
                 pBody->s_Timestamp,
                 pBody->s_title, pBody->s_offsetDivisor
             );
         }
+        // Now we need to fix up the original source id. (Issue #36).
+
+        v12::pStateChangeItemBody pNewBody =
+             reinterpret_cast<ufmt::v12::pStateChangeItemBody>(pResult->getBodyPointer());
+        pNewBody->s_originalSid = pBody->s_originalSid;
+
+        return pResult;
         
     }
     /** Return format version: */
