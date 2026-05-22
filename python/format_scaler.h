@@ -22,7 +22,7 @@
 
 
 #include <Python.h>
-#include <format_ringitem.h>
+#include "format_ringitem.h"
 
 namespace ufmt {
     class CRingScalerItem;

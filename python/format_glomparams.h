@@ -19,7 +19,7 @@
  */
 #ifndef FORMAT_GLOMPARAMETERS_H
 #define FORMAT_GLOMPARAMETERS_H
-#include <format_ringitem.h>
+#include "format_ringitem.h"
 #include <Python.h>
 
 // Forward reference the encapsulated class here.
