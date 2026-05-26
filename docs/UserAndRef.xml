@@ -18566,6 +18566,108 @@ if raw_item.type() in (daqformat.PACKET_TYPES, daqformat.MONITORED_VARIABLES):
                 </itemizedlist>
             </refsect1>
         </refentry>
+        <refentry id='ringfragmentitem'>
+            <refmeta>
+                <refentrytitle id='ringfragmentitem.title'>ringfragmentitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>                
+            </refmeta>
+            <refnamediv>
+                <refname>ringfragmentitem</refname>
+                <refpurpose>Python representation ofitems with arbitrary fragment data </refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.EVB_FRAGMENT:
+    fragment = factory.makeRingFragmentItem(raw_item)
+    ...
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                  The FRIB/NSCLDAQ event builder is able, to tee off a stream of data
+                  consisting only of fragments.  These fragments are wrapped into a ring item
+                  of the type daqformat.EVB_FRAGMENT.  The <classname>ringfragmentitem</classname>
+                  is the Python version of those ring items.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>ringfragmenttitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>timestamp</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the timestamp from the fragment encapsulated in the
+                                    ring item.  In practice, this <emphasis>should</emphasis>
+                                    be the same as the timestamp in the bodyheader of the item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type><methodname>source</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the fragment's source id.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>bytearray</type> <methodname>payload</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the fragment payload as a byte array.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>barrierType</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the fragment's barrier type field.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
