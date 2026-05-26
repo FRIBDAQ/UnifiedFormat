@@ -18830,6 +18830,136 @@ if raw_item.type() in (daqformat.PERIODIC_SCALERS, daqformat.INCREMENTAL_SCALERS
                 </itemizedlist>
             </refsect1>
         </refentry>
+        <refentry id='glomparameters'>
+            <refmeta>
+                <refentrytitle id='glomparameters.title'> glomparameters</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>glomparameters</refname>
+                <refpurpose>Encapsulate event builder parameters</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.EVB_GLOM_INFO:
+    scalers = factory.makeGlomParameters(raw_item)
+    ...         
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The FRIB/NSCLDAQ event builder is configurable and, to know what it's doing you
+                    need to know how its configuration paramters have been set.  At the beginning of a 
+                    run, the event builder, emits both a format item and a glom parameters item wit
+                    type daqformat.EVB_GLOM_INFO.
+                    the <classname>glomparameters</classname> encapsulates the glom parameters ring item type
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>glomparameters</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>   
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>coincidenceTicks</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    The final stage of the event builder glues together physics items that
+                                    are within a coincidence interval of timestamp ticks that are
+                                    settable by the user.  This method returns the users setting for the
+                                    coincidence interval.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>bool</type> <methodname>isBulding</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    For test purposes, rather than building events, the event builder can
+                                    just emit fragments as new physics event items.  If the event builder is,
+                                    in fact, building events, this method will return <literal>True</literal>
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>string</type> <methodname>policy</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    When the event builder is building events, it needs to know how
+                                    to assign timestamps to the events it outputs from among the fragments
+                                    that make up each event.  The user can select from among three
+                                    timetamp assignemnt policies.  This method returns a string that depends
+                                    on the policy selected and is one of:
+                                </para>
+                                <variablelist>
+                                    <varlistentry>
+                                            <term><literal>first</literal></term>
+                                            <listitem>
+                                                <para>
+                                                    The timestamp will be assigned from the first (earliest)
+                                                    fragment.
+                                                </para>
+                                            </listitem>
+
+                                    </varlistentry>
+                                    <varlistentry>
+                                            <term><literal>last</literal></term>
+                                            <listitem>
+                                                <para>
+                                                    The timestamp is assigned fromt he last (latest)
+                                                    fragment
+                                                </para>
+                                            </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                            <term><literal>average</literal></term>
+                                            <listitem>
+                                                <para>
+                                                    The timetamp is computed from the average of all timestamps
+                                                    in the fragments that make up the event.
+                                                </para>
+                                            </listitem>
+                                    </varlistentry>
+                                </variablelist>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>      
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
