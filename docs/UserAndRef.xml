@@ -18668,6 +18668,168 @@ if raw_item.type() == daqformat.EVB_FRAGMENT:
                 </itemizedlist>
             </refsect1>
         </refentry>
+        <refentry id='scaleritem'>
+            <refmeta>
+                <refentrytitle id='scaleritem.title'>scaleritem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>scaleritem</refname>
+                <refpurpose>Pythonic scaler data item</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() in (daqformat.PERIODIC_SCALERS, daqformat.INCREMENTAL_SCALERS, TIMESTAMPED_NONINCR_SCALERS):
+    scalers = factory.makeScalerItem(raw_item)
+    ...
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    Readers in FRIB/NSCLDAQ periodically read counters that allow users
+                    to see detector rates, live times and other useful bits of data.
+                    These are encpaulated in <classname>scaleritem</classname> objects which
+                    are derived from <classname>ringitem</classname>
+                </para>
+                <para>
+                    The methods provided by the object allow you to either pull inidividual counter
+                    values from the object or get all of the items in a single call.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>scalertitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type><methodname>startTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the
+                                    run of the start time of the counting period represented by this
+                                    item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>endTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the
+                                    run of the end time of the counting period represented by
+                                    this item.  In practice, this is also the number of seconds
+                                    into the run at which the item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>absoluteTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the wall clock time in the format of
+                                    <literal>time.time()</literal> at which the item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>boo</type> <methodname>isIncremental</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Historically, scalers have been read in two modes.  Incremental
+                                    and cumulative.  Incremental scalers are cleared after each read while
+                                    cumulative are only cleared at the end of each run. This
+                                    method returns <literal>True</literal> if the scalers  in this
+                                    item were read incrementally. 
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>number</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the number of counters (scalers) stored in this item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getScaler</methodname>
+                                <methodparam><type>int</type> <parameter>index</parameter></methodparam>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the value of the counter/scaler
+                                    selected by <parameter>index</parameter>.  If the index is not valid
+                                    (that is not  in the range [0, number()))
+                                    an IndexError exception is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>tuple of int</type>
+                                <methodname>getScalers</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns a tuple containing the values of all scalers.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getOriginalSourceId</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the id of the source that emitted the scaler item.
+                                    Since the event builder will rewrite the body header sourcde id
+                                    to support multi-level event building use this method to know
+                                    which source emitted the item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
