@@ -17821,7 +17821,7 @@ evtdump <replaceable>option...</replaceable>
             </refnamediv>
             <refsynopsisdiv>
             <programlisting>
-import daqformat
+from nscldaq import daqformat
 # Integers defined by the module.
 daqformat.BEGIN_RUN
 daqformat.END_RUN
@@ -17856,7 +17856,310 @@ daqformat.EVB_UNKNOWN_PAYLOAD
                 and create a specific ring item object.
             </para>
         </refsect1>
+        <refsect1>
+            <title>SEE ALSO</title>
+            <para>
+                (3pythonformat<link linkend='format_factory' endterm='format_factory.title' />
+            </para>
+        </refsect1>
         </refentry>
+        <refentry id='format_factory'>
+            <refmeta>
+                <refentrytitle id='format_factory.title'>ringitemfactory</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ringitemfactory</refname>
+                <refpurpose>Create ringitems of all types</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+
+factory = daqformat.ringitemfactory(<replaceable>version</replaceable>)
+ringitem_data = getringitem_as_bytearray()     # You implement something like this.
+raw_ringitem = factory.makeRingItem(ringitem_data)
+match raw_ringitem.type():
+    case daqformat.BEGIN_RUN | daqformat.END_RUN | daqformat.PAUSE_RUN | daqformat.RESUME_RUN:
+        state_transition = factory.makeStateChangeItem(raw_ringitem)
+        ...
+    case daqformat.ABNORMAL_ENDRUN:
+        abnormal_endrun = factory.makeAbnormalEndItem(raw_ringitem)
+        ...
+    case daqformat.PERIODIC_SCALERS | daqformat.INCREMENTAL_SCALERS | daqformat.TIMESTAMPT_NONINCR_SCALERS:
+        scaler_update = factory.makeScalerItem(raw_ringitem)
+        ...
+    case daqformat.EVB_GLOM_INFO:
+        glom_params = factory.makeGlomParameters(raw_ringitem)
+        ...
+    case daqformat.PHYSICS_EVENT:
+        event = factory.makePhysicsEventItem(raw_ringitem)
+        ...
+    case daqformat.EVB_FRAGMENT:
+        fragment = factory.makeRingFratmentItem(raw_ringitem)
+        ...
+    case daqformat.daqformat.PHYSICS_EVENT_COUNT:
+        trigger_stats  = factory.makePhysicsEventCountItem(raw_ringitem)
+        ...
+    case daqformat.PACKET_TYPES | daqformat.MONITORED_VARIABLES:
+        stringlist_item = factory.makeTextitem(raw_ringitem)
+        ...
+    case daqformat.RING_FORMAT:
+        format_item = factory.makeDataFormatItem(raw_ringitem)
+        ...
+    case daqformat.EVB_UNKNOWN_PAYLOAD:
+        #  process the raw_ringitem in an application dependent way.
+        ...
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The <classname>ringitemfactory</classname> is responsible for taking byte arrays
+                    and turning them into raw <classname>ringitem</classname> objects, if possible.
+                    Once the type of the ring item is determined, the factory can take that
+                    <classname>ringitem</classname> object and turn it into an object of the appropriate
+                    derived class from <classname>ringitem</classname>.
+                </para>
+                <para>
+                    Each of the ring item types, base class and derived classes, have a set of methods
+                    that allow interrogation of the contents of the item in a meaningful, type dependent way.
+                    The extension does not, at present, support the creation or modification of ring items.
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><constructorsynopsis language='python'>
+                                <methodname>daqformat.ringitemfactory</methodname>
+                                <methodparam><type>int</type><parameter>major_version</parameter></methodparam>
+                            </constructorsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    The constructor of the <classname>ringitemfactory</classname> requires
+                                    a single integer parameter, the major version of FRIB/NSCLDAQ for which
+                                    the factory will make items.  Supported versions as of the time this
+                                    document is being written are <literal>10</literal>, <literal>11</literal>
+                                    and <literal>12</literal>.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>ringitem</type> <methodname>makeRingItem</methodname>
+                                <methodparam><type>bytearray</type><parameter>raw_data</parameter></methodparam>
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Given a byte array that contains a ring item, this method returns a 
+                                    <classname>ringitem</classname> object.  <classname>ringitem</classname>
+                                    is the base class of the class hierarchy of ring item types.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>abnormalenditem</type><methodname>makeAbnormalEndItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns an <classname>abnormalenditem</classname>
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>scaleritem</type><methodname>makeScalerItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>scaleritem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>glomparameters</type><methodname>makeGlomParameters</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>glomparameters</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>physicsevent</type><methodname>makePhysicsEventItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>physicsevent</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>ringfragmentitem</type><methodname>makeRingFragmentItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>ringfragmentitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>eventcountitem</type><methodname>makePhysicsEventCountItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>eventcountitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>stringlistitem</type><methodname>makeTextItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>stringlistitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>statechangeitem</type><methodname>makeStateChangeItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>statechangeitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>ringformatitem</type><methodname>makeDataFormatItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>ringformatitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <para>
+                    For more information about the capabilities of each of the specific ring item types 
+                    the factory can produce, see the appropriate manpage:
+                </para>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='abnormalenditem' endterm='abnormalenditem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='scaleritem' endterm='scaleritem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='glomparameters' endterm='glomparameters.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='physicsevent' endterm='physicsevent.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='ringfragmentitem' endterm='ringfragmentitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='eventcountitem' endterm='eventcountitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='stringlistitem' endterm='stringlistitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='statechangeitem' endterm='statechangeitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='ringformatitem' endterm='ringformatitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        
        </section>
     </chapter>
 </book>
