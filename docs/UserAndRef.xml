@@ -18159,7 +18159,298 @@ match raw_ringitem.type():
                 </itemizedlist>
             </refsect1>
         </refentry>
-        
+        <refentry id='ringitem'>
+            <refmeta>
+                <refentrytitle id='ringitem.title'>ringitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ringitem</refname>
+                <refpurpose>Base class of all python encapsulated ring items</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+from nscldaq import daqformat
+
+factory = daqformat.ringitemfactory(<replaceable>major_verison</replaceable>)
+
+some_bytearray = geringitem_from_somewhere()
+item = factory.makeRingItem(some_bytearray)
+...
+
+            </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    <classname>ringitem</classname> object provide a few basic services.  Normally,
+                    one simply interrogates the type and then calls another factory method to create the
+                    specific type of ring item represented by the item's type.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>ringitem</classname> object from a byte array.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type><methodname>getType</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the ring item types.  This can be
+                                    comared against the ring item type values defined in the
+                                    <literal>daqformat</literal> module.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>size</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the size of the entire ring item in byts.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>timestamp</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    If the ring item has a body header, this method returns the
+                                    64 bit timestamp value from the body header. If the item has
+                                    no body header, <literal>None</literal> is returned instead.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type><methodname>sourceid</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    If the ring item has a body heder, the source id field from
+                                    it is returned. If there is no body header; <literal>None</literal>
+                                    is returned instead.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>barriertype</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    If the ring item has a body heder, the barrier type field from
+                                    it is returned. If there is no body header; <literal>None</literal>
+                                    is returned instead.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>bytearray</type> <methodname>getbody</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the ring item payload as a byte array.  Note that 
+                                    if there is a body header, this is not included in the
+                                    byte array.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <para>
+                    <link endterm='format_factory.title' linkend='format_factory' />
+                </para>
+            </refsect1>
+        </refentry>
+        <refentry id='physicsevent'>
+            <refmeta>
+                <refentrytitle id='physicsevent.title'>physicsevent</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>physicsevent</refname>
+                <refpurpose>Encapsulate a physics event</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+from nscldaq import daqformat
+..
+factory = daqformat.ringitemfactory(<replaceable>major_version</replaceable>)
+...
+some_ringitem = factory.makeRingItem(<replaceable>some_bytearray</replaceable>)
+if some_ringitem.type() == daqformat.PHYSICS_EVENT:
+    event = factory.makePhysicsEventItem(some_ringitem)
+    ...
+
+            </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The <classname>physicsevent</classname> class is derived from 
+                    the <classname>ringitem</classname> class.  Therefore all methods 
+                    from that class are available to <classname>physicsevent</classname> objects.
+                </para>
+                <para>
+                    <classname>physicsevent</classname> objects encapsulate the data from a 
+                    physics trigger.
+                    Since the contents of a physics event item are totally experiment dependent,
+                    the class does not implement any additional methods.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>physicsevent</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry> 
+        <refentry id='eventcountitem'>
+            <refmeta>
+                <refentrytitle id='eventcountitem.title'>eventcountitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>eventcountitem</refname>
+                <refpurpose>Encpasulate run trigger statistics data</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.PHYSICS_EVENT_COUNT:
+    trigger_stats = factory.makePysicsEventCountItem(raw_item)
+    ...
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The readout programs for FRIB/NSCLDAQ periodically emit a trigger statistics
+                    item that shows how many triggers have been accepted since a run started.
+                    The <classname>eventcountitem</classname> encapsulates this ring item type.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>eventcountitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>timeOffset</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the run at which
+                                    this item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>time</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    This method returns the time at which the item was emitted
+                                    in the format <literal>time.time()</literal> would return.
+                                    Note that to convert this to a time string, you will need to know
+                                    the timezone at which the data was acquired if it is not the same
+                                    as your timezone.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>eventCount</methodname> <void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the number of accepted triggers since the start of the
+                                    run.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>originalSource</methodname>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    In environments where there is an event builder, the event builder
+                                    output stage will, in order to support multi-level event building, 
+                                    emit items with body headers that all have the event source id 
+                                    selected when running the event builder.  Nonetheless, it can be 
+                                    important to know which event sourcde actually emitted the original
+                                    item.  This method returns that sourcde id.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
