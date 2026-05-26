@@ -18960,6 +18960,122 @@ if raw_item.type() == daqformat.EVB_GLOM_INFO:
                 </itemizedlist>
             </refsect1>
         </refentry>
+        <refentry id='statechangeitem'>
+            <refmeta>
+                <refentrytitle id='statechangeitem.title'>statechangeitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>statechangeitem</refname>
+                <refpurpose>Encapsulate run state change items</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() in (dataformat.BEGIN_RUN, dataformat.END_RUN
+                       dataformat.PAUSE_RUN, dataformat.RESUME_RUN):
+    state_change = factory.makeStateChangeItem(raw_item)
+    ...         
+            </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    When FRIB/NSCLDAQ runs change state, a <classname>statechangeitem</classname> is
+                    emitted.  THis documents the change of state as well as carrying information about
+                    the run. See   <literal>METHODS</literal> below.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>statechangeitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>  
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getRunNumber</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the run number the user assigned to the data taking run.
+                                    The run number for recorded runs should be unique.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>getElapsedTime</methodname> <void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the run at which
+                                    the state change item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>string</type> <methodname>getElapsedTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the title associated with the run by the user.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getTime</methodname> <void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the wall time at wich the state change item was
+                                    emitted. This is the <literal>time.time()</literal> value.
+                                </para>
+                            </listitem>
+                    </varlistentry> 
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>originalSource</methodname>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the id of the sourcde that emitted this item.  Note that
+                                    the sourcde id in the body header, if that exists, can have beeen ovewritten
+                                    by an event builder to support multilevel event builder.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        
        </section>
     </chapter>
 </book>
