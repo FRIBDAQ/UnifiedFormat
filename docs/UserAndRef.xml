@@ -18451,6 +18451,121 @@ if raw_item.type() == daqformat.PHYSICS_EVENT_COUNT:
                 </itemizedlist>
             </refsect1>
         </refentry>
+        <refentry id='stringlistitem'>
+            <refmeta>
+                <refentrytitle id='stringlistitem.title'>stringlistitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>stringlistitem</refname>
+                <refpurpose>Python representation of ring item with a list of strings</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() in (daqformat.PACKET_TYPES, daqformat.MONITORED_VARIABLES):
+    text_list = factory.makeTextItem(raw_item)
+    ...
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    FRIB/NSCLDAQ has a pair of ring item types that contain lists of strings
+                    in their body payloads.  The <classname>stringlistitem</classname> class
+                    encapsulates both of these.  You can tell the difference between them (what
+                    the strings represent), by invoking the <methodname>type</methodname> on the
+                    object, since <classname>stringlistitem</classname> is derived from
+                    <classname>ringitem</classname>
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>stringlistitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>tuple of str</type>
+                                <methodname>getStrings</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns a tuple containing all of the strings in the ring item.
+                                    The strings are in the order in which they appear in the object.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>getElapsedTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the run at which
+                                    this item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    This method returns the time at which the item was emitted
+                                    in the format <literal>time.time()</literal> would return.
+                                    Note that to convert this to a time string, you will need to know
+                                    the timezone at which the data was acquired if it is not the same
+                                    as your timezone.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>originalSource</methodname>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    In environments where there is an event builder, the event builder
+                                    output stage will, in order to support multi-level event building, 
+                                    emit items with body headers that all have the event source id 
+                                    selected when running the event builder.  Nonetheless, it can be 
+                                    important to know which event sourcde actually emitted the original
+                                    item.  This method returns that sourcde id.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
