@@ -17821,7 +17821,7 @@ evtdump <replaceable>option...</replaceable>
             </refnamediv>
             <refsynopsisdiv>
             <programlisting>
-from nscldaq import daqformat
+import daqformat
 # Integers defined by the module.
 daqformat.BEGIN_RUN
 daqformat.END_RUN
@@ -17874,7 +17874,7 @@ daqformat.EVB_UNKNOWN_PAYLOAD
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 
 factory = daqformat.ringitemfactory(<replaceable>version</replaceable>)
 ringitem_data = getringitem_as_bytearray()     # You implement something like this.
@@ -18170,7 +18170,7 @@ match raw_ringitem.type():
             </refnamediv>
             <refsynopsisdiv>
             <programlisting>
-from nscldaq import daqformat
+import daqformat
 
 factory = daqformat.ringitemfactory(<replaceable>major_verison</replaceable>)
 
@@ -18290,7 +18290,7 @@ item = factory.makeRingItem(some_bytearray)
             </refnamediv>
             <refsynopsisdiv>
             <programlisting>
-from nscldaq import daqformat
+import daqformat
 ..
 factory = daqformat.ringitemfactory(<replaceable>major_version</replaceable>)
 ...
@@ -18351,7 +18351,7 @@ if some_ringitem.type() == daqformat.PHYSICS_EVENT:
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -18462,7 +18462,7 @@ if raw_item.type() == daqformat.PHYSICS_EVENT_COUNT:
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -18577,7 +18577,7 @@ if raw_item.type() in (daqformat.PACKET_TYPES, daqformat.MONITORED_VARIABLES):
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -18679,7 +18679,7 @@ if raw_item.type() == daqformat.EVB_FRAGMENT:
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -18841,7 +18841,7 @@ if raw_item.type() in (daqformat.PERIODIC_SCALERS, daqformat.INCREMENTAL_SCALERS
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -18971,7 +18971,7 @@ if raw_item.type() == daqformat.EVB_GLOM_INFO:
             </refnamediv>
             <refsynopsisdiv>
             <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -19086,7 +19086,7 @@ if raw_item.type() in (daqformat.BEGIN_RUN, daqformat.END_RUN
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -19142,7 +19142,7 @@ if raw_item.type() == daqformat.ABNORMAL_ENDRUN:
             </refnamediv>
             <refsynopsisdiv>
                 <programlisting>
-from nscldaq import daqformat
+import daqformat
 ...
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
@@ -19192,7 +19192,7 @@ if raw_item.type() == daqformat.ABNORMAL_ENDRUN:
                 <example>
                     <title>Choosing the correct factory in Python</title>
                     <programlisting>
-from nscldaq import daqformat
+import daqformat
 
 factory = daqformat.ringitemfactory(11)     # Guess the right factory type:
 ring_item_bytes = read_ring_item()
