@@ -76,10 +76,21 @@
                     from an arbitrary data source.
                 </para>
             </listitem>
+            
+            <listitem>
+                <para>
+                    <link linkend='ch.python' endterm='ch.python.title' />
+                    Describes how to use the Python module that wraps
+                    this library. This modules is available as of 
+                    version 2.4-000
+                </para>
+            </listitem>
             <listitem>
                <para>
                   <link linkend='ch.reference' endterm='ch.reference.title' />
-                  Provides detailed reference pages.
+                  Provides detailed reference pages.  Reference pages inlude
+                  reference information for the pytyhon module in manual section
+                  3pythonformat
                </para>
             </listitem>
         </itemizedlist>
@@ -936,6 +947,129 @@ while(1) {
                 </para>
             </callout>
         </calloutlist>
+    </chapter>
+    <chapter id='ch.python'>
+        <title id='ch.python.title'>The Python unified format module</title>
+        <para>
+            Beginning version 2.4-000, the unified format library installs a
+            Python3 module that can be used to handle ring items from FRIB/NSCLDAQ
+            from within Python scripts.   This section shows how to import that module
+            and discusses a bit about how it is intended to be used.
+        </para>
+        <para>
+            The module is installed in the <filename>python</filename> subdirectory
+            of the unified format installation tree.  If, for example, the library is installed
+            in /usr/opt/daqformat/2.4-000, you can import the library as follows:
+        </para>
+        <informalexample>
+            <programlisting>
+PYTHONPATH=/usr/opt/daqformat/2.4-000/python
+python3
+>>> import daqformat
+
+            </programlisting>
+        </informalexample>
+        <para>
+            The module revolves around the use of factories.  The idea is that you
+            will read a ring item from some source into a bytearray.  Next you'll use the 
+            factory to create a raw ring item.  After analyzing the type of the
+            ring item, you'll pass it into another factory method to get the detailed
+            ring item type which you an then interrogate using its methods. 
+        </para>
+        <para>
+            Note that the encpasulation is read-only at present. That is you cannot
+            use it to modify exising ring items.  
+        </para>
+        <para>
+            The code fragment below shows how to search some input source for
+            state transition items and print out the item type, run number and title.
+        </para>
+        <informalexample>
+            <programlisting language='python'>
+import daqformat
+...
+factory = daqformat.ringitemfactory(12)   <co id='python.factory' />
+
+with src=open_datasource('somedatasource'): <co id='python.detailnotshown' />
+    raw_bytes = src.get_ringitem()
+    raw_item  = factory.makeRingitem()      <co id='python.makeraw' />
+    transition = None
+    match raw_item.type():                   <co id='python.matchtype' />
+        case daqformat.BEGIN_RUN:            <co id='python.transition' />
+            transition = factory.makeStateChangeItem(raw_item)
+            transtionType = 'Begin run'
+        case daqformat.END_RUN:
+            transition = factory.makeStateChangeItem(raw_item)
+            transitionType = 'End run'
+        case daqformat.PAUSE_RUN:
+            transition = factory.makeStateChangeItem(raw_item)
+            transitionType = 'Pause run'
+        case daqformat.RESUME_RUN:
+            transition = factory.makeStateChangeItem(raw_item)
+            transitionType = 'Resume run'
+        case _:
+            pass
+
+    if transition is not None:              <co id='python.handletransition' />
+
+        print('state transition:')
+        print ('transition type: ', transitionType)
+        print('   run title: ', transition.getTitle())
+        print ('  run number:', transitino.getRun())
+
+            </programlisting>
+        </informalexample>
+        <calloutlist>
+            <callout arearefs='python.factory'>
+                <para>
+                    After importing the module, a ring item factory is created
+                    for FRIB/NSCLDAQ version 12.
+                </para>
+            </callout>
+            <callout arearefs='python.detailnotshown'>
+                <para>
+                    This code fragment assumes the existence of some
+                    way to get ring items from some source into byte arrays.
+                    <literal>open_datasource</literal> opens the data source and
+                    <literal>get_ringitem</literal> gets a ring item into a 
+                    bytarray.   The data source implments the resource manager protocol
+                    and the man program is, therefore a loop over all items in the data
+                    source, getting them one at a time.
+                </para>
+            </callout>
+            <callout arearefs='python.matchtype'>
+                <para>
+                    The ring item <methodname>type</methodname> returns the ring item type
+                    as an integer.  Each of the match arms handles one of the possible
+                    ring item types that represent a state transition and all other cases as well.
+                </para>
+            </callout>
+            <callout arearefs='python.transition'>
+                <para>
+                    This is an example match arm for begin run item types.
+                    Note tha the daqformat module defines constants for all of the defined
+                    ring item types.  These are described in the reference material.
+                    For a state transition item, the transition variable is set to tbe
+                    a state transition object by passing the raw_item into the factory's
+                    <methodname>makeStateChangeItem</methodname>.  The resulting object has
+                    methods that allow the properties of the item to be queried.
+                </para>
+                <para>
+                    Additionally, the transitionType variable is set to a string-ified version
+                    of the transition type.
+                </para>
+            </callout>
+            <callout arearefs='python.handletransition'>
+                <para> 
+                    If the transition variable was set (It's initialized to None each loop pass), it
+                    information about the transition is printed out.
+                </para>
+            </callout>
+        </calloutlist>
+        <para>
+            See the 3pythonformat section of the <link linkend='ch.reference'>reference</link>
+            pages for detailed descriptions of the module, factory and objects it can create.
+        </para>
     </chapter>
     <chapter id='ch.reference'>
        <title id='ch.reference.title'>Reference pages</title>
@@ -17661,6 +17795,1454 @@ evtdump <replaceable>option...</replaceable>
             </refsect1>
         </refentry>
        </section>
+       <section>
+        <title>Python unified format module reference</title>
+        <para>
+            The capabilites of the Python module closely match those of the C++ libaries.  
+            Where possible, the interfaces have been made more python like.  As
+            described previously, normally, you have a ring item as a bytearray, you then
+            make a raw ring item with the factory and, after analyzing the type, you
+            use the factory again, to create the proper type of ring item subclass.
+            You can then do natural interrogations of the ring item.
+        </para>
+        <para>
+            Note that the <classname>ringite</classname> class is the base class
+             of all of the other, more, speciic ring item classes.  Thus for
+             any specific ring item class, you can all any of the ringitem methods.
+        </para>
+        <refentry>
+            <refmeta>
+                <refentrytitle>daqformat module</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>daqformat</refname>
+                <refpurpose>Module for FRIB/NSCLDAQ ringitems.</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+from nscldaq import daqformat
+# Integers defined by the module.
+daqformat.BEGIN_RUN
+daqformat.END_RUN
+daqformat.PAUSE_RUN
+daqformat.RESUME_RUN
+daqformat.ABNORMAL_ENDRUN
+daqformat.PERIODIC_SCALERS
+daqformat.INCREMENTAL_SCALERS
+daqformat.TIMESTAMPED_NONINCR_SCALERS
+daqformat.EVB_GLOM_INFO
+daqformat.PHYSICS_EVENT
+daqformat.EVB_FRAGMENT
+daqformat.PHYSICS_EVENT_COUNT
+daqformat.PACKET_TYPES
+daqformat.MONITORED_VARIABLES
+daqformat.RING_FORMAT
+daqformat.EVB_UNKNOWN_PAYLOAD
+            </programlisting>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>DESCRIPTION</title>
+            <para>  
+                This is the module that contains all of the classes described in this
+                section.  Normally you can import this, build a <classname>ringitemfactory</classname>
+                and then just use its methods and the methods of the objects it creates.  It's important
+                to note that ring item classes are not meant to be directly instantiated.  You <emphasis>must</emphasis>
+                use the methods of the <classname>ringitemfactory</classname> to create instances of them.
+            </para>
+            <para>
+                The names in the synopsis above are symbolic ring item types.  They are typically used to
+                determine which factory method to invoke to take a raw ring item, created from a byte array
+                and create a specific ring item object.
+            </para>
+        </refsect1>
+        <refsect1>
+            <title>SEE ALSO</title>
+            <para>
+                (3pythonformat<link linkend='format_factory' endterm='format_factory.title' />
+            </para>
+        </refsect1>
+        </refentry>
+        <refentry id='format_factory'>
+            <refmeta>
+                <refentrytitle id='format_factory.title'>ringitemfactory</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ringitemfactory</refname>
+                <refpurpose>Create ringitems of all types</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
 
+factory = daqformat.ringitemfactory(<replaceable>version</replaceable>)
+ringitem_data = getringitem_as_bytearray()     # You implement something like this.
+raw_ringitem = factory.makeRingItem(ringitem_data)
+match raw_ringitem.type():
+    case daqformat.BEGIN_RUN | daqformat.END_RUN | daqformat.PAUSE_RUN | daqformat.RESUME_RUN:
+        state_transition = factory.makeStateChangeItem(raw_ringitem)
+        ...
+    case daqformat.ABNORMAL_ENDRUN:
+        abnormal_endrun = factory.makeAbnormalEndItem(raw_ringitem)
+        ...
+    case daqformat.PERIODIC_SCALERS | daqformat.INCREMENTAL_SCALERS | daqformat.TIMESTAMPT_NONINCR_SCALERS:
+        scaler_update = factory.makeScalerItem(raw_ringitem)
+        ...
+    case daqformat.EVB_GLOM_INFO:
+        glom_params = factory.makeGlomParameters(raw_ringitem)
+        ...
+    case daqformat.PHYSICS_EVENT:
+        event = factory.makePhysicsEventItem(raw_ringitem)
+        ...
+    case daqformat.EVB_FRAGMENT:
+        fragment = factory.makeRingFratmentItem(raw_ringitem)
+        ...
+    case daqformat.daqformat.PHYSICS_EVENT_COUNT:
+        trigger_stats  = factory.makePhysicsEventCountItem(raw_ringitem)
+        ...
+    case daqformat.PACKET_TYPES | daqformat.MONITORED_VARIABLES:
+        stringlist_item = factory.makeTextitem(raw_ringitem)
+        ...
+    case daqformat.RING_FORMAT:
+        format_item = factory.makeDataFormatItem(raw_ringitem)
+        ...
+    case daqformat.EVB_UNKNOWN_PAYLOAD:
+        #  process the raw_ringitem in an application dependent way.
+        ...
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The <classname>ringitemfactory</classname> is responsible for taking byte arrays
+                    and turning them into raw <classname>ringitem</classname> objects, if possible.
+                    Once the type of the ring item is determined, the factory can take that
+                    <classname>ringitem</classname> object and turn it into an object of the appropriate
+                    derived class from <classname>ringitem</classname>.
+                </para>
+                <para>
+                    Each of the ring item types, base class and derived classes, have a set of methods
+                    that allow interrogation of the contents of the item in a meaningful, type dependent way.
+                    The extension does not, at present, support the creation or modification of ring items.
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>factory</type> <methodname>daqformat.ringitemfactory</methodname>
+                                <methodparam><type></type><parameter>major_version</parameter></methodparam>
+                            </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    The constructor of the <classname>ringitemfactory</classname> requires
+                                    a single integer parameter, the major version of FRIB/NSCLDAQ for which
+                                    the factory will make items.  Supported versions as of the time this
+                                    document is being written are <literal>10</literal>, <literal>11</literal>
+                                    and <literal>12</literal>.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>ringitem</type> <methodname>makeRingItem</methodname>
+                                <methodparam><type></type><parameter>raw_data</parameter></methodparam>
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Given a byte array that contains a ring item, this method returns a 
+                                    <classname>ringitem</classname> object.  <classname>ringitem</classname>
+                                    is the base class of the class hierarchy of ring item types.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>abnormalenditem</type><methodname>makeAbnormalEndItem</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns an <classname>abnormalenditem</classname>
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>scaleritem</type><methodname>makeScalerItem</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis>
+                            </term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>scaleritem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>glomparameters</type><methodname>makeGlomParameters</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>glomparameters</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>physicsevent</type><methodname>makePhysicsEventItem</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>physicsevent</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type></type><methodname>makeRingFragmentItem</methodname>
+                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>ringfragmentitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>eventcountitem</type><methodname>makePhysicsEventCountItem</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>eventcountitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>stringlistitem</type><methodname>makeTextItem</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>stringlistitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>statechangeitem</type><methodname>makeStateChangeItem</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>statechangeitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>ringformatitem</type><methodname>makeDataFormatItem</methodname>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
+                                </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Given a <classname>ringitem</classname> object returned from 
+                                    <methodname>makeRingItem</methodname>, returns a <classname>ringformatitem</classname>
+                                    object
+                                    if the ring item type is correct. If not a <classname>RuntimeError</classname> exception
+                                    is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <para>
+                    For more information about the capabilities of each of the specific ring item types 
+                    the factory can produce, see the appropriate manpage:
+                </para>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='abnormalenditem' endterm='abnormalenditem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='scaleritem' endterm='scaleritem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='glomparameters' endterm='glomparameters.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='physicsevent' endterm='physicsevent.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='ringfragmentitem' endterm='ringfragmentitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='eventcountitem' endterm='eventcountitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='stringlistitem' endterm='stringlistitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='statechangeitem' endterm='statechangeitem.title' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            (3pythonformat)<link linkend='ringformatitem' endterm='ringformatitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='ringitem'>
+            <refmeta>
+                <refentrytitle id='ringitem.title'>ringitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ringitem</refname>
+                <refpurpose>Base class of all python encapsulated ring items</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+from nscldaq import daqformat
+
+factory = daqformat.ringitemfactory(<replaceable>major_verison</replaceable>)
+
+some_bytearray = geringitem_from_somewhere()
+item = factory.makeRingItem(some_bytearray)
+...
+
+            </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    <classname>ringitem</classname> object provide a few basic services.  Normally,
+                    one simply interrogates the type and then calls another factory method to create the
+                    specific type of ring item represented by the item's type.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>ringitem</classname> object from a byte array.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type><methodname>getType</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the ring item types.  This can be
+                                    comared against the ring item type values defined in the
+                                    <literal>daqformat</literal> module.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>size</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the size of the entire ring item in byts.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>timestamp</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    If the ring item has a body header, this method returns the
+                                    64 bit timestamp value from the body header. If the item has
+                                    no body header, <literal>None</literal> is returned instead.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type><methodname>sourceid</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    If the ring item has a body heder, the source id field from
+                                    it is returned. If there is no body header; <literal>None</literal>
+                                    is returned instead.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>barriertype</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    If the ring item has a body heder, the barrier type field from
+                                    it is returned. If there is no body header; <literal>None</literal>
+                                    is returned instead.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>bytearray</type> <methodname>getbody</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the ring item payload as a byte array.  Note that 
+                                    if there is a body header, this is not included in the
+                                    byte array.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <para>
+                    <link endterm='format_factory.title' linkend='format_factory' />
+                </para>
+            </refsect1>
+        </refentry>
+        <refentry id='physicsevent'>
+            <refmeta>
+                <refentrytitle id='physicsevent.title'>physicsevent</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>physicsevent</refname>
+                <refpurpose>Encapsulate a physics event</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+from nscldaq import daqformat
+..
+factory = daqformat.ringitemfactory(<replaceable>major_version</replaceable>)
+...
+some_ringitem = factory.makeRingItem(<replaceable>some_bytearray</replaceable>)
+if some_ringitem.type() == daqformat.PHYSICS_EVENT:
+    event = factory.makePhysicsEventItem(some_ringitem)
+    ...
+
+            </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The <classname>physicsevent</classname> class is derived from 
+                    the <classname>ringitem</classname> class.  Therefore all methods 
+                    from that class are available to <classname>physicsevent</classname> objects.
+                </para>
+                <para>
+                    <classname>physicsevent</classname> objects encapsulate the data from a 
+                    physics trigger.
+                    Since the contents of a physics event item are totally experiment dependent,
+                    the class does not implement any additional methods.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>physicsevent</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry> 
+        <refentry id='eventcountitem'>
+            <refmeta>
+                <refentrytitle id='eventcountitem.title'>eventcountitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>eventcountitem</refname>
+                <refpurpose>Encpasulate run trigger statistics data</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.PHYSICS_EVENT_COUNT:
+    trigger_stats = factory.makePysicsEventCountItem(raw_item)
+    ...
+
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The readout programs for FRIB/NSCLDAQ periodically emit a trigger statistics
+                    item that shows how many triggers have been accepted since a run started.
+                    The <classname>eventcountitem</classname> encapsulates this ring item type.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>eventcountitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>timeOffset</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the run at which
+                                    this item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>time</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    This method returns the time at which the item was emitted
+                                    in the format <literal>time.time()</literal> would return.
+                                    Note that to convert this to a time string, you will need to know
+                                    the timezone at which the data was acquired if it is not the same
+                                    as your timezone.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>eventCount</methodname> <void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the number of accepted triggers since the start of the
+                                    run.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>originalSource</methodname>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    In environments where there is an event builder, the event builder
+                                    output stage will, in order to support multi-level event building, 
+                                    emit items with body headers that all have the event source id 
+                                    selected when running the event builder.  Nonetheless, it can be 
+                                    important to know which event sourcde actually emitted the original
+                                    item.  This method returns that sourcde id.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='stringlistitem'>
+            <refmeta>
+                <refentrytitle id='stringlistitem.title'>stringlistitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>stringlistitem</refname>
+                <refpurpose>Python representation of ring item with a list of strings</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() in (daqformat.PACKET_TYPES, daqformat.MONITORED_VARIABLES):
+    text_list = factory.makeTextItem(raw_item)
+    ...
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    FRIB/NSCLDAQ has a pair of ring item types that contain lists of strings
+                    in their body payloads.  The <classname>stringlistitem</classname> class
+                    encapsulates both of these.  You can tell the difference between them (what
+                    the strings represent), by invoking the <methodname>type</methodname> on the
+                    object, since <classname>stringlistitem</classname> is derived from
+                    <classname>ringitem</classname>
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>stringlistitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>tuple of str</type>
+                                <methodname>getStrings</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns a tuple containing all of the strings in the ring item.
+                                    The strings are in the order in which they appear in the object.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>getElapsedTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the run at which
+                                    this item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    This method returns the time at which the item was emitted
+                                    in the format <literal>time.time()</literal> would return.
+                                    Note that to convert this to a time string, you will need to know
+                                    the timezone at which the data was acquired if it is not the same
+                                    as your timezone.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>originalSource</methodname>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    In environments where there is an event builder, the event builder
+                                    output stage will, in order to support multi-level event building, 
+                                    emit items with body headers that all have the event source id 
+                                    selected when running the event builder.  Nonetheless, it can be 
+                                    important to know which event sourcde actually emitted the original
+                                    item.  This method returns that sourcde id.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='ringfragmentitem'>
+            <refmeta>
+                <refentrytitle id='ringfragmentitem.title'>ringfragmentitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>                
+            </refmeta>
+            <refnamediv>
+                <refname>ringfragmentitem</refname>
+                <refpurpose>Python representation ofitems with arbitrary fragment data </refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.EVB_FRAGMENT:
+    fragment = factory.makeRingFragmentItem(raw_item)
+    ...
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                  The FRIB/NSCLDAQ event builder is able, to tee off a stream of data
+                  consisting only of fragments.  These fragments are wrapped into a ring item
+                  of the type daqformat.EVB_FRAGMENT.  The <classname>ringfragmentitem</classname>
+                  is the Python version of those ring items.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>ringfragmenttitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>timestamp</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the timestamp from the fragment encapsulated in the
+                                    ring item.  In practice, this <emphasis>should</emphasis>
+                                    be the same as the timestamp in the bodyheader of the item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type><methodname>source</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the fragment's source id.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>bytearray</type> <methodname>payload</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the fragment payload as a byte array.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>barrierType</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the fragment's barrier type field.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='scaleritem'>
+            <refmeta>
+                <refentrytitle id='scaleritem.title'>scaleritem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>scaleritem</refname>
+                <refpurpose>Pythonic scaler data item</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() in (daqformat.PERIODIC_SCALERS, daqformat.INCREMENTAL_SCALERS, TIMESTAMPED_NONINCR_SCALERS):
+    scalers = factory.makeScalerItem(raw_item)
+    ...
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    Readers in FRIB/NSCLDAQ periodically read counters that allow users
+                    to see detector rates, live times and other useful bits of data.
+                    These are encpaulated in <classname>scaleritem</classname> objects which
+                    are derived from <classname>ringitem</classname>
+                </para>
+                <para>
+                    The methods provided by the object allow you to either pull inidividual counter
+                    values from the object or get all of the items in a single call.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>scalertitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type><methodname>startTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the
+                                    run of the start time of the counting period represented by this
+                                    item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>endTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the
+                                    run of the end time of the counting period represented by
+                                    this item.  In practice, this is also the number of seconds
+                                    into the run at which the item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>absoluteTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the wall clock time in the format of
+                                    <literal>time.time()</literal> at which the item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>boo</type> <methodname>isIncremental</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Historically, scalers have been read in two modes.  Incremental
+                                    and cumulative.  Incremental scalers are cleared after each read while
+                                    cumulative are only cleared at the end of each run. This
+                                    method returns <literal>True</literal> if the scalers  in this
+                                    item were read incrementally. 
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>number</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the number of counters (scalers) stored in this item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getScaler</methodname>
+                                <methodparam><type></type> <parameter>index</parameter></methodparam>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the value of the counter/scaler
+                                    selected by <parameter>index</parameter>.  If the index is not valid
+                                    (that is not  in the range [0, number()))
+                                    an IndexError exception is raised.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>tuple of int</type>
+                                <methodname>getScalers</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns a tuple containing the values of all scalers.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getOriginalSourceId</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the id of the source that emitted the scaler item.
+                                    Since the event builder will rewrite the body header sourcde id
+                                    to support multi-level event building use this method to know
+                                    which source emitted the item.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='glomparameters'>
+            <refmeta>
+                <refentrytitle id='glomparameters.title'> glomparameters</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>glomparameters</refname>
+                <refpurpose>Encapsulate event builder parameters</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.EVB_GLOM_INFO:
+    scalers = factory.makeGlomParameters(raw_item)
+    ...         
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    The FRIB/NSCLDAQ event builder is configurable and, to know what it's doing you
+                    need to know how its configuration paramters have been set.  At the beginning of a 
+                    run, the event builder, emits both a format item and a glom parameters item wit
+                    type daqformat.EVB_GLOM_INFO.
+                    the <classname>glomparameters</classname> encapsulates the glom parameters ring item type
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>glomparameters</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>   
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>coincidenceTicks</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    The final stage of the event builder glues together physics items that
+                                    are within a coincidence interval of timestamp ticks that are
+                                    settable by the user.  This method returns the users setting for the
+                                    coincidence interval.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>bool</type> <methodname>isBulding</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    For test purposes, rather than building events, the event builder can
+                                    just emit fragments as new physics event items.  If the event builder is,
+                                    in fact, building events, this method will return <literal>True</literal>
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>string</type> <methodname>policy</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    When the event builder is building events, it needs to know how
+                                    to assign timestamps to the events it outputs from among the fragments
+                                    that make up each event.  The user can select from among three
+                                    timetamp assignemnt policies.  This method returns a string that depends
+                                    on the policy selected and is one of:
+                                </para>
+                                <variablelist>
+                                    <varlistentry>
+                                            <term><literal>first</literal></term>
+                                            <listitem>
+                                                <para>
+                                                    The timestamp will be assigned from the first (earliest)
+                                                    fragment.
+                                                </para>
+                                            </listitem>
+
+                                    </varlistentry>
+                                    <varlistentry>
+                                            <term><literal>last</literal></term>
+                                            <listitem>
+                                                <para>
+                                                    The timestamp is assigned fromt he last (latest)
+                                                    fragment
+                                                </para>
+                                            </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                            <term><literal>average</literal></term>
+                                            <listitem>
+                                                <para>
+                                                    The timetamp is computed from the average of all timestamps
+                                                    in the fragments that make up the event.
+                                                </para>
+                                            </listitem>
+                                    </varlistentry>
+                                </variablelist>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>      
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='statechangeitem'>
+            <refmeta>
+                <refentrytitle id='statechangeitem.title'>statechangeitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>statechangeitem</refname>
+                <refpurpose>Encapsulate run state change items</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+            <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() in (daqformat.BEGIN_RUN, daqformat.END_RUN
+                       daqformat.PAUSE_RUN, daqformat.RESUME_RUN):
+    state_change = factory.makeStateChangeItem(raw_item)
+    ...         
+            </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    When FRIB/NSCLDAQ runs change state, a <classname>statechangeitem</classname> is
+                    emitted.  THis documents the change of state as well as carrying information about
+                    the run. See   <literal>METHODS</literal> below.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>statechangeitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>  
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <variablelist>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getRunNumber</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the run number the user assigned to the data taking run.
+                                    The run number for recorded runs should be unique.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>float</type> <methodname>getElapsedTime</methodname> <void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the floating point number of seconds into the run at which
+                                    the state change item was emitted.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>string</type> <methodname>getElapsedTime</methodname><void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the title associated with the run by the user.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>getTime</methodname> <void />
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the wall time at wich the state change item was
+                                    emitted. This is the <literal>time.time()</literal> value.
+                                </para>
+                            </listitem>
+                    </varlistentry> 
+                    <varlistentry>
+                            <term><methodsynopsis language='python'>
+                                <type>int</type> <methodname>originalSource</methodname>
+                            </methodsynopsis></term>
+                            <listitem>
+                                <para>
+                                    Returns the id of the sourcde that emitted this item.  Note that
+                                    the sourcde id in the body header, if that exists, can have beeen ovewritten
+                                    by an event builder to support multilevel event builder.
+                                </para>
+                            </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='abnormalenditem'>
+            <refmeta>
+                <refentrytitle id='abnormalenditem.title'>abnormalenditem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>abnormalenditem</refname>
+                <refpurpose>Abnormal end of run item</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.ABNORMAL_ENDRUN:
+    abend = factory.makeAbnormalEndItem(raw_item)
+    ...                        
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    Abnormal end items are emitted into the data stream under some
+                    circumstances when it's been determined that a data taking run was
+                    not normally ended.  Note that other than the methods  inherited
+                    from <classname>ringitem</classname>, <classname>abnormalenditem</classname>
+                    has no methods of its own.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct an <classname>abnormalenditem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>  
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='ringformatitem'>
+            <refmeta>
+                <refentrytitle id='ringformatitem.title'>ringformatitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ringformatitem</refname>
+                <refpurpose>Provide the DAQ verswion of the data format</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.ABNORMAL_ENDRUN:
+    version = factory.makeDataFormatItem(raw_item)
+    ...                        
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    There's a bit of a chicken and egg proglem in atomatically decoding data from FRIB/NSCLDAQ.
+                    WHich version of the format factory should you create?  Beginning with FRIBDAQ 11, a format
+                    version item was emitted as the first item by each readout program.  This item describes the
+                    version of FRIB/NSCLDAQ used by that program.  This item is not emitted by version 10 readouts
+                    and versions prior to 10 were not ring item bsaed.
+                </para>
+                <para>
+                    The format of the ring item version is going to be fixed from now until the end of FRIB/NSCLDAQ's
+                    lifetime.   What we recommend is to read the first ring item in a data stream:
+                </para>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                           Make a ring item factory of version 11 or 12.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            Get the first ring and query its type.  If It's not daqformat.RING_FORMAT,
+                            select a version 10 factory.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            If the ring item is daqformat.RING_FORMAT, then use its major version to instantiate
+                            the proper factory.
+                        </para>
+                    </listitem>
+                </itemizedlist>
+                <para>
+                    Here is some sample code for this 
+                    that assumes the esistence a function read_ring_item to read and
+                    return a ring item as a byte array from some stream:
+                </para>
+                <example>
+                    <title>Choosing the correct factory in Python</title>
+                    <programlisting>
+from nscldaq import daqformat
+
+factory = daqformat.ringitemfactory(11)     # Guess the right factory type:
+ring_item_bytes = read_ring_item()
+ring_item = factory.makeRingItem(ring_item_bytes)
+
+# Not a version item if 10:
+
+if ring_item.type() != daqformat.RING_FORMAT:
+    factory = daqformat.ringitemfactory(10)     # Version 10
+else:
+    version_item = factory.makeDataFormatItem(ring_item)
+    factory      = daqformat.ringitemfactory(version.item.getMajor())
+
+#  From here on, factory can be used to decode future ring items.
+                    </programlisting>
+                </example>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>ringformatitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>  
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <para>
+                    The only method these objects have, other than those inherited from their 
+                    <classname>ringitem</classname> base class is <methodname>getMajro</methodname> which
+                    returns the major version from the item.  This is sufficient to choose a format factory.
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+       </section>
     </chapter>
 </book>
