@@ -17932,10 +17932,10 @@ match raw_ringitem.type():
                 <title>METHODS</title>
                 <variablelist>
                     <varlistentry>
-                            <term><constructorsynopsis language='python'>
-                                <methodname>daqformat.ringitemfactory</methodname>
-                                <methodparam><type>int</type><parameter>major_version</parameter></methodparam>
-                            </constructorsynopsis>
+                            <term><methodsynopsis language='python'>
+                                <type>factory</type> <methodname>daqformat.ringitemfactory</methodname>
+                                <methodparam><type></type><parameter>major_version</parameter></methodparam>
+                            </methodsynopsis>
                             </term>
                             <listitem>
                                 <para>
@@ -17950,7 +17950,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>ringitem</type> <methodname>makeRingItem</methodname>
-                                <methodparam><type>bytearray</type><parameter>raw_data</parameter></methodparam>
+                                <methodparam><type></type><parameter>raw_data</parameter></methodparam>
                                 </methodsynopsis>
                             </term>
                             <listitem>
@@ -17964,7 +17964,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>abnormalenditem</type><methodname>makeAbnormalEndItem</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis>
                             </term>
                             <listitem>
@@ -17979,7 +17979,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>scaleritem</type><methodname>makeScalerItem</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis>
                             </term>
                             <listitem>
@@ -17995,7 +17995,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>glomparameters</type><methodname>makeGlomParameters</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis></term>
                             <listitem>
                                 <para>
@@ -18010,7 +18010,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>physicsevent</type><methodname>makePhysicsEventItem</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis></term>
                             <listitem>
                                 <para>
@@ -18024,7 +18024,7 @@ match raw_ringitem.type():
                     </varlistentry>
                     <varlistentry>
                             <term><methodsynopsis language='python'>
-                                <type>ringfragmentitem</type><methodname>makeRingFragmentItem</methodname>
+                                <type></type><methodname>makeRingFragmentItem</methodname>
                                 <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis></term>
                             <listitem>
@@ -18040,7 +18040,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>eventcountitem</type><methodname>makePhysicsEventCountItem</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis></term>
                             <listitem>
                                 <para>
@@ -18055,7 +18055,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>stringlistitem</type><methodname>makeTextItem</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis></term>
                             <listitem>
                                 <para>
@@ -18070,7 +18070,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>statechangeitem</type><methodname>makeStateChangeItem</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis></term>
                             <listitem>
                                 <para>
@@ -18085,7 +18085,7 @@ match raw_ringitem.type():
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>ringformatitem</type><methodname>makeDataFormatItem</methodname>
-                                <methodparam><type>ringitem</type> <parameter>ring_item</parameter></methodparam>
+                                <methodparam><type></type> <parameter>ring_item</parameter></methodparam>
                                 </methodsynopsis></term>
                             <listitem>
                                 <para>
@@ -18777,7 +18777,7 @@ if raw_item.type() in (daqformat.PERIODIC_SCALERS, daqformat.INCREMENTAL_SCALERS
                     <varlistentry>
                             <term><methodsynopsis language='python'>
                                 <type>int</type> <methodname>getScaler</methodname>
-                                <methodparam><type>int</type> <parameter>index</parameter></methodparam>
+                                <methodparam><type></type> <parameter>index</parameter></methodparam>
                             </methodsynopsis></term>
                             <listitem>
                                 <para>
@@ -18976,8 +18976,8 @@ from nscldaq import daqformat
 factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
 ...
 raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
-if raw_item.type() in (dataformat.BEGIN_RUN, dataformat.END_RUN
-                       dataformat.PAUSE_RUN, dataformat.RESUME_RUN):
+if raw_item.type() in (daqformat.BEGIN_RUN, daqformat.END_RUN
+                       daqformat.PAUSE_RUN, daqformat.RESUME_RUN):
     state_change = factory.makeStateChangeItem(raw_item)
     ...         
             </programlisting>
@@ -19075,7 +19075,174 @@ if raw_item.type() in (dataformat.BEGIN_RUN, dataformat.END_RUN
                 </itemizedlist>
             </refsect1>
         </refentry>
-        
+        <refentry id='abnormalenditem'>
+            <refmeta>
+                <refentrytitle id='abnormalenditem.title'>abnormalenditem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>abnormalenditem</refname>
+                <refpurpose>Abnormal end of run item</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.ABNORMAL_ENDRUN:
+    abend = factory.makeAbnormalEndItem(raw_item)
+    ...                        
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    Abnormal end items are emitted into the data stream under some
+                    circumstances when it's been determined that a data taking run was
+                    not normally ended.  Note that other than the methods  inherited
+                    from <classname>ringitem</classname>, <classname>abnormalenditem</classname>
+                    has no methods of its own.
+                </para>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct an <classname>abnormalenditem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>  
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
+        <refentry id='ringformatitem'>
+            <refmeta>
+                <refentrytitle id='ringformatitem.title'>ringformatitem</refentrytitle>
+                <manvolnum>3pythonformat</manvolnum>
+            </refmeta>
+            <refnamediv>
+                <refname>ringformatitem</refname>
+                <refpurpose>Provide the DAQ verswion of the data format</refpurpose>
+            </refnamediv>
+            <refsynopsisdiv>
+                <programlisting>
+from nscldaq import daqformat
+...
+factory = daqformat.ringitemfactory(<replaceable>major-version</replaceable>)                
+...
+raw_item = factory.makeRingItem(<replaceable>some-bytearray</replaceable>)
+if raw_item.type() == daqformat.ABNORMAL_ENDRUN:
+    version = factory.makeDataFormatItem(raw_item)
+    ...                        
+                </programlisting>
+            </refsynopsisdiv>
+            <refsect1>
+                <title>DESCRIPTION</title>
+                <para>
+                    There's a bit of a chicken and egg proglem in atomatically decoding data from FRIB/NSCLDAQ.
+                    WHich version of the format factory should you create?  Beginning with FRIBDAQ 11, a format
+                    version item was emitted as the first item by each readout program.  This item describes the
+                    version of FRIB/NSCLDAQ used by that program.  This item is not emitted by version 10 readouts
+                    and versions prior to 10 were not ring item bsaed.
+                </para>
+                <para>
+                    The format of the ring item version is going to be fixed from now until the end of FRIB/NSCLDAQ's
+                    lifetime.   What we recommend is to read the first ring item in a data stream:
+                </para>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                           Make a ring item factory of version 11 or 12.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            Get the first ring and query its type.  If It's not daqformat.RING_FORMAT,
+                            select a version 10 factory.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            If the ring item is daqformat.RING_FORMAT, then use its major version to instantiate
+                            the proper factory.
+                        </para>
+                    </listitem>
+                </itemizedlist>
+                <para>
+                    Here is some sample code for this 
+                    that assumes the esistence a function read_ring_item to read and
+                    return a ring item as a byte array from some stream:
+                </para>
+                <example>
+                    <title>Choosing the correct factory in Python</title>
+                    <programlisting>
+from nscldaq import daqformat
+
+factory = daqformat.ringitemfactory(11)     # Guess the right factory type:
+ring_item_bytes = read_ring_item()
+ring_item = factory.makeRingItem(ring_item_bytes)
+
+# Not a version item if 10:
+
+if ring_item.type() != daqformat.RING_FORMAT:
+    factory = daqformat.ringitemfactory(10)     # Version 10
+else:
+    version_item = factory.makeDataFormatItem(ring_item)
+    factory      = daqformat.ringitemfactory(version.item.getMajor())
+
+#  From here on, factory can be used to decode future ring items.
+                    </programlisting>
+                </example>
+                <warning>
+                    <para> 
+                        You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
+                        to construct a <classname>ringformatitem</classname> object from a 
+                        <classname>ringitem</classname>.
+                        Attempting to construct one directly will result in an imporoperly constructed
+                        ringitem that will most likely segfault when used.
+                    </para>
+                </warning>  
+            </refsect1>
+            <refsect1>
+                <title>METHODS</title>
+                <para>
+                    The only method these objects have, other than those inherited from their 
+                    <classname>ringitem</classname> base class is <methodname>getMajro</methodname> which
+                    returns the major version from the item.  This is sufficient to choose a format factory.
+                </para>
+            </refsect1>
+            <refsect1>
+                <title>SEE ALSO</title>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <link endterm='format_factory.title' linkend='format_factory' />
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <link linkend='ringitem' endterm='ringitem.title' />
+                        </para>
+                    </listitem>
+                </itemizedlist>
+            </refsect1>
+        </refentry>
        </section>
     </chapter>
 </book>
