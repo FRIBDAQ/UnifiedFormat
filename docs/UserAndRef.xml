@@ -19203,12 +19203,38 @@ ring_item = factory.makeRingItem(ring_item_bytes)
 if ring_item.type() != daqformat.RING_FORMAT:
     factory = daqformat.ringitemfactory(10)     # Version 10
 else:
-    version_item = factory.makeDataFormatItem(ring_item)
-    factory      = daqformat.ringitemfactory(version.item.getMajor())
+    try:
+        item = self._itemfactory.makeDataFormatItem(base_item)        
+    except RuntimeError:
+        factory = daqformat.ringitemfactory(12)
 
+    
 #  From here on, factory can be used to decode future ring items.
                     </programlisting>
                 </example>
+                <para>
+                    The code above uses the following:
+                </para>
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            Version 10 event files don't have RING_FORMAT items,
+                            so if an event file starts without one, it must
+                            be version 10.  
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            The ringitem factory will raise a RuntimeError exception
+                            if the format item passed ins is from the wrong
+                            version.  So when that happens, we know the format version
+                            must be 12, not 11 as originally assumed.  Note that as
+                            the set of supported version formats increase (e.g., 13),
+                            similar probing can be done to home in on the correct
+                            ring item vactory format version.
+                        </para>
+                    </listitem>
+                </itemizedlist>
                 <warning>
                     <para> 
                         You  <emphasis>must</emphasis> use a <classname>ringitemfactory</classname>
