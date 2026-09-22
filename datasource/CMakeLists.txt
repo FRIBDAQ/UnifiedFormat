@@ -18,8 +18,8 @@ target_sources(
 
 target_include_directories(
     DataSources PRIVATE
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/abstract
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../abstract
     ${CMAKE_BINARY_DIR}
 )
 
